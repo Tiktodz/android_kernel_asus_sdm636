@@ -102,14 +102,12 @@ static int decrementer_set_next_event(unsigned long evt,
 static int decrementer_shutdown(struct clock_event_device *evt);
 
 struct clock_event_device decrementer_clockevent = {
-	.name			= "decrementer",
-	.rating			= 200,
-	.irq			= 0,
-	.set_next_event		= decrementer_set_next_event,
-	.set_state_shutdown	= decrementer_shutdown,
-	.tick_resume		= decrementer_shutdown,
-	.features		= CLOCK_EVT_FEAT_ONESHOT |
-				  CLOCK_EVT_FEAT_C3STOP,
+	.name           = "decrementer",
+	.rating         = 200,
+	.irq            = 0,
+	.set_next_event = decrementer_set_next_event,
+	.set_mode       = decrementer_set_mode,
+	.features       = CLOCK_EVT_FEAT_ONESHOT | CLOCK_EVT_FEAT_C3STOP,
 };
 EXPORT_SYMBOL(decrementer_clockevent);
 
@@ -991,10 +989,6 @@ void __init time_init(void)
 
 	init_decrementer_clockevent();
 	tick_setup_hrtimer_broadcast();
-
-#ifdef CONFIG_COMMON_CLK
-	of_clk_init(NULL);
-#endif
 }
 
 

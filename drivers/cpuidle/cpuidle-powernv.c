@@ -12,8 +12,6 @@
 #include <linux/cpu.h>
 #include <linux/notifier.h>
 #include <linux/clockchips.h>
-#include <linux/of.h>
-#include <linux/slab.h>
 
 #include <asm/machdep.h>
 #include <asm/firmware.h>
@@ -89,8 +87,6 @@ static int nap_loop(struct cpuidle_device *dev,
 	return index;
 }
 
-/* Register for fastsleep only in oneshot mode of broadcast */
-#ifdef CONFIG_TICK_ONESHOT
 static int fastsleep_loop(struct cpuidle_device *dev,
 				struct cpuidle_driver *drv,
 				int index)
@@ -102,10 +98,12 @@ static int fastsleep_loop(struct cpuidle_device *dev,
 		return index;
 
 	new_lpcr = old_lpcr;
-	/* Do not exit powersave upon decrementer as we've setup the timer
-	 * offload.
+	new_lpcr &= ~(LPCR_MER | LPCR_PECE); /* lpcr[mer] must be 0 */
+
+	/* exit powersave upon external interrupt, but not decrementer
+	 * interrupt.
 	 */
-	new_lpcr &= ~LPCR_PECE1;
+	new_lpcr |= LPCR_PECE0;
 
 	mtspr(SPRN_LPCR, new_lpcr);
 	power7_sleep();
@@ -114,7 +112,7 @@ static int fastsleep_loop(struct cpuidle_device *dev,
 
 	return index;
 }
-#endif
+
 /*
  * States for dedicated partition case.
  */
@@ -125,6 +123,20 @@ static struct cpuidle_state powernv_states[MAX_POWERNV_IDLE_STATES] = {
 		.exit_latency = 0,
 		.target_residency = 0,
 		.enter = &snooze_loop },
+	{ /* NAP */
+		.name = "NAP",
+		.desc = "NAP",
+		.flags = CPUIDLE_FLAG_TIME_VALID,
+		.exit_latency = 10,
+		.target_residency = 100,
+		.enter = &nap_loop },
+	 { /* Fastsleep */
+		.name = "fastsleep",
+		.desc = "fastsleep",
+		.flags = CPUIDLE_FLAG_TIME_VALID,
+		.exit_latency = 10,
+		.target_residency = 100,
+		.enter = &fastsleep_loop },
 };
 
 static int powernv_cpuidle_add_cpu_notifier(struct notifier_block *n,

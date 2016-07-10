@@ -9,6 +9,7 @@ obj-$(CONFIG_CPU_FREQ_TIMES)		+= cpufreq_times.o
 
 # CPUfreq governors
 obj-$(CONFIG_CPU_FREQ_GOV_BIOSHOCK)     += cpufreq_bioshock.o
+obj-$(CONFIG_CPU_FREQ_GOV_CHILL)        += cpufreq_chill.o
 obj-$(CONFIG_CPU_FREQ_GOV_PERFORMANCE)	+= cpufreq_performance.o
 obj-$(CONFIG_CPU_FREQ_GOV_POWERSAVE)	+= cpufreq_powersave.o
 obj-$(CONFIG_CPU_FREQ_GOV_USERSPACE)	+= cpufreq_userspace.o

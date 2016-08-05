@@ -1230,4 +1230,10 @@ if MACH_ASUS_X00T
 source "drivers/input/touchscreen/NVT_Touch/Kconfig"
 endif
 
+config SWEEP2SLEEP
+        tristate "Sweep to put device to sleep"
+        default y
+        help
+          Say Y here to support sweep2sleep
+
 endif

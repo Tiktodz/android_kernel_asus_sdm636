@@ -239,7 +239,7 @@
 		//qcom,mdss-dsi-reset-sequence = <1 20>, <0 15>, <1 20>;
 		//qcom,mdss-dsi-reset-sequence = <1 50>, <0 50>, <1 100>, <0 50>, <1 50>;
 		qcom,mdss-dsi-reset-sequence = <1 10>, <0 10>, <1 10>, <0 10>, <1 20>;
-		qcom,mdss-dsi-lp11-init;
+		//qcom,mdss-dsi-lp11-init;
 		//qcom,mdss-dsi-init-delay-us = <10000>;
 		/* Huaqin add for ESD check by xieguoqiang 20170203 start */
 		qcom,esd-check-enabled;
@@ -250,5 +250,7 @@
 		qcom,mdss-dsi-panel-status-value = <0x9C>;
 		qcom,mdss-dsi-panel-max-error-count = <3>;
 		/* Huaqin add for ESD check by xieguoqiang 20170203 end */
+		qcom,ulps-enabled;
+		qcom,panel-allow-phy-poweroff;
 	};
 };

@@ -2,7 +2,6 @@
 #define _LINUX_FUTEX_H
 
 #include <linux/sched.h>
-
 #include <linux/ktime.h>
 #include <uapi/linux/futex.h>
 

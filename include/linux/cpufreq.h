@@ -540,6 +540,9 @@ extern struct cpufreq_governor cpufreq_gov_schedutil;
 #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_CHILL)
 extern struct cpufreq_governor cpufreq_gov_chill;
 #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_chill)
+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_RELAXED)
+extern struct cpufreq_governor cpufreq_gov_relaxed;
+#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_relaxed)
 #endif
 
 static inline void cpufreq_policy_apply_limits(struct cpufreq_policy *policy)

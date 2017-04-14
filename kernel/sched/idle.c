@@ -287,7 +287,7 @@ static void cpu_idle_loop(void)
 		 */
 		flush_smp_call_function_from_idle();
 		sched_ttwu_pending();
-		schedule_preempt_disabled();
+		schedule_idle();
 	}
 }
 

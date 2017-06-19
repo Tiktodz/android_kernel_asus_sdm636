@@ -2552,11 +2552,11 @@ extern u32 sched_get_wake_up_idle(struct task_struct *p);
 extern int sched_set_wake_up_idle(struct task_struct *p, int wake_up_idle);
 
 #ifdef CONFIG_NO_HZ_COMMON
-void calc_load_enter_idle(void);
-void calc_load_exit_idle(void);
+void calc_load_nohz_start(void);
+void calc_load_nohz_stop(void);
 #else
-static inline void calc_load_enter_idle(void) { }
-static inline void calc_load_exit_idle(void) { }
+static inline void calc_load_nohz_start(void) { }
+static inline void calc_load_nohz_stop(void) { }
 #endif /* CONFIG_NO_HZ_COMMON */
 
 /*

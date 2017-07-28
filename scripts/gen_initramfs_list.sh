@@ -251,7 +251,7 @@ case "$arg" in
                 && compr="lzma -9 -f"
 		echo "$output_file" | grep -q "\.xz$" \
                 && [ -x "`which xz 2> /dev/null`" ] \
-                && compr="xz --check=crc32 --lzma2=dict=1MiB"
+                && compr="xz --check=crc32 --lzma2=dict=8MiB"
 		echo "$output_file" | grep -q "\.lzo$" \
                 && [ -x "`which lzop 2> /dev/null`" ] \
                 && compr="lzop -9 -f"

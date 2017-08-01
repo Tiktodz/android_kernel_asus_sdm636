@@ -67,6 +67,9 @@
 
 		qcom,chipid = <0x05010200>;
 
+		/* To disable GPU wake up on touch event */
+		qcom,disable-wake-on-touch;
+
 		qcom,initial-pwrlevel = <6>;
 
 		/* <HZ/12> */

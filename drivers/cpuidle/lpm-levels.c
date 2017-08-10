@@ -1109,6 +1109,14 @@ static int cluster_configure(struct lpm_cluster *cluster, int idx,
 			pr_info("Failed msm_rpm_enter_sleep() rc = %d\n", ret);
 			goto failed_set_mode;
 		}
+		/*
+		 * Print the clocks which are enabled during system suspend
+		 * This debug information is useful to know which are the
+		 * clocks that are enabled and preventing the system level
+		 * LPMs(XO and Vmin).
+		 */
+		if (!from_idle)
+			clock_debug_print_enabled();
 
 		clear_predict_history();
 		clear_cl_predict_history();
@@ -1565,6 +1573,30 @@ exit:
 	return idx;
 }
 
+static void lpm_cpuidle_freeze(struct cpuidle_device *dev,
+		struct cpuidle_driver *drv, int idx)
+{
+	struct lpm_cluster *cluster = per_cpu(cpu_cluster, dev->cpu);
+	const struct cpumask *cpumask = get_cpu_mask(dev->cpu);
+
+	for (; idx >= 0; idx--) {
+		if (lpm_cpu_mode_allow(dev->cpu, idx, false))
+			break;
+	}
+	if (idx < 0) {
+		pr_err("Failed suspend\n");
+		return;
+	}
+
+	cpu_prepare(cluster, idx, true);
+	cluster_prepare(cluster, cpumask, idx, false, 0);
+
+	psci_enter_sleep(cluster, idx, false);
+
+	cluster_unprepare(cluster, cpumask, idx, false, 0);
+	cpu_unprepare(cluster, idx, true);
+}
+
 #ifdef CONFIG_CPU_IDLE_MULTIPLE_DRIVERS
 static int cpuidle_register_cpu(struct cpuidle_driver *drv,
 		struct cpumask *mask)
@@ -1649,6 +1681,8 @@ static int cluster_cpuidle_register(struct lpm_cluster *cl)
 		st->power_usage = cpu_level->pwr.ss_power;
 		st->target_residency = 0;
 		st->enter = lpm_cpuidle_enter;
+		if (i == cl->cpu->nlevels - 1)
+			st->enter_freeze = lpm_cpuidle_freeze;
 	}
 
 	cl->drv->state_count = cl->cpu->nlevels;
@@ -1778,14 +1812,6 @@ static int lpm_suspend_enter(suspend_state_t state)
 	cpu_prepare(cluster, idx, false);
 	cluster_prepare(cluster, cpumask, idx, false, 0);
 
-	/*
-	 * Print the clocks which are enabled during system suspend
-	 * This debug information is useful to know which are the
-	 * clocks that are enabled and preventing the system level
-	 * LPMs(XO and Vmin).
-	 */
-	clock_debug_print_enabled();
-
 	BUG_ON(!use_psci);
 	psci_enter_sleep(cluster, idx, true);
 
@@ -1799,6 +1825,11 @@ static const struct platform_suspend_ops lpm_suspend_ops = {
 	.valid = suspend_valid_only_mem,
 	.prepare_late = lpm_suspend_prepare,
 	.wake = lpm_suspend_wake,
+};
+
+static const struct platform_freeze_ops lpm_freeze_ops = {
+	.prepare = lpm_suspend_prepare,
+	.restore = lpm_suspend_wake,
 };
 
 static int lpm_probe(struct platform_device *pdev)
@@ -1825,6 +1856,7 @@ static int lpm_probe(struct platform_device *pdev)
 	 * how late lpm_levels gets initialized.
 	 */
 	suspend_set_ops(&lpm_suspend_ops);
+	freeze_set_ops(&lpm_freeze_ops);
 	hrtimer_init(&lpm_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	hrtimer_init(&histtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	cluster_timer_init(lpm_root_node);

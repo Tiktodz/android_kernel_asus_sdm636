@@ -431,9 +431,16 @@ nvkm_ioctl(struct nvkm_client *client, bool supervisor,
 			   "vers %d type %02x object %016llx owner %02x\n",
 			   args->v0.version, args->v0.type, args->v0.object,
 			   args->v0.owner);
-		ret = nvkm_ioctl_path(client, args->v0.object, args->v0.type,
+		if (args->v0.path_nr >= ARRAY_SIZE(args->v0.path)) {
+			ret = -EINVAL;
+			nv_ioctl(client, "path_nr %d is out-of-bound\n",
+			args->v0.path_nr);
+		} else
+		ret = nvkm_ioctl_path(client->root, args->v0.type,
+				      args->v0.path_nr, args->v0.path,
 				      data, size, args->v0.owner,
-				      &args->v0.route, &args->v0.token);
+				      &args->v0.route,
+				      &args->v0.token);
 	}
 
 	nvif_ioctl(object, "return %d\n", ret);

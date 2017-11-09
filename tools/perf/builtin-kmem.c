@@ -1013,7 +1013,7 @@ static void __print_page_alloc_result(struct perf_session *session, int n_lines)
 	struct rb_node *next = rb_first(&page_alloc_sorted);
 	struct machine *machine = &session->machines.host;
 	const char *format;
-	int gfp_len = max(strlen("GFP flags"), max_gfp_len);
+	int gfp_len = max(DSTRLEN("GFP flags"), max_gfp_len);
 
 	printf("\n%.105s\n", graph_dotted_line);
 	printf(" %-16s | %5s alloc (KB) | Hits      | Order | Mig.type | %-*s | Callsite\n",
@@ -1062,7 +1062,7 @@ static void __print_page_caller_result(struct perf_session *session, int n_lines
 {
 	struct rb_node *next = rb_first(&page_caller_sorted);
 	struct machine *machine = &session->machines.host;
-	int gfp_len = max(strlen("GFP flags"), max_gfp_len);
+	int gfp_len = max(DSTRLEN("GFP flags"), max_gfp_len);
 
 	printf("\n%.105s\n", graph_dotted_line);
 	printf(" %5s alloc (KB) | Hits      | Order | Mig.type | %-*s | Callsite\n",

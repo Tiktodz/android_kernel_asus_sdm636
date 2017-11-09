@@ -565,7 +565,7 @@ static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
 	arg = buf;
 	if (!strncmp(arg, "memory", 6)) {
 		hp_elog->resource = PSERIES_HP_ELOG_RESOURCE_MEM;
-		arg += strlen("memory ");
+		arg += DSTRLEN("memory ");
 	} else {
 		pr_err("Invalid resource specified: \"%s\"\n", buf);
 		rc = -EINVAL;
@@ -574,10 +574,10 @@ static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
 
 	if (!strncmp(arg, "add", 3)) {
 		hp_elog->action = PSERIES_HP_ELOG_ACTION_ADD;
-		arg += strlen("add ");
+		arg += DSTRLEN("add ");
 	} else if (!strncmp(arg, "remove", 6)) {
 		hp_elog->action = PSERIES_HP_ELOG_ACTION_REMOVE;
-		arg += strlen("remove ");
+		arg += DSTRLEN("remove ");
 	} else {
 		pr_err("Invalid action specified: \"%s\"\n", buf);
 		rc = -EINVAL;
@@ -588,7 +588,7 @@ static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
 		u32 index;
 
 		hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
-		arg += strlen("index ");
+		arg += DSTRLEN("index ");
 		if (kstrtou32(arg, 0, &index)) {
 			rc = -EINVAL;
 			pr_err("Invalid drc_index specified: \"%s\"\n", buf);
@@ -600,7 +600,7 @@ static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
 		u32 count;
 
 		hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_COUNT;
-		arg += strlen("count ");
+		arg += DSTRLEN("count ");
 		if (kstrtou32(arg, 0, &count)) {
 			rc = -EINVAL;
 			pr_err("Invalid count specified: \"%s\"\n", buf);

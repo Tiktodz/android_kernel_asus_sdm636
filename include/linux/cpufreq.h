@@ -582,6 +582,9 @@ extern struct cpufreq_governor cpufreq_gov_lionheart;
 #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_DARKUTIL)
 extern struct cpufreq_governor cpufreq_gov_darkutil;
 #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_darkutil)
+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_ELECTROUTIL)
+extern struct cpufreq_governor cpufreq_gov_electroutil;
+#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_electroutil)
 #endif
 
 

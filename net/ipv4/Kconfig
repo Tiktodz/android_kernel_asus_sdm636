@@ -651,6 +651,18 @@ config TCP_CONG_AGILESD
         to packet losses, which in turn Agile-SD to achieve better throughput 
         over high-speed networks.
 
+config TCP_CONG_CHINA
+        tristate "TCP_China"
+        default n
+        ---help---
+        
+        TCP-Africa is a delay-sensitive congestion avoidance algorithm for TCP that
+	allows for scalable, aggressive behavior in large underutilized links, yet
+        falls back to the more conservative TCP-Reno algorithm once links become
+        well utilized and congestion is imminent.
+        TCP-China is a modification of TCP-Africa that keeps using fast mode all the
+        time, regardless of fairness.
+
 choice
 	prompt "Default TCP congestion control"
 	default DEFAULT_CUBIC
@@ -691,6 +703,9 @@ choice
 	config DEFAULT_CDG
 		bool "CDG" if TCP_CONG_CDG=y
 
+	config DEFAULT_CHINA
+		bool "CHINA" if TCP_CONG_CDG=y
+
 	config DEFAULT_RENO
 		bool "Reno"
 endchoice
@@ -717,6 +732,7 @@ config DEFAULT_TCP_CONG
 	default "bbr" if DEFAULT_BBR
 	default "sociopath" if DEFAULT_SOCIOPATH
 	default "agilesd" if DEFAULT_AGILESD
+        default "china" if DEFAULT_CHINA
 	default "cubic"
 
 config TCP_MD5SIG

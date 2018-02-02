@@ -43,11 +43,13 @@ struct kgsl_device_private;
  * @ticks: GPU ticks at submit time (from the 19.2Mhz timer)
  * @ktime: local clock time (in nanoseconds)
  * @utime: Wall clock time
+ * @drawobj: the object that we want to profile
  */
 struct adreno_submit_time {
 	uint64_t ticks;
 	u64 ktime;
 	struct timespec utime;
+	struct kgsl_drawobj *drawobj;
 };
 
 /**

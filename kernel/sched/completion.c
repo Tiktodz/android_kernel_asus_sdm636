@@ -266,7 +266,7 @@ EXPORT_SYMBOL(wait_for_completion_killable_timeout);
 bool try_wait_for_completion(struct completion *x)
 {
 	unsigned long flags;
-	int ret = 1;
+	bool ret = true;
 
 	/*
 	 * Since x->done will need to be locked only
@@ -275,12 +275,12 @@ bool try_wait_for_completion(struct completion *x)
 	 * return early in the blocking case.
 	 */
 	if (!READ_ONCE(x->done))
-		return 0;
+		return false;
 
 	spin_lock_irqsave(&x->wait.lock, flags);
 	if (!x->done)
-		ret = 0;
-	else
+		ret = false;
+	else if (x->done != UINT_MAX)
 		x->done--;
 	spin_unlock_irqrestore(&x->wait.lock, flags);
 	return ret;

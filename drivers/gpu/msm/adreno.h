@@ -289,6 +289,7 @@ struct adreno_busy_data {
  * @regfw_name: Filename for the register sequence firmware
  * @gpmu_tsens: ID for the temporature sensor used by the GPMU
  * @max_power: Max possible power draw of a core, units elephant tail hairs
+ * @va_padding: Size to pad allocations to, zero if not required
  */
 struct adreno_gpu_core {
 	enum adreno_gpurev gpurev;
@@ -318,6 +319,7 @@ struct adreno_gpu_core {
 	const char *regfw_name;
 	unsigned int gpmu_tsens;
 	unsigned int max_power;
+	uint64_t va_padding;
 };
 
 /**

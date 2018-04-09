@@ -57,6 +57,9 @@ int kgsl_cache_range_op(struct kgsl_memdesc *memdesc,
 			uint64_t offset, uint64_t size,
 			unsigned int op);
 
+void kgsl_memdesc_init(struct kgsl_device *device,
+			struct kgsl_memdesc *memdesc, uint64_t flags);
+
 void kgsl_process_init_sysfs(struct kgsl_device *device,
 		struct kgsl_process_private *private);
 void kgsl_process_uninit_sysfs(struct kgsl_process_private *private);
@@ -281,8 +284,8 @@ static inline int kgsl_allocate_global(struct kgsl_device *device,
 {
 	int ret;
 
-	memdesc->flags = flags;
-	memdesc->priv = priv;
+	kgsl_memdesc_init(device, memdesc, flags);
+	memdesc->priv |= priv;
 	spin_lock_init(&memdesc->lock);
 
 	if (((memdesc->priv & KGSL_MEMDESC_CONTIG) != 0) ||

@@ -530,7 +530,7 @@ static int gf_open(struct inode *inode, struct file *filp)
 					gf_dev->irq);
 
 			status = commonfp_request_irq(NULL,gf_irq,
-			IRQF_TRIGGER_RISING | IRQF_ONESHOT,
+			IRQF_TRIGGER_RISING | IRQF_ONESHOT | IRQF_PERF_CRITICAL,
 			"gf", gf_dev);
 
 			if (status) {

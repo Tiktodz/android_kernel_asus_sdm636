@@ -5608,6 +5608,7 @@ static void rdstd_cc2_detach_work(struct work_struct *work)
 {
 	int rc;
 	u8 stat4, stat5;
+	bool lock = false;
 	struct smb_charger *chg = container_of(work, struct smb_charger,
 						rdstd_cc2_detach_work);
 
@@ -5670,22 +5671,28 @@ static void rdstd_cc2_detach_work(struct work_struct *work)
 	rc = smblib_masked_write(chg, TYPE_C_INTRPT_ENB_SOFTWARE_CTRL_REG,
 						EXIT_SNK_BASED_ON_CC_BIT, 0);
 	smblib_reg_block_restore(chg, cc2_detach_settings);
-	
+
 	/*
 	 * Mutex acquisition deadlock can happen while cancelling this work
 	 * during pd_hard_reset from the function smblib_cc2_sink_removal_exit
 	 * which is called in the same lock context that we try to acquire in
 	 * this work routine.
-	 * Check if this work is running during pd_hard_reset and skip holding
-	 * mutex if lock is already held.
+	 * Check if this work is running during pd_hard_reset and use trylock
+	 * instead of mutex_lock to prevent any deadlock if mutext is already
+	 * held.
 	 */
-	if (!chg->in_chg_lock)
+	if (chg->pd_hard_reset) {
+		if (mutex_trylock(&chg->lock))
+			lock = true;
+	} else {
 		mutex_lock(&chg->lock);
-		smblib_usb_typec_change(chg);
-	
-	if (!chg->in_chg_lock)
+		lock = true;
+	}
+
+	smblib_usb_typec_change(chg);
+
+	if (lock)
 		mutex_unlock(&chg->lock);
-	
 	return;
 
 rerun:

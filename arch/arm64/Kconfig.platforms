@@ -182,4 +182,29 @@ config ARCH_ZYNQMP
 	help
 	  This enables support for Xilinx ZynqMP Family
 
+config MACH_ASUS
+	bool "ASUS devices"
+	help
+	  This enables support for ASUS devices.
+
+if MACH_ASUS
+
+config MACH_ASUS_SDM660
+	bool
+	select ARCH_QCOM
+	select ARCH_SDM660
+
+choice
+	prompt "ASUS device"
+
+config MACH_ASUS_X00TD
+	bool "ZenFone Max Pro (M1)"
+	select MACH_ASUS_SDM660
+	help
+	  This enables support for ASUS ZenFone Max Pro (M1).
+
+endchoice
+
+endif
+
 endmenu

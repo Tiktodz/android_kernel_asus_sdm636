@@ -635,6 +635,10 @@ struct fg_chip {
 	bool			batt_info_restore;
 	bool			*batt_range_ocv;
 	int			*batt_range_pct;
+#ifdef CONFIG_MACH_ASUS_SDM660
+	bool			throttled;
+	int			prev_current_ma;
+#endif
 };
 
 /* FG_MEMIF DEBUGFS structures */
@@ -2672,6 +2676,54 @@ resched:
 		msecs_to_jiffies(SANITY_CHECK_PERIOD_MS));
 }
 
+#ifdef CONFIG_MACH_ASUS_SDM660
+#define TEMP_THROTTLE		475
+#define TEMP_UNTHROTTLE		450
+static bool is_charger_available(struct fg_chip *chip);
+
+static bool charging_is_throttled(struct fg_chip *chip)
+{
+	int temp = get_sram_prop_now(chip, FG_DATA_BATT_TEMP);
+
+	if (chip->throttled) {
+		if (temp <= TEMP_UNTHROTTLE)
+			chip->throttled = false;
+	} else {
+		if (temp >= TEMP_THROTTLE)
+			chip->throttled = true;
+	}
+
+	return chip->throttled;
+}
+
+static void set_charge_current(struct fg_chip *chip, int current_ma)
+{
+	union power_supply_propval pval;
+
+	current_ma = clamp(current_ma, EON_MIN_MA, EON_MAX_MA);
+	chip->prev_current_ma = current_ma;
+	pval.intval = current_ma * 1000;
+	chip->batt_psy->set_property(chip->batt_psy,
+			POWER_SUPPLY_PROP_CURRENT_MAX, &pval);
+}
+
+static void check_charger_throttle(struct fg_chip *chip, int *resched_ms)
+{
+	if (!is_charger_available(chip))
+		return;
+
+	if (charging_is_throttled(chip)) {
+		int current_ma =
+			get_sram_prop_now(chip, FG_DATA_CURRENT) / 1000;
+
+		set_charge_current(chip, chip->prev_current_ma + current_ma);
+		*resched_ms = 1000;
+	} else {
+		set_charge_current(chip, EON_MAX_MA);
+	}
+}
+#endif
+
 #define SRAM_TIMEOUT_MS			3000
 static void update_sram_data_work(struct work_struct *work)
 {
@@ -2701,6 +2753,10 @@ wait:
 		goto out;
 	}
 	rc = update_sram_data(chip, &resched_ms);
+
+#ifdef CONFIG_MACH_ASUS_SDM660
+	check_charger_throttle(chip, &resched_ms);
+#endif
 
 out:
 	if (!rc)

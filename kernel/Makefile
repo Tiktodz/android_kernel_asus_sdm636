@@ -121,7 +121,12 @@ $(obj)/configs.o: $(obj)/config_data.h
 # config_data.h contains the same information as ikconfig.h but gzipped.
 # Info from config_data can be extracted from /proc/config*
 targets += config_data.gz
-$(obj)/config_data.gz: $(KCONFIG_CONFIG) FORCE
+ifdef CONFIG_MACH_ASUS_X00TD
+$(obj)/config_data.gz: arch/arm64/configs/vendor/X00TD_stock-defconfig FORCE
+endif
+ifdef CONFIG_MACH_ASUS_X01BD
+$(obj)/config_data.gz: arch/arm64/configs/vendor/X01BD_stock-defconfig FORCE
+endif
 	$(call if_changed,gzip)
 
       filechk_ikconfiggz = (echo "static const char kernel_config_data[] __used = MAGIC_START"; cat $< | scripts/basic/bin2c; echo "MAGIC_END;")

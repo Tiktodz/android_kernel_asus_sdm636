@@ -585,7 +585,7 @@ static void a5xx_enable_pc(struct adreno_device *adreno_dev)
 	kgsl_regwrite(device, A5XX_GPMU_PWR_COL_INTER_FRAME_HYST, 0x000A0080);
 	kgsl_regwrite(device, A5XX_GPMU_PWR_COL_STAGGER_DELAY, 0x00600040);
 
-	trace_adreno_sp_tp((unsigned long) __builtin_return_address(0));
+//	trace_adreno_sp_tp((unsigned long) __builtin_return_address(0));
 };
 
 /*
@@ -1717,10 +1717,10 @@ static uint64_t a5xx_read_throttling_counters(struct adreno_device *adreno_dev)
 	adj = th[CRC_MORE50PCT] - th[IDLE_10PCT];
 	adj = th[CRC_50PCT] + th[CRC_LESS50PCT] / 3 + (adj < 0 ? 0 : adj) * 3;
 
-	trace_kgsl_clock_throttling(
-		th[IDLE_10PCT], th[CRC_50PCT],
-		th[CRC_MORE50PCT], th[CRC_LESS50PCT],
-		adj);
+//	trace_kgsl_clock_throttling(
+//		th[IDLE_10PCT], th[CRC_50PCT],
+//		th[CRC_MORE50PCT], th[CRC_LESS50PCT],
+//		adj);
 	return adj;
 }
 

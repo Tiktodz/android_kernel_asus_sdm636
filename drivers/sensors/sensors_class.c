@@ -451,6 +451,7 @@ static ssize_t sensors_calibrate_store(struct device *dev,
 	return size;
 }
 
+#ifndef CONFIG_MACH_ASUS_SDM660
 static struct device_attribute sensors_class_attrs[] = {
 	__ATTR(name, 0444, sensors_name_show, NULL),
 	__ATTR(vendor, 0444, sensors_vendor_show, NULL),
@@ -477,6 +478,7 @@ static struct device_attribute sensors_class_attrs[] = {
 			sensors_calibrate_store),
 	__ATTR_NULL,
 };
+#endif /* !CONFIG_MACH_ASUS_SDM660 */
 
 /**
  * sensors_classdev_register - register a new object of sensors_classdev class.
@@ -515,12 +517,73 @@ void sensors_classdev_unregister(struct sensors_classdev *sensors_cdev)
 }
 EXPORT_SYMBOL(sensors_classdev_unregister);
 
+#ifdef CONFIG_MACH_ASUS_SDM660
+static DEVICE_ATTR_RO(sensors_name);
+static DEVICE_ATTR_RO(sensors_vendor);
+static DEVICE_ATTR_RO(sensors_version);
+static DEVICE_ATTR_RO(sensors_handle);
+static DEVICE_ATTR_RO(sensors_type);
+static DEVICE_ATTR_RO(sensors_max_range);
+static DEVICE_ATTR_RO(sensors_resolution);
+static DEVICE_ATTR_RO(sensors_power);
+static DEVICE_ATTR_RO(sensors_min_delay);
+static DEVICE_ATTR_RO(sensors_fifo_event);
+static DEVICE_ATTR_RO(sensors_fifo_max);
+static DEVICE_ATTR_RO(sensors_max_delay);
+static DEVICE_ATTR_RO(sensors_flags);
+static DEVICE_ATTR_RW(sensors_enable);
+static DEVICE_ATTR_RW(sensors_enable_wakeup);
+static DEVICE_ATTR_RW(sensors_delay);
+static DEVICE_ATTR_RO(sensors_test);
+static DEVICE_ATTR_RW(sensors_max_latency);
+static DEVICE_ATTR_RW(sensors_flush);
+static DEVICE_ATTR_RW(sensors_calibrate);
+
+static struct attribute *sensor_class_attrs[] = {
+	&dev_attr_sensors_name.attr,
+	&dev_attr_sensors_vendor.attr,
+	&dev_attr_sensors_version.attr,
+	&dev_attr_sensors_handle.attr,
+	&dev_attr_sensors_type.attr,
+	&dev_attr_sensors_max_range.attr,
+	&dev_attr_sensors_resolution.attr,
+	&dev_attr_sensors_power.attr,
+	&dev_attr_sensors_min_delay.attr,
+	&dev_attr_sensors_fifo_event.attr,
+	&dev_attr_sensors_fifo_max.attr,
+	&dev_attr_sensors_max_delay.attr,
+	&dev_attr_sensors_flags.attr,
+	&dev_attr_sensors_enable.attr,
+	&dev_attr_sensors_enable_wakeup.attr,
+	&dev_attr_sensors_delay.attr,
+	&dev_attr_sensors_test.attr,
+	&dev_attr_sensors_max_latency.attr,
+	&dev_attr_sensors_flush.attr,
+	&dev_attr_sensors_calibrate.attr,
+	NULL,
+};
+
+static const struct attribute_group sensor_group = {
+	.attrs = sensor_class_attrs,
+};
+
+static const struct attribute_group *sensor_groups[] = {
+	&sensor_group,
+	NULL,
+};
+#endif /* CONFIG_MACH_ASUS_SDM660 */
+
 static int __init sensors_init(void)
 {
 	sensors_class = class_create(THIS_MODULE, "sensors");
 	if (IS_ERR(sensors_class))
 		return PTR_ERR(sensors_class);
+#ifdef CONFIG_MACH_ASUS_SDM660
+	sensors_class->dev_groups = sensor_groups;
+#else
 	sensors_class->dev_attrs = sensors_class_attrs;
+#endif
+
 	return 0;
 }
 

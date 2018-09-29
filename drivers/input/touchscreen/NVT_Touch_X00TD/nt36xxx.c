@@ -1741,6 +1741,13 @@ static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_i
 	for (retry = 0; retry < (sizeof(gesture_key_array) / sizeof(gesture_key_array[0])); retry++) {
 		input_set_capability(ts->input_dev, EV_KEY, gesture_key_array[retry]);
 	}
+        __set_bit(KEY_WAKEUP, ts->input_dev->keybit);
+	__set_bit(GESTURE_EVENT_E, ts->input_dev->keybit);
+	__set_bit(GESTURE_EVENT_W, ts->input_dev->keybit);
+	__set_bit(GESTURE_EVENT_S, ts->input_dev->keybit);
+	__set_bit(GESTURE_EVENT_V, ts->input_dev->keybit);
+	__set_bit(GESTURE_EVENT_Z, ts->input_dev->keybit);
+	__set_bit(GESTURE_EVENT_C, ts->input_dev->keybit);
 	wake_lock_init(&gestrue_wakelock, WAKE_LOCK_SUSPEND, "poll-wake-lock");
 #endif
 

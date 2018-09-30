@@ -1,0 +1,17 @@
+# Asus board options
+
+menu "Asus board selection"
+config MACH_ASUS_SDM660_FAMILY
+	bool "ASUS SDM660 Family"
+	depends on ARCH_SDM660
+	help
+	  Add support for ASUS sdm660 board options
+
+
+config MACH_ASUS_X00T
+	bool "ZenFone Max Pro M1 board (X00T)"
+	select MACH_ASUS_SDM660_FAMILY
+	help
+	  Support for Asus ZB601KL/ZB602KL
+
+endmenu

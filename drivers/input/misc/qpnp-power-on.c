@@ -33,6 +33,16 @@
 #include <linux/input/qpnp-power-on.h>
 #include <linux/power_supply.h>
 
+#ifdef CONFIG_MACH_ASUS_X00TD
+#include <linux/timer.h>
+
+static struct timer_list tm;
+struct timer_data {
+    struct qpnp_pon *pon;
+    struct qpnp_pon_config *cfg;
+}timer_data;
+#endif
+
 #define PMIC_VER_8941           0x01
 #define PMIC_VERSION_REG        0x0105
 #define PMIC_VERSION_REV4_REG   0x0103
@@ -1271,6 +1281,87 @@ qpnp_pon_config_input(struct qpnp_pon *pon,  struct qpnp_pon_config *cfg)
 	return 0;
 }
 
+#ifdef CONFIG_MACH_ASUS_X00TD
+static int
+qpnp_config_reset_reg(struct qpnp_pon *pon, struct qpnp_pon_config *cfg)
+{
+	int rc;
+	u8 i;
+	u16 s1_timer_addr, s2_timer_addr;
+	s1_timer_addr = QPNP_PON_KPDPWR_S1_TIMER(pon);
+	s2_timer_addr = QPNP_PON_KPDPWR_S2_TIMER(pon);
+
+	/* disable S2 reset */
+	rc = qpnp_pon_masked_write(pon, cfg->s2_cntl2_addr,
+				QPNP_PON_S2_CNTL_EN, 0);
+	if (rc) {
+		dev_err(&pon->pdev->dev, "%s : Unable to configure S2 enable\n", __func__);
+		return rc;
+	}
+
+	/* configure s1 timer, s2 timer and reset type */
+	for (i = 0; i < PON_S1_COUNT_MAX + 1; i++) {
+		if (cfg->s1_timer <= s1_delay[i])
+			break;
+	}
+	rc = qpnp_pon_masked_write(pon, s1_timer_addr,
+				QPNP_PON_S1_TIMER_MASK, i);
+	if (rc) {
+		dev_err(&pon->pdev->dev, "%s : Unable to configure S1 timer\n", __func__);
+		return rc;
+	}
+
+	i = 0;
+	if (cfg->s2_timer) {
+		i = cfg->s2_timer / 10;
+		i = ilog2(i + 1);
+	}
+
+	rc = qpnp_pon_masked_write(pon, s2_timer_addr,
+				QPNP_PON_S2_TIMER_MASK, i);
+	if (rc) {
+		dev_err(&pon->pdev->dev, "%s : Unable to configure S2 timer\n", __func__);
+		return rc;
+	}
+
+	rc = qpnp_pon_masked_write(pon, cfg->s2_cntl_addr,
+				QPNP_PON_S2_CNTL_TYPE_MASK, (u8)cfg->s2_type);
+	if (rc) {
+		dev_err(&pon->pdev->dev, "%s : Unable to configure S2 reset type\n", __func__);
+		return rc;
+	}
+
+	/* enable S2 reset */
+	rc = qpnp_pon_masked_write(pon, cfg->s2_cntl2_addr,
+				QPNP_PON_S2_CNTL_EN, QPNP_PON_S2_CNTL_EN);
+	if (rc) {
+		dev_err(&pon->pdev->dev, "%s : Unable to configure S2 enable\n", __func__);
+		return rc;
+	}
+
+	return 0;
+}
+
+static void timer_func(unsigned long data){
+    pr_err("%s reset qpnp config reg...\n",__func__);
+    timer_data.cfg->s1_timer = 4480;
+    timer_data.cfg->s2_timer = 2000;
+    timer_data.cfg->s2_type = 7;
+    qpnp_config_reset_reg(timer_data.pon ,timer_data.cfg);
+}
+
+static void start_timer(struct qpnp_pon *pon,  struct qpnp_pon_config *cfg){
+    timer_data.pon = pon;
+    timer_data.cfg = cfg;
+    setup_timer(&tm, timer_func, 0);
+    init_timer(&tm);
+    tm.data = 0;
+    tm.expires = jiffies + 60 * HZ;
+    tm.function = timer_func;
+    add_timer(&tm);
+}
+#endif
+
 static int qpnp_pon_config_init(struct qpnp_pon *pon)
 {
 	int rc = 0, i = 0, pmic_wd_bark_irq;
@@ -1620,6 +1711,11 @@ static int qpnp_pon_config_init(struct qpnp_pon *pon)
 			dev_err(&pon->pdev->dev, "Unable to request-irq's\n");
 			goto unreg_input_dev;
 		}
+#ifdef CONFIG_MACH_ASUS_X00TD
+		if(cfg->pon_type == PON_KPDPWR){
+			start_timer(pon, cfg);
+		}
+#endif
 	}
 
 	device_init_wakeup(&pon->pdev->dev, 1);

@@ -148,14 +148,14 @@
 #define GESTURE_W	0x77
 #define GESTURE_Z	0x7A
 
-#define GESTURE_EVENT_C 		KEY_TP_GESTURE_C
-#define GESTURE_EVENT_E 		KEY_TP_GESTURE_E
-#define GESTURE_EVENT_S 		KEY_TP_GESTURE_S
-#define GESTURE_EVENT_V 		KEY_TP_GESTURE_V
-#define GESTURE_EVENT_W 		KEY_TP_GESTURE_W
-#define GESTURE_EVENT_Z 		KEY_TP_GESTURE_Z
-#define GESTURE_EVENT_SWIPE_UP 		0x2f6
-#define GESTURE_EVENT_DOUBLE_CLICK 	0x2f7
+#define GESTURE_EVENT_C 		249
+#define GESTURE_EVENT_E 		250
+#define GESTURE_EVENT_S 		251
+#define GESTURE_EVENT_V 		252
+#define GESTURE_EVENT_W 		253
+#define GESTURE_EVENT_Z 		254
+#define GESTURE_EVENT_SWIPE_UP 		258
+#define GESTURE_EVENT_DOUBLE_CLICK 	KEY_WAKEUP
 
 #define SYNA_GESTURE_MODE 		"tpd_gesture"
 #endif
@@ -1103,6 +1103,86 @@ static ssize_t synaptics_rmi4_virtual_key_map_show(struct kobject *kobj,
 #ifdef CONFIG_MACH_ASUS_X00TD
 long syna_gesture_mode;
 struct synaptics_rmi4_data *syna_rmi4_data;
+
+static int allow_gesture = 0;
+static int screen_gesture = 1;
+static struct kobject *gesture_kobject;
+
+static ssize_t gesture_show(struct kobject *kobj, struct kobj_attribute *attr,
+                      char *buf)
+{
+        return sprintf(buf, "%d\n", allow_gesture);
+}
+
+static ssize_t gesture_store(struct kobject *kobj, struct kobj_attribute *attr,
+                      char *buf, size_t count)
+{
+        sscanf(buf, "%du", &allow_gesture);
+	if (allow_gesture == 0) {
+		syna_gesture_mode = 0;
+		syna_rmi4_data->enable_wakeup_gesture = 0;
+	} else {
+		syna_gesture_mode = 0x1FF;
+		syna_rmi4_data->enable_wakeup_gesture = 1;
+	}
+	pr_err("syna_gesture_mode = 0x%x, enable_wakeup_gesture = %d \n", (unsigned int)syna_gesture_mode, syna_rmi4_data->enable_wakeup_gesture);
+        return count;
+}
+
+static struct kobj_attribute gesture_attribute = __ATTR(dclicknode, 0664, gesture_show,
+                                                   gesture_store);
+
+static ssize_t screengesture_show(struct kobject *kobj, struct kobj_attribute *attr,
+                      char *buf)
+{
+        return sprintf(buf, "%d\n", screen_gesture);
+}
+
+static ssize_t screengesture_store(struct kobject *kobj, struct kobj_attribute *attr,
+                      char *buf, size_t count)
+{
+        sscanf(buf, "%du", &screen_gesture);
+	if (screen_gesture == 0) {
+		syna_gesture_mode = 0;
+		syna_rmi4_data->enable_wakeup_gesture = 0;
+	} else {
+		syna_gesture_mode = 0x1FF;
+		syna_rmi4_data->enable_wakeup_gesture = 1;
+	}
+	pr_err("syna_gesture_mode = 0x%x, enable_wakeup_gesture = %d \n", (unsigned int)syna_gesture_mode, syna_rmi4_data->enable_wakeup_gesture);
+        return count;
+}
+
+static struct kobj_attribute screengesture_attribute = __ATTR(gesture_node, 0664, screengesture_show,
+                                                   screengesture_store);
+
+int create_gesture_node_syna(void) {
+	int error = 0, error2 = 0;
+
+        gesture_kobject = kobject_create_and_add("touchpanel",
+                                                 kernel_kobj);
+        if(!gesture_kobject)
+                return -ENOMEM;
+
+        pr_err("[Syna-ts] : Gesture Node initialized successfully \n");
+
+        error = sysfs_create_file(gesture_kobject, &gesture_attribute.attr);
+        if (error) {
+                pr_err("[Syna-ts] : failed to create the gesture_node file in /sys/kernel/touchpanel \n");
+        }
+
+        error2 = sysfs_create_file(gesture_kobject, &screengesture_attribute.attr);
+        if (error) {
+                pr_err("[Syna-ts] : failed to create the gesture_node file in /sys/kernel/touchpanel \n");
+        }
+
+        return error;
+}
+
+void destroy_gesture_syna(void) {
+	kobject_put(gesture_kobject);
+}
+
 
 static ssize_t syna_gesture_mode_get_proc(struct file *file,
                         char __user *buffer, size_t size, loff_t *ppos)
@@ -4509,7 +4589,7 @@ EXPORT_SYMBOL(synaptics_rmi4_new_function);
 
 static int synaptics_rmi4_probe(struct platform_device *pdev)
 {
-	int retval;
+	int retval, er = 0;
 	unsigned char attr_count;
 	struct synaptics_rmi4_data *rmi4_data;
 	const struct synaptics_dsx_hw_interface *hw_if;
@@ -4690,6 +4770,7 @@ static int synaptics_rmi4_probe(struct platform_device *pdev)
 #endif
 
 #ifdef CONFIG_MACH_ASUS_X00TD
+	er = create_gesture_node_syna();
 	syna_gesture_mode_proc = proc_create(SYNA_GESTURE_MODE, 0666, NULL,
 					&syna_gesture_mode_proc_ops);
 	if (!syna_gesture_mode_proc)
@@ -5158,6 +5239,7 @@ static int __init synaptics_rmi4_init(void)
 static void __exit synaptics_rmi4_exit(void)
 {
 	platform_driver_unregister(&synaptics_rmi4_driver);
+	destroy_gesture_syna();
 
 	synaptics_rmi4_bus_exit_X00TD();
 

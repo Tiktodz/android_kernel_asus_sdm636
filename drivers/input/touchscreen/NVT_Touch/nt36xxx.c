@@ -459,7 +459,7 @@ static ssize_t screengesture_store(struct kobject *kobj, struct kobj_attribute *
 static struct kobj_attribute screengesture_attribute = __ATTR(gesture_node, 0664, screengesture_show,
                                                    screengesture_store);
 
-int create_gesture_node() {
+int create_gesture_node(void) {
 	int error = 0, error2 = 0;
 
         gesture_kobject = kobject_create_and_add("touchpanel",
@@ -482,7 +482,7 @@ int create_gesture_node() {
         return error;
 }
 
-void destroy_gesture() {
+void destroy_gesture(void) {
 	kobject_put(gesture_kobject);
 }
 
@@ -523,6 +523,8 @@ static ssize_t nvt_gesture_mode_set_proc(struct file *filp,
 		if (gesture_mode == 0) {
 			gesture_mode = 0;
 		} else {
+			screen_gesture = 1;
+			allow_gesture = 1;
 			gesture_mode = 0x1FF;
 		}
 		/* Huaqin modify for upper layer definition by yuexinghan 20171108 end */
@@ -1608,7 +1610,7 @@ return:
 *******************************************************/
 static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
-	int32_t ret = 0;
+	int32_t ret = 0, er = 0;
 #if ((TOUCH_KEY_NUM > 0) || WAKEUP_GESTURE)
 	int32_t retry = 0;
 #endif
@@ -1834,7 +1836,7 @@ static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_i
 #endif
 
 #if WAKEUP_GESTURE
-	int er = create_gesture_node();
+	er = create_gesture_node();
 	nvt_gesture_mode_proc = proc_create(NVT_GESTURE_MODE, 0644, NULL,
 				&gesture_mode_proc_ops);
 	if (!nvt_gesture_mode_proc) {

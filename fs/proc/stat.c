@@ -201,6 +201,9 @@ static const struct file_operations proc_stat_operations = {
 static int __init proc_stat_init(void)
 {
 	proc_create("stat", 0, NULL, &proc_stat_operations);
+#ifdef CONFIG_MACH_ASUS_X00T
+	proc_create("cpu_infos", 444, NULL, &proc_stat_operations);
+#endif
 	return 0;
 }
 fs_initcall(proc_stat_init);

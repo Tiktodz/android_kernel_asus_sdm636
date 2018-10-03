@@ -1,0 +1,23 @@
+#
+# for huaqin mis info
+#
+
+# Huaqin add for ZQL1650-86 by liunianliang at 2018/02/09 start
+config HQ_HARDWARE_INFO
+	bool "show hardware info"
+        default y
+	help
+	  this will create proc/hardwareinfo to show some hardware information.
+
+	  If unsure, say N.
+# Huaqin add for ZQL1650-86 by liunianliang at 2018/02/09 end
+
+# Huaqin add for ZQL1650-1179 by liunianliang at 2018/04/20 start
+config HQ_SIM_TRAY_CHECK
+	bool "check sim stry status"
+        default y
+	help
+	  this will create a node to show sim tray status.
+
+	  If unsure, say N.
+# Huaqin add for ZQL1650-1179 by liunianliang at 2018/04/20 end

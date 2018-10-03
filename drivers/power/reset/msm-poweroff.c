@@ -331,6 +331,7 @@ static void msm_restart_prepare(const char *cmd)
 			unsigned long reset_reason;
 			int ret;
 			ret = kstrtoul(cmd + 4, 16, &code);
+
 			if (!ret) {
 				/* Bit-2 to bit-7 of SOFT_RB_SPARE for hard
 				 * reset reason:
@@ -343,7 +344,15 @@ static void msm_restart_prepare(const char *cmd)
 				   reset_reason < PON_RESTART_REASON_OEM_MIN) {
 					pr_err("Invalid oem reset reason: %lx\n",
 						reset_reason);
-				} else {
+				} 
+#ifdef CONFIG_MACH_ASUS_X00T
+				/*  common reset reason is 8  */
+				else if (code == 8) {
+					qpnp_pon_set_restart_reason(
+						PON_RESTART_REASON_ASUS_UNLOCK);
+				}
+#endif
+				else {
 					qpnp_pon_set_restart_reason(
 						reset_reason);
 				}

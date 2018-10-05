@@ -316,7 +316,7 @@ static int devfreq_memlat_get_freq(struct devfreq *df,
 	return 0;
 }
 
-gov_attr(ratio_ceil, 1U, 10000U);
+gov_attr(ratio_ceil, 1U, 20000U);
 
 static struct attribute *dev_attr[] = {
 	&dev_attr_ratio_ceil.attr,

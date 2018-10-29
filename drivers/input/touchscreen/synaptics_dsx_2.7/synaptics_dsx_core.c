@@ -40,7 +40,7 @@
 #include <linux/gpio.h>
 #include <linux/platform_device.h>
 #include <linux/regulator/consumer.h>
-#include <linux/input/synaptics_dsx.h>
+#include <linux/input/synaptics_dsx_v2_7.h>
 #include "synaptics_dsx_core.h"
 #ifdef KERNEL_ABOVE_2_6_38
 #include <linux/input/mt.h>
@@ -4720,7 +4720,7 @@ static int __init synaptics_rmi4_init(void)
 {
 	int retval;
 
-	retval = synaptics_rmi4_bus_init();
+	retval = synaptics_rmi4_bus_init_v27();
 	if (retval)
 		return retval;
 
@@ -4731,7 +4731,7 @@ static void __exit synaptics_rmi4_exit(void)
 {
 	platform_driver_unregister(&synaptics_rmi4_driver);
 
-	synaptics_rmi4_bus_exit();
+	synaptics_rmi4_bus_exit_v27();
 
 	return;
 }

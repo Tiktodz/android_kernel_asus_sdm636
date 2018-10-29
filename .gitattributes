@@ -1,0 +1,6 @@
+# Huaqin, stop being retard by doing all kernel stuffs on Windows
+*.c text eol=lf
+*.dtsi text eol=lf
+*.h text eol=lf
+Kconfig text eol=lf
+Makefile text eol=lf

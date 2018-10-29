@@ -196,6 +196,12 @@ config MACH_ASUS_SDM660
 
 choice
 	prompt "ASUS device"
+	default MACH_ASUS_DUMMY
+
+config MACH_ASUS_DUMMY
+	bool "Dummy device"
+	help
+	  A stub configuration that doesn't enable support for anything.
 
 config MACH_ASUS_X00TD
 	bool "ZenFone Max Pro (M1)"

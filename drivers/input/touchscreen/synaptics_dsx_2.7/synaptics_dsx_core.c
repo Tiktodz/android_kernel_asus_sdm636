@@ -46,6 +46,21 @@
 #include <linux/input/mt.h>
 #endif
 
+#ifdef CONFIG_MACH_ASUS_X00T
+#include <linux/init.h>
+#include <linux/cdev.h>
+#include <linux/fs.h>
+#include <linux/device.h>
+#include <linux/miscdevice.h>
+#include <linux/gfp.h>
+#include <linux/slab.h>
+#include <linux/miscdevice.h>
+#include <linux/list.h>
+#include <linux/device.h>
+#include <linux/uaccess.h>
+#include <linux/proc_fs.h>
+#endif
+
 #define INPUT_PHYS_NAME "synaptics_dsx_v2.7/touch_input"
 #define STYLUS_PHYS_NAME "synaptics_dsx_v2.7/stylus"
 
@@ -76,6 +91,9 @@
 #define FB_READY_WAIT_MS 100
 #define FB_READY_TIMEOUT_S 30
 */
+#ifdef CONFIG_MACH_ASUS_X00T
+#define SYNA_TDDI
+#endif
 #ifdef SYNA_TDDI
 #define TDDI_LPWG_WAIT_US 10
 #endif
@@ -119,6 +137,28 @@
 #define F12_CONTINUOUS_MODE 0x00
 #define F12_WAKEUP_GESTURE_MODE 0x02
 #define F12_UDG_DETECT 0x0f
+#ifdef CONFIG_MACH_ASUS_X00T
+#define F12_DOUBLECLICK_DETECT 0x03
+#define F12_SWIPE_DETECT 0x07
+#define F12_VEE_DETECT 0x0a
+#define F12_UNICODE_DETECT 0x0b
+#define GESTURE_C	0x63
+#define GESTURE_E	0x65
+#define GESTURE_S	0x73
+#define GESTURE_W	0x77
+#define GESTURE_Z	0x7A
+
+#define GESTURE_EVENT_C 		KEY_TP_GESTURE_C
+#define GESTURE_EVENT_E 		KEY_TP_GESTURE_E
+#define GESTURE_EVENT_S 		KEY_TP_GESTURE_S
+#define GESTURE_EVENT_V 		KEY_TP_GESTURE_V
+#define GESTURE_EVENT_W 		KEY_TP_GESTURE_W
+#define GESTURE_EVENT_Z 		KEY_TP_GESTURE_Z
+#define GESTURE_EVENT_SWIPE_UP 		0x2f6
+#define GESTURE_EVENT_DOUBLE_CLICK 	0x2f7
+
+#define SYNA_GESTURE_MODE 		"tpd_gesture"
+#endif
 
 static int synaptics_rmi4_check_status(struct synaptics_rmi4_data *rmi4_data,
 		bool *was_in_bl_mode);
@@ -721,6 +761,131 @@ static struct kobj_attribute virtual_key_map_attr = {
 	.show = synaptics_rmi4_virtual_key_map_show,
 };
 
+#if SYNA_POWER_SOURCE_CUST_EN
+static int syna_lcm_bias_power_init(struct synaptics_rmi4_data *rmi4_data)
+{
+	int ret;
+
+	rmi4_data->lcm_lab = regulator_get(rmi4_data->pdev->dev.parent,
+						"lcm_lab");
+	if (IS_ERR(rmi4_data->lcm_lab)) {
+		ret = PTR_ERR(rmi4_data->lcm_lab);
+		pr_err("Regulator get failed lcm_lab ret=%d", ret);
+		goto _end;
+	}
+	if (regulator_count_voltages(rmi4_data->lcm_lab) > 0) {
+		ret = regulator_set_voltage(rmi4_data->lcm_lab, LCM_LAB_MIN_UV,
+						LCM_LAB_MAX_UV);
+		if (ret) {
+			pr_err("Regulator set_vtg failed lcm_lab ret=%d", ret);
+			goto reg_lcm_lab_put;
+		}
+	}
+
+	rmi4_data->lcm_ibb = regulator_get(rmi4_data->pdev->dev.parent,
+						"lcm_ibb");
+	if (IS_ERR(rmi4_data->lcm_ibb)) {
+		ret = PTR_ERR(rmi4_data->lcm_ibb);
+		pr_err("Regulator get failed lcm_ibb ret=%d", ret);
+		goto reg_set_lcm_lab_vtg;
+	}
+	if (regulator_count_voltages(rmi4_data->lcm_ibb) > 0) {
+		ret = regulator_set_voltage(rmi4_data->lcm_ibb, LCM_IBB_MIN_UV,
+						LCM_IBB_MAX_UV);
+		if (ret) {
+			pr_err("Regulator set_vtg failed lcm_lab ret=%d", ret);
+			goto reg_lcm_ibb_put;
+		}
+	}
+
+	return 0;
+
+reg_lcm_ibb_put:
+	regulator_put(rmi4_data->lcm_ibb);
+	rmi4_data->lcm_ibb = NULL;
+reg_set_lcm_lab_vtg:
+	if (regulator_count_voltages(rmi4_data->lcm_lab) > 0) {
+		regulator_set_voltage(rmi4_data->lcm_lab, 0, LCM_LAB_MAX_UV);
+	}
+reg_lcm_lab_put:
+	regulator_put(rmi4_data->lcm_lab);
+	rmi4_data->lcm_lab = NULL;
+_end:
+	return ret;
+}
+
+static int syna_lcm_bias_power_deinit(struct synaptics_rmi4_data *rmi4_data)
+{
+	if (rmi4_data->lcm_ibb != NULL) {
+		if (regulator_count_voltages(rmi4_data->lcm_ibb) > 0) {
+			regulator_set_voltage(rmi4_data->lcm_ibb, 0,
+						LCM_LAB_MAX_UV);
+		}
+		regulator_put(rmi4_data->lcm_ibb);
+	}
+	if (rmi4_data->lcm_lab != NULL) {
+		if (regulator_count_voltages(rmi4_data->lcm_lab) > 0) {
+			regulator_set_voltage(rmi4_data->lcm_lab, 0,
+						LCM_LAB_MAX_UV);
+		}
+		regulator_put(rmi4_data->lcm_lab);
+	}
+
+	return 0;
+}
+
+static int syna_lcm_power_source_ctrl(struct synaptics_rmi4_data *rmi4_data,
+					int enable)
+{
+	int rc;
+
+	if (rmi4_data->lcm_lab != NULL && rmi4_data->lcm_ibb != NULL) {
+		if (enable) {
+			if (atomic_inc_return(&(rmi4_data->lcm_lab_power))
+				== 1) {
+				rc = regulator_enable(rmi4_data->lcm_lab);
+				if (rc) {
+					atomic_dec(&(rmi4_data->lcm_lab_power));
+					pr_err("Regulator lcm_lab enable failed rc=%d", rc);
+				}
+			} else
+				atomic_dec(&(rmi4_data->lcm_lab_power));
+			if (atomic_inc_return(&(rmi4_data->lcm_ibb_power))
+				== 1) {
+				rc = regulator_enable(rmi4_data->lcm_ibb);
+				if (rc) {
+					atomic_dec(&(rmi4_data->lcm_ibb_power));
+					pr_err("Regulator lcm_ibb enable failed rc=%d", rc);
+				}
+			} else
+				atomic_dec(&(rmi4_data->lcm_ibb_power));
+		} else {
+			if (atomic_dec_return(&(rmi4_data->lcm_lab_power))
+				== 0) {
+				rc = regulator_disable(rmi4_data->lcm_lab);
+				if (rc) {
+					atomic_inc(&(rmi4_data->lcm_lab_power));
+					pr_err("Regulator lcm_lab disable failed rc=%d", rc);
+				}
+			} else
+				atomic_inc(&(rmi4_data->lcm_lab_power));
+			if (atomic_dec_return(&(rmi4_data->lcm_ibb_power))
+				== 0) {
+				rc = regulator_disable(rmi4_data->lcm_ibb);
+				if (rc)	{
+					atomic_inc(&(rmi4_data->lcm_ibb_power));
+					pr_err("Regulator lcm_ibb disable failed rc=%d", rc);
+				}
+			} else
+				atomic_inc(&(rmi4_data->lcm_ibb_power));
+		}
+	} else
+		pr_err("Regulator lcm_ibb or lcm_lab is invalid");
+
+	return 0;
+}
+#endif /* SYNA_POWER_SOURCE_CUST_EN */
+
 static ssize_t synaptics_rmi4_f01_reset_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
@@ -935,6 +1100,63 @@ static ssize_t synaptics_rmi4_virtual_key_map_show(struct kobject *kobj,
 	return count;
 }
 
+#ifdef CONFIG_MACH_ASUS_X00T
+long syna_gesture_mode;
+struct synaptics_rmi4_data *syna_rmi4_data;
+
+static ssize_t syna_gesture_mode_get_proc(struct file *file,
+                        char __user *buffer, size_t size, loff_t *ppos)
+{
+	char ptr[64];
+	unsigned int len = 0;
+	unsigned int ret = 0;
+
+	if (syna_gesture_mode == 0)
+		len = sprintf(ptr, "0\n");
+	else
+		len = sprintf(ptr, "1\n");
+
+	ret = simple_read_from_buffer(buffer, size, ppos, ptr, (size_t)len);
+	return ret;
+}
+
+static ssize_t syna_gesture_mode_set_proc(struct file *filp,
+                        const char __user *buffer, size_t count, loff_t *off)
+{
+	char msg[20];
+	int ret = 0;
+
+	ret = copy_from_user(msg, buffer, count);
+	if (ret)
+		return -EFAULT;
+
+	ret = kstrtol(msg, 0, &syna_gesture_mode);
+	if (!ret) {
+		if (syna_gesture_mode == 0) {
+			syna_gesture_mode = 0;
+			syna_rmi4_data->enable_wakeup_gesture = 0;
+		} else {
+			syna_gesture_mode = 0x1FF;
+			syna_rmi4_data->enable_wakeup_gesture = 1;
+		}
+	} else
+		pr_err("set gesture mode failed\n");
+
+	pr_err("syna_gesture_mode = 0x%x, enable_wakeup_gesture = %d \n",
+		(unsigned int)syna_gesture_mode,
+		syna_rmi4_data->enable_wakeup_gesture);
+
+	return count;
+}
+
+static struct proc_dir_entry *syna_gesture_mode_proc;
+static const struct file_operations syna_gesture_mode_proc_ops = {
+	.owner = THIS_MODULE,
+	.read = syna_gesture_mode_get_proc,
+	.write = syna_gesture_mode_set_proc,
+};
+#endif /* CONFIG_MACH_ASUS_X00T */
+
 static void synaptics_rmi4_f11_wg(struct synaptics_rmi4_data *rmi4_data,
 		bool enable)
 {
@@ -1013,9 +1235,17 @@ static void synaptics_rmi4_f12_wg(struct synaptics_rmi4_data *rmi4_data,
 	}
 
 	if (enable)
+#ifdef CONFIG_MACH_ASUS_X00T
+		reporting_control[2] = F12_WAKEUP_GESTURE_MODE;
+#else
 		reporting_control[rmi4_data->set_wakeup_gesture] = F12_WAKEUP_GESTURE_MODE;
+#endif
 	else
+#ifdef CONFIG_MACH_ASUS_X00T
+		reporting_control[2] = F12_CONTINUOUS_MODE;
+#else
 		reporting_control[rmi4_data->set_wakeup_gesture] = F12_CONTINUOUS_MODE;
+#endif
 
 	retval = synaptics_rmi4_reg_write(rmi4_data,
 			fhandler->full_addr.ctrl_base + offset,
@@ -1202,6 +1432,44 @@ exit:
 	return touch_count;
 }
 
+#ifdef CONFIG_MACH_ASUS_X00T
+static uint32_t synaptics_check_unicode_gesture(
+			struct synaptics_rmi4_data *rmi4_data, int gesture_id)
+{
+	uint32_t keycode = 0;
+
+	dev_info(rmi4_data->pdev->dev.parent, "%s: gesture_id = %x \n",
+			__func__, gesture_id);
+
+	switch (gesture_id) {
+	case GESTURE_C:
+		pr_debug("Gesture: Word-C.\n");
+		keycode = GESTURE_EVENT_C;
+		break;
+	case GESTURE_W:
+		pr_debug("Gesture: Word-W.\n");
+		keycode = GESTURE_EVENT_W;
+		break;
+	case GESTURE_Z:
+		pr_debug("Gesture: Word_Z.\n");
+		keycode = GESTURE_EVENT_Z;
+		break;
+	case GESTURE_E:
+		pr_debug("Gesture: Word_E.\n");
+		keycode = GESTURE_EVENT_E;
+		break;
+	case GESTURE_S:
+		pr_debug("Gesture: Word_S.\n");
+		keycode = GESTURE_EVENT_S;
+		break;
+	default:
+		break;
+	}
+
+	return keycode;
+}
+#endif /* CONFIG_MACH_ASUS_X00T */
+
 static int synaptics_rmi4_f12_abs_report(struct synaptics_rmi4_data *rmi4_data,
 		struct synaptics_rmi4_fn *fhandler)
 {
@@ -1219,6 +1487,17 @@ static int synaptics_rmi4_f12_abs_report(struct synaptics_rmi4_data *rmi4_data,
 	int wx;
 	int wy;
 	int temp;
+#ifdef CONFIG_MACH_ASUS_X00T
+	int gesture_count= 0;
+	uint32_t keycode = 0;
+	int abs_x;
+	int abs_y;
+	int direction = 0;
+	int gesture_x_distance;
+	int gesture_y_distance;
+	int horizontal_direction = 1;
+	int vertical_direction = 2;
+#endif
 #if defined(REPORT_2D_PRESSURE) || defined(F51_DISCRETE_FORCE)
 	int pressure;
 #endif
@@ -1253,13 +1532,69 @@ static int synaptics_rmi4_f12_abs_report(struct synaptics_rmi4_data *rmi4_data,
 		if (retval < 0)
 			return 0;
 
-		gesture_type = rmi4_data->gesture_detection[0];
+#ifdef CONFIG_MACH_ASUS_X00T
+		for (; gesture_count<5; gesture_count++)
+			pr_debug("[%d] DGY %d\n", gesture_count,
+				rmi4_data->gesture_detection[gesture_count]);
+#endif
 
+		gesture_type = rmi4_data->gesture_detection[0];
+#ifdef CONFIG_MACH_ASUS_X00T
+		gesture_x_distance = rmi4_data->gesture_detection[1];
+		gesture_y_distance = rmi4_data->gesture_detection[2];
+
+		dev_info(rmi4_data->pdev->dev.parent,
+			"%s: gesture_type, gesture_x_distance, gesture_y_distance = %x, %x, %x\n",
+			__func__, gesture_type, gesture_x_distance,
+			gesture_y_distance);
+
+		if (gesture_type != F12_UDG_DETECT) {
+			switch (gesture_type) {
+			case F12_DOUBLECLICK_DETECT:
+				pr_debug("Gesture: Double click.\n");
+				keycode = GESTURE_EVENT_DOUBLE_CLICK;
+				break;
+			case F12_UNICODE_DETECT:
+				pr_debug("Gesture: Unicode detect.\n");
+				keycode = synaptics_check_unicode_gesture(rmi4_data,rmi4_data->gesture_detection[2]);
+				break;
+			case F12_VEE_DETECT:
+				pr_debug("Gesture: Word_V.\n");
+				keycode = GESTURE_EVENT_V;
+				break;
+			case F12_SWIPE_DETECT:
+				abs_x = abs(gesture_x_distance);
+				abs_y = abs(gesture_y_distance);
+				direction = (abs_x > abs_y) ?
+						horizontal_direction :
+						vertical_direction;
+				if ((direction == vertical_direction) &&
+					(gesture_y_distance > 0)){
+					pr_debug("Gesture: Swipe up.\n");
+					keycode = GESTURE_EVENT_SWIPE_UP;
+				}
+				break;
+			default:
+				break;
+			}
+
+			pr_debug("Gesture: keycode = %ud.\n", keycode);
+			if (keycode > 0) {
+			input_report_key(rmi4_data->input_dev, keycode, 1);
+#else
 		if (gesture_type && gesture_type != F12_UDG_DETECT) {
 			input_report_key(rmi4_data->input_dev, KEY_WAKEUP, 1);
+#endif /* CONFIG_MACH_ASUS_X00T */
 			input_sync(rmi4_data->input_dev);
+#ifdef CONFIG_MACH_ASUS_X00T
+			input_report_key(rmi4_data->input_dev, keycode, 0);
+#else
 			input_report_key(rmi4_data->input_dev, KEY_WAKEUP, 0);
+#endif
 			input_sync(rmi4_data->input_dev);
+#ifdef CONFIG_MACH_ASUS_X00T
+			}
+#endif
 			/* synaptics_rmi4_wakeup_gesture(rmi4_data, false); */
 			/* rmi4_data->suspend = false; */
 		}
@@ -2469,6 +2804,7 @@ static int synaptics_rmi4_f12_init(struct synaptics_rmi4_data *rmi4_data,
 
 	}
 
+#ifndef CONFIG_MACH_ASUS_X00T
 	retval = synaptics_rmi4_f12_find_sub(rmi4_data,
 			fhandler, query_5->data, sizeof(query_5->data),
 			6, 20, 0);
@@ -2478,6 +2814,7 @@ static int synaptics_rmi4_f12_init(struct synaptics_rmi4_data *rmi4_data,
 		rmi4_data->set_wakeup_gesture = 0;
 	else if (retval < 0)
 		goto exit;
+#endif
 
 	retval = synaptics_rmi4_reg_read(rmi4_data,
 			fhandler->full_addr.ctrl_base + ctrl_23_offset,
@@ -3432,7 +3769,33 @@ static void synaptics_rmi4_set_params(struct synaptics_rmi4_data *rmi4_data)
 
 	if (rmi4_data->f11_wakeup_gesture || rmi4_data->f12_wakeup_gesture) {
 		set_bit(KEY_WAKEUP, rmi4_data->input_dev->keybit);
+#ifdef CONFIG_MACH_ASUS_X00T
+		input_set_capability(rmi4_data->input_dev, EV_KEY,
+					GESTURE_EVENT_DOUBLE_CLICK);
+		set_bit(KEY_C, rmi4_data->input_dev->keybit);
+		input_set_capability(rmi4_data->input_dev, EV_KEY,
+					GESTURE_EVENT_C);
+		set_bit(KEY_E, rmi4_data->input_dev->keybit);
+		input_set_capability(rmi4_data->input_dev, EV_KEY,
+					GESTURE_EVENT_E);
+		set_bit(KEY_S, rmi4_data->input_dev->keybit);
+		input_set_capability(rmi4_data->input_dev, EV_KEY,
+					GESTURE_EVENT_S);
+		set_bit(KEY_W, rmi4_data->input_dev->keybit);
+		input_set_capability(rmi4_data->input_dev, EV_KEY,
+					GESTURE_EVENT_W);
+		set_bit(KEY_Z, rmi4_data->input_dev->keybit);
+		input_set_capability(rmi4_data->input_dev, EV_KEY,
+					GESTURE_EVENT_Z);
+		set_bit(KEY_V, rmi4_data->input_dev->keybit);
+		input_set_capability(rmi4_data->input_dev, EV_KEY,
+					GESTURE_EVENT_V);
+		set_bit(KEY_UP, rmi4_data->input_dev->keybit);
+		input_set_capability(rmi4_data->input_dev, EV_KEY,
+					GESTURE_EVENT_SWIPE_UP);
+#else
 		input_set_capability(rmi4_data->input_dev, EV_KEY, KEY_WAKEUP);
+#endif
 	}
 
 	return;
@@ -4196,6 +4559,10 @@ static int synaptics_rmi4_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, rmi4_data);
 
+#ifdef CONFIG_MACH_ASUS_X00T
+	syna_rmi4_data = rmi4_data;
+#endif
+
 	vir_button_map = bdata->vir_button_map;
 
 	retval = synaptics_rmi4_get_reg(rmi4_data, true);
@@ -4221,6 +4588,18 @@ static int synaptics_rmi4_probe(struct platform_device *pdev)
 				__func__);
 		goto err_set_gpio;
 	}
+
+#if SYNA_POWER_SOURCE_CUST_EN
+	atomic_set(&(rmi4_data->lcm_lab_power), 0);
+	atomic_set(&(rmi4_data->lcm_ibb_power), 0);
+	retval = syna_lcm_bias_power_init(rmi4_data);
+	if (retval) {
+		pr_err("power resource init error!\n");
+		goto err_power_resource_init_fail;
+	}
+
+	syna_lcm_power_source_ctrl(rmi4_data, 1);
+#endif
 
 	if (hw_if->ui_hw_init) {
 		retval = hw_if->ui_hw_init(rmi4_data);
@@ -4310,6 +4689,13 @@ static int synaptics_rmi4_probe(struct platform_device *pdev)
 	interrupt_signal.si_code = SI_USER;
 #endif
 
+#ifdef CONFIG_MACH_ASUS_X00T
+	syna_gesture_mode_proc = proc_create(SYNA_GESTURE_MODE, 0666, NULL,
+					&syna_gesture_mode_proc_ops);
+	if (!syna_gesture_mode_proc)
+		pr_err("create proc tpd_gesture failed\n");
+#endif
+
 	rmi4_data->rb_workqueue =
 			create_singlethread_workqueue("dsx_rebuild_workqueue");
 	INIT_DELAYED_WORK(&rmi4_data->rb_work, synaptics_rmi4_rebuild_work);
@@ -4374,6 +4760,11 @@ err_set_input_dev:
 
 err_ui_hw_init:
 err_set_gpio:
+#ifdef CONFIG_MACH_ASUS_X00T
+	syna_lcm_power_source_ctrl(rmi4_data, 0);
+	syna_lcm_bias_power_deinit(rmi4_data);
+err_power_resource_init_fail:
+#endif
 	synaptics_rmi4_enable_reg(rmi4_data, false);
 
 err_enable_reg:
@@ -4461,13 +4852,26 @@ static int synaptics_rmi4_fb_notifier_cb(struct notifier_block *self,
 			container_of(self, struct synaptics_rmi4_data,
 			fb_notifier);
 
-	if (evdata && evdata->data && rmi4_data) {
-		if (event == FB_EVENT_BLANK) {
+	if (evdata && evdata->data) {
+#ifdef CONFIG_MACH_ASUS_X00T
+		if (event == FB_EARLY_EVENT_BLANK)
+#else
+		if (rmi4_data && event == FB_EVENT_BLANK)
+#endif
+		{
 			transition = evdata->data;
 			if (*transition == FB_BLANK_POWERDOWN) {
 				synaptics_rmi4_suspend(&rmi4_data->pdev->dev);
 				rmi4_data->fb_ready = false;
-			} else if (*transition == FB_BLANK_UNBLANK) {
+			}
+#ifdef CONFIG_MACH_ASUS_X00T
+		}
+		if (event == FB_EVENT_BLANK) {
+			transition = evdata->data;
+#else
+			else
+#endif
+			if (*transition == FB_BLANK_UNBLANK) {
 				synaptics_rmi4_resume(&rmi4_data->pdev->dev);
 				rmi4_data->fb_ready = true;
 			}
@@ -4520,7 +4924,11 @@ static void synaptics_rmi4_early_suspend(struct early_suspend *h)
 				sizeof(device_ctrl));
 	}
 	synaptics_rmi4_wakeup_gesture(rmi4_data, true);
+#ifdef CONFIG_MACH_ASUS_X00T
+	udelay(TDDI_LPWG_WAIT_US);
+#else
 	usleep(TDDI_LPWG_WAIT_US);
+#endif
 #endif
 	synaptics_rmi4_irq_enable(rmi4_data, false, false);
 	synaptics_rmi4_sleep_enable(rmi4_data, true);
@@ -4630,7 +5038,11 @@ static int synaptics_rmi4_suspend(struct device *dev)
 					sizeof(device_ctrl));
 		}
 		synaptics_rmi4_wakeup_gesture(rmi4_data, true);
+#ifdef CONFIG_MACH_ASUS_X00T
+		udelay(TDDI_LPWG_WAIT_US);
+#else
 		usleep(TDDI_LPWG_WAIT_US);
+#endif
 #endif
 		synaptics_rmi4_irq_enable(rmi4_data, false, false);
 		synaptics_rmi4_sleep_enable(rmi4_data, true);
@@ -4648,6 +5060,16 @@ exit:
 
 	rmi4_data->suspend = true;
 
+#ifdef CONFIG_MACH_ASUS_X00T
+	if (rmi4_data->enable_wakeup_gesture)
+		pr_debug("gesture suspend end not disable vsp/vsn\n");
+	else {
+		/* disable vsp/vsn */
+		syna_lcm_power_source_ctrl(rmi4_data, 0);
+		pr_debug("sleep suspend end  disable vsp/vsn\n");
+	}
+#endif
+
 	return 0;
 }
 
@@ -4659,12 +5081,18 @@ static int synaptics_rmi4_resume(struct device *dev)
 	struct synaptics_rmi4_exp_fhandler *exp_fhandler;
 	struct synaptics_rmi4_data *rmi4_data = dev_get_drvdata(dev);
 
+#ifdef CONFIG_MACH_ASUS_X00T
+	/* enable vsp/vsn */
+	syna_lcm_power_source_ctrl(rmi4_data, 1);
+#endif
 	if (rmi4_data->stay_awake)
 		return 0;
 
 	if (rmi4_data->enable_wakeup_gesture) {
 		disable_irq_wake(rmi4_data->irq);
+#ifndef CONFIG_MACH_ASUS_X00T
 		synaptics_rmi4_wakeup_gesture(rmi4_data, false);
+#endif
 		goto exit;
 	}
 
@@ -4738,6 +5166,10 @@ static void __exit synaptics_rmi4_exit(void)
 
 module_init(synaptics_rmi4_init);
 module_exit(synaptics_rmi4_exit);
+
+#ifdef CONFIG_MACH_ASUS_X00T
+EXPORT_SYMBOL(syna_gesture_mode);
+#endif
 
 MODULE_AUTHOR("Synaptics, Inc.");
 MODULE_DESCRIPTION("Synaptics DSX Touch Driver");

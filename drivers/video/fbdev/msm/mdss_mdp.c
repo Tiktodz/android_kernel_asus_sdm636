@@ -105,7 +105,10 @@ static struct mdss_panel_intf pan_types[] = {
 	{"edp", MDSS_PANEL_INTF_EDP},
 	{"hdmi", MDSS_PANEL_INTF_HDMI},
 };
-static char mdss_mdp_panel[MDSS_MAX_PANEL_LEN];
+#ifndef CONFIG_MACH_ASUS_X00T
+static
+#endif
+char mdss_mdp_panel[MDSS_MAX_PANEL_LEN];
 
 struct mdss_hw mdss_mdp_hw = {
 	.hw_ndx = MDSS_HW_MDP,
@@ -5627,6 +5630,10 @@ static int __init mdss_mdp_driver_init(void)
 	return 0;
 
 }
+
+#ifdef CONFIG_MACH_ASUS_X00T
+EXPORT_SYMBOL(mdss_mdp_panel);
+#endif
 
 module_param_string(panel, mdss_mdp_panel, MDSS_MAX_PANEL_LEN, 0);
 MODULE_PARM_DESC(panel,

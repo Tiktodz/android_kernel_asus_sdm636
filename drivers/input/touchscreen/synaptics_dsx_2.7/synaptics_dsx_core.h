@@ -38,6 +38,16 @@
 #define SYNAPTICS_DS5 (1 << 1)
 #define SYNAPTICS_DSX_DRIVER_PRODUCT (SYNAPTICS_DS4 | SYNAPTICS_DS5)
 #define SYNAPTICS_DSX_DRIVER_VERSION 0x2070
+#ifdef CONFIG_MACH_ASUS_X00T
+#define SYNA_POWER_SOURCE_CUST_EN 1
+#endif
+
+#if SYNA_POWER_SOURCE_CUST_EN
+#define LCM_LAB_MIN_UV	6000000
+#define LCM_LAB_MAX_UV	6000000
+#define LCM_IBB_MIN_UV	6000000
+#define LCM_IBB_MAX_UV	6000000
+#endif
 
 #include <linux/version.h>
 #ifdef CONFIG_FB
@@ -398,7 +408,9 @@ struct synaptics_rmi4_data {
 	int sensor_max_y;
 	int force_min;
 	int force_max;
+#ifndef CONFIG_MACH_ASUS_X00T
 	int set_wakeup_gesture;
+#endif
 	bool flash_prog_mode;
 	bool irq_enabled;
 	bool fingers_on_2d;
@@ -422,6 +434,12 @@ struct synaptics_rmi4_data {
 			bool enable);
 	void (*report_touch)(struct synaptics_rmi4_data *rmi4_data,
 			struct synaptics_rmi4_fn *fhandler);
+#if SYNA_POWER_SOURCE_CUST_EN
+	struct regulator *lcm_lab;
+	struct regulator *lcm_ibb;
+	atomic_t lcm_lab_power;
+	atomic_t lcm_ibb_power;
+#endif
 };
 
 struct synaptics_dsx_bus_access {

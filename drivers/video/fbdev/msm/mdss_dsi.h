@@ -24,6 +24,10 @@
 #include "mdss_dsi_cmd.h"
 #include "mdss_dsi_clk.h"
 
+#if defined(CONFIG_MACH_ASUS_X00T) && defined(CONFIG_TOUCHSCREEN_NT36xxx)
+extern int nvt_tp_check;
+#endif
+
 #define MMSS_SERDES_BASE_PHY 0x04f01000 /* mmss (De)Serializer CFG */
 
 #define MIPI_OUTP(addr, data) writel_relaxed((data), (addr))

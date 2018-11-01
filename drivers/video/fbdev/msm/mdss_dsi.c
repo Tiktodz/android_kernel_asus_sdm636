@@ -3176,6 +3176,9 @@ static struct device_node *mdss_dsi_pref_prim_panel(
  *
  * returns pointer to panel node on success, NULL on error.
  */
+#if defined(CONFIG_MACH_ASUS_X00T) && defined(CONFIG_TOUCHSCREEN_NT36xxx)
+int nvt_tp_check;
+#endif
 static struct device_node *mdss_dsi_find_panel_of_node(
 		struct platform_device *pdev, char *panel_cfg)
 {
@@ -3242,6 +3245,13 @@ static struct device_node *mdss_dsi_find_panel_of_node(
 		}
 		pr_info("%s: cmdline:%s panel_name:%s\n",
 			__func__, panel_cfg, panel_name);
+#if defined(CONFIG_MACH_ASUS_X00T) && defined(CONFIG_TOUCHSCREEN_NT36xxx)
+		if (!strcmp(panel_name, "qcom,mdss_dsi_nt36672_1080p_video"))
+			nvt_tp_check = 0;
+		else if (!strcmp(panel_name,
+				"qcom,mdss_dsi_nt36672_1080p_video_txd"))
+			nvt_tp_check = 1;
+#endif
 		if (!strcmp(panel_name, NONE_PANEL))
 			goto exit;
 

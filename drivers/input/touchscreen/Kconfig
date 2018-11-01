@@ -1226,4 +1226,8 @@ config TOUCHSCREEN_ST
 
 source "drivers/input/touchscreen/st/Kconfig"
 
+if MACH_ASUS_X00T
+source "drivers/input/touchscreen/NVT_Touch/Kconfig"
+endif
+
 endif

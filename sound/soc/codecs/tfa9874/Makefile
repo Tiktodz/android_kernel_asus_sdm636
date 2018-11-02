@@ -15,15 +15,6 @@
 # additional debugging
 #TFA_DEBUG=1
 
-# add version number derived from Git
-ifeq ($(KDIR),)
-PLMA_HOSTSW_DIR=$(realpath -f $(srctree)/$(src))
-else
-PLMA_HOSTSW_DIR=$(realpath -f $(src))
-endif
-GIT_VERSION=$(shell cd $(PLMA_HOSTSW_DIR); git describe --tags --dirty --match "v[0-9]*.[0-9]*.[0-9]*")
-EXTRA_CFLAGS += -DTFA98XX_GIT_VERSIONS=\"$(GIT_VERSION)\"
-
 # debugging support (also enables trace_printk)
 EXTRA_CFLAGS += -DDEBUG -DTFA9874_NONDSP_STEREO
 

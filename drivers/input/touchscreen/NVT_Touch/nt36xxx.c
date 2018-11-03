@@ -418,10 +418,7 @@ const uint16_t gesture_key_array[] = {
 
 static uint8_t bTouchIsAwake = 0;
 
-/* Huaqin add by yuexinghan for gesture mode 20171030 start */
 #if WAKEUP_GESTURE
-#define NVT_GESTURE_MODE "tpd_gesture"
-
 long gesture_mode = 0;
 static int allow_gesture = 0;
 static int screen_gesture = 1;
@@ -485,66 +482,7 @@ int create_gesture_node(void) {
 void destroy_gesture(void) {
 	kobject_put(gesture_kobject);
 }
-
-static ssize_t nvt_gesture_mode_get_proc(struct file *file,
-                        char __user *buffer, size_t size, loff_t *ppos)
-{
-	char ptr[64];
-	unsigned int len = 0;
-	unsigned int ret = 0;
-
-	/* Huaqin modify for upper layer definition by yuexinghan 20171108 start */
-	//len = sprintf(ptr, "gesture_mode=0x%3X\n", (unsigned int)gesture_mode);
-	if (gesture_mode == 0) {
-		len = sprintf(ptr, "0\n");
-	} else {
-		len = sprintf(ptr, "1\n");
-	}
-	/* Huaqin modify for upper layer definition by yuexinghan 20171108 end */
-	ret = simple_read_from_buffer(buffer, size, ppos, ptr, (size_t)len);
-	return ret;
-}
-
-static ssize_t nvt_gesture_mode_set_proc(struct file *filp,
-                        const char __user *buffer, size_t count, loff_t *off)
-{
-	char msg[20];
-	int ret = 0;
-
-	ret = copy_from_user(msg, buffer, count);
-	if (ret) {
-		return -EFAULT;
-	}
-
-	ret = kstrtol(msg, 0, &gesture_mode);
-	if (!ret) {
-		/* Huaqin modify for upper layer definition by yuexinghan 20171108 start */
-		//gesture_mode = gesture_mode & 0x1FF;
-		if (gesture_mode == 0) {
-			gesture_mode = 0;
-		} else {
-			screen_gesture = 1;
-			allow_gesture = 1;
-			gesture_mode = 0x1FF;
-		}
-		/* Huaqin modify for upper layer definition by yuexinghan 20171108 end */
-	}
-	else {
-		NVT_ERR("set gesture mode failed\n");
-	}
-	NVT_LOG("gesture_mode = 0x%x\n", (unsigned int)gesture_mode);
-
-	return count;
-}
-
-static struct proc_dir_entry *nvt_gesture_mode_proc = NULL;
-static const struct file_operations gesture_mode_proc_ops = {
-	.owner = THIS_MODULE,
-	.read = nvt_gesture_mode_get_proc,
-	.write = nvt_gesture_mode_set_proc,
-};
 #endif
-/* Huaqin add by yuexinghan for gesture mode 20171030 end */
 
 
 /*******************************************************
@@ -1837,11 +1775,6 @@ static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_i
 
 #if WAKEUP_GESTURE
 	er = create_gesture_node();
-	nvt_gesture_mode_proc = proc_create(NVT_GESTURE_MODE, 0644, NULL,
-				&gesture_mode_proc_ops);
-	if (!nvt_gesture_mode_proc) {
-		NVT_ERR("create proc tpd_gesture failed\n");
-	}
 #endif
 
 

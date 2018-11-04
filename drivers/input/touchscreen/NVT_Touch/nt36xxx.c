@@ -431,7 +431,7 @@ static ssize_t gesture_show(struct kobject *kobj, struct kobj_attribute *attr,
 }
 
 static ssize_t gesture_store(struct kobject *kobj, struct kobj_attribute *attr,
-                      char *buf, size_t count)
+                      const char *buf, size_t count)
 {
         sscanf(buf, "%du", &allow_gesture);
         return count;
@@ -447,7 +447,7 @@ static ssize_t screengesture_show(struct kobject *kobj, struct kobj_attribute *a
 }
 
 static ssize_t screengesture_store(struct kobject *kobj, struct kobj_attribute *attr,
-                      char *buf, size_t count)
+                      const char *buf, size_t count)
 {
         sscanf(buf, "%du", &screen_gesture);
         return count;

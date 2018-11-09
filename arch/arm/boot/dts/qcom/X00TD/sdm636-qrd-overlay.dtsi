@@ -419,3 +419,8 @@
 		reg = <0x34>;
 	};
 };
+
+&msm_gpu {
+	/* sdm636.dtsi defaults to A509, but X00T has A512 tweaks */
+	qcom,chipid = <0x05010200>;
+};

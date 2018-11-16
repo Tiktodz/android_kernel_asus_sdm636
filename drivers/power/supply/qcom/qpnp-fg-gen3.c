@@ -906,6 +906,11 @@ static int fg_get_prop_capacity(struct fg_chip *chip, int *val)
 		return 0;
 	}
 
+	if (!chip->soc_reporting_ready) {
+		*val = BATT_MISS_SOC;
+		return -EBUSY;
+	}
+
 	if (is_batt_empty(chip)) {
 		*val = EMPTY_SOC;
 		return 0;

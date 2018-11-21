@@ -104,7 +104,7 @@ struct cdfinger_key_map {
 
 static int isInKeyMode = 0; // key mode
 static int screen_status = 1; // screen on
-static u8 cdfinger_debug = 0x01;
+static u8 cdfinger_debug = 0x00;
 static int isInit = 0;
 static char wake_flag = 0;
 #define CDFINGER_DBG(fmt, args...) \

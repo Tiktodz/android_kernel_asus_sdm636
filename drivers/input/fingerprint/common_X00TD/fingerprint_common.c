@@ -143,7 +143,7 @@ int commonfp_hw_reset(int ms)
 	mdelay(ms);	
 #endif
 
-	pr_info("hw reset success, ret: %d\n", ret);
+	pr_debug("hw reset success, ret: %d\n", ret);
 	return ret;
 exit:
 	pr_err("fingerprint_hw_reset failed, ret: %d\n", ret);

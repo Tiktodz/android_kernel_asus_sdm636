@@ -615,9 +615,11 @@ static int msm_load(struct drm_device *dev, unsigned long flags)
 		priv->fbdev = msm_fbdev_init(dev);
 #endif
 
-	ret = msm_debugfs_late_init(dev);
-	if (ret)
-		goto fail;
+	if (!msm_debugfs_late_init(ddev)) {
+		priv->debug_root = debugfs_create_dir("debug",
+						ddev->primary->debugfs_root);
+		sde_dbg_debugfs_register(priv->debug_root);
+	}
 
 	/* perform subdriver post initialization */
 	if (kms && kms->funcs && kms->funcs->postinit) {

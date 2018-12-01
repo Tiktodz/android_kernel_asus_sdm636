@@ -570,7 +570,7 @@ static int msm_load(struct drm_device *dev, unsigned long flags)
 		init_kthread_worker(&priv->disp_thread[i].worker);
 		priv->disp_thread[i].dev = dev;
 		priv->disp_thread[i].thread =
-			kthread_run(kthread_worker_fn,
+			kthread_run_perf_critical(kthread_worker_fn,
 				&priv->disp_thread[i].worker,
 				"crtc_commit:%d",
 				priv->disp_thread[i].crtc_id);

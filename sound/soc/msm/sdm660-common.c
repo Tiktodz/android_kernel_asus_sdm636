@@ -33,6 +33,10 @@
 #define DEFAULT_MCLK_RATE 9600000
 #define MSM_LL_QOS_VALUE 300 /* time in us to ensure LPM doesn't go in C3/C4 */
 
+#if defined(CONFIG_MACH_ASUS_X00TD) && defined(CONFIG_INPUT_SX9310)
+extern void sar_switch(bool);
+#endif
+
 struct dev_config {
 	u32 sample_rate;
 	u32 bit_format;

@@ -147,7 +147,6 @@ enum dwc3_drd_state {
 };
 
 static const char *const state_names[] = {
-	[DRD_STATE_UNDEFINED] = "undefined",
 	[DRD_STATE_IDLE] = "idle",
 	[DRD_STATE_PERIPHERAL] = "peripheral",
 	[DRD_STATE_PERIPHERAL_SUSPEND] = "peripheral_suspend",
@@ -158,7 +157,7 @@ static const char *const state_names[] = {
 static const char *dwc3_drd_state_string(enum dwc3_drd_state state)
 {
 	if (state < 0 || state >= ARRAY_SIZE(state_names))
-		return "UNKNOWN";
+		return "UNDEFINED";
 
 	return state_names[state];
 }
@@ -3967,11 +3966,6 @@ static void dwc3_otg_sm_work(struct work_struct *w)
 		pm_runtime_enable(mdwc->dev);
 		/* fall-through */
 	case DRD_STATE_IDLE:
-		if (test_bit(WAIT_FOR_LPM, &mdwc->inputs)) {
-			dev_dbg(mdwc->dev, "still not in lpm, wait.\n");
-			break;
-		}
-
 		if (!test_bit(ID, &mdwc->inputs)) {
 			dev_dbg(mdwc->dev, "!id\n");
 			mdwc->drd_state = DRD_STATE_HOST_IDLE;

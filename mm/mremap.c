@@ -175,6 +175,53 @@ static void move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
 		i_mmap_unlock_write(mapping);
 }
 
+#ifdef CONFIG_HAVE_MOVE_PMD
+static void move_normal_pmd(struct vm_area_struct *vma, struct vm_area_struct *new_vma,
+		  unsigned long old_addr,
+		  unsigned long new_addr, unsigned long old_end,
+		  pmd_t *old_pmd, pmd_t *new_pmd)
+{
+	spinlock_t *old_ptl, *new_ptl;
+	pmd_t pmd;
+	struct mm_struct *mm = vma->vm_mm;
+
+	if ((old_addr & PMD_MASK) || (new_addr & PMD_MASK)
+	    || old_end - old_addr < PMD_SIZE ||
+	    (new_vma->vm_flags & VM_NOHUGEPAGE))
+		return;
+
+	/*
+	 * The destination pmd shouldn't be established, free_pgtables()
+	 * should have release it.
+	 */
+	if (WARN_ON(!pmd_none(*new_pmd))) {
+		return;
+	}
+
+	/*
+	 * We don't have to worry about the ordering of src and dst
+	 * ptlocks because exclusive mmap_sem prevents deadlock.
+	 */
+	old_ptl = pmd_lock(vma->vm_mm, old_pmd);
+	new_ptl = pmd_lockptr(mm, new_pmd);
+	if (new_ptl != old_ptl)
+		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
+
+	/* Clear the pmd */
+	pmd = *old_pmd;
+	pmd_clear(old_pmd);
+	
+	VM_BUG_ON(!pmd_none(*new_pmd));
+
+	set_pmd_at(mm, new_addr, new_pmd, pmd_mksoft_dirty(pmd));
+	flush_tlb_range(vma, old_addr, old_addr + PMD_SIZE);
+	if (new_ptl != old_ptl)
+		spin_unlock(new_ptl);
+	spin_unlock(old_ptl);
+	return;
+}
+#endif
+
 #define LATENCY_LIMIT	(64 * PAGE_SIZE)
 
 unsigned long move_page_tables(struct vm_area_struct *vma,
@@ -227,7 +274,21 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 				split_huge_page_pmd(vma, old_addr, old_pmd);
 			}
 			VM_BUG_ON(pmd_trans_huge(*old_pmd));
+		} else if (extent == PMD_SIZE) {
+#ifdef CONFIG_HAVE_MOVE_PMD
+				VM_BUG_ON_VMA(vma->vm_file || !vma->anon_vma,
+					      vma);
+				/* See comment in move_ptes() */
+				if (need_rmap_locks)
+					anon_vma_lock_write(vma->anon_vma);
+				move_normal_pmd(vma, new_vma, old_addr,
+						    new_addr, old_end,
+						    old_pmd, new_pmd);
+				if (need_rmap_locks)
+					anon_vma_unlock_write(vma->anon_vma);
+#endif
 		}
+
 		if (pmd_none(*new_pmd) && __pte_alloc(new_vma->vm_mm, new_vma,
 						      new_pmd, new_addr))
 			break;

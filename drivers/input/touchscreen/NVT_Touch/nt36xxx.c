@@ -397,8 +397,11 @@ const uint16_t touch_key_array[TOUCH_KEY_NUM] = {
 #define GESTURE_EVENT_W 		KEY_TP_GESTURE_W
 #define GESTURE_EVENT_Z 		KEY_TP_GESTURE_Z
 /* Huaqin modify gesture keycode by yuexinghan 20171109 start */
-#define GESTURE_EVENT_SWIPE_UP 248
-#define GESTURE_EVENT_DOUBLE_CLICK KEY_WAKEUP
+#define GESTURE_EVENT_SWIPE_UP 255
+#define GESTURE_EVENT_SWIPE_DOWN        256
+#define GESTURE_EVENT_SWIPE_LEFT        257
+#define GESTURE_EVENT_SWIPE_RIGHT       258
+#define GESTURE_EVENT_DOUBLE_CLICK      260
 /* Huaqin modify gesture keycode by yuexinghan 20171109 end */
 
 const uint16_t gesture_key_array[] = {
@@ -412,9 +415,9 @@ const uint16_t gesture_key_array[] = {
 	GESTURE_EVENT_E,
 	GESTURE_EVENT_S,
 	GESTURE_EVENT_SWIPE_UP,
-	KEY_WAKEUP,
-	KEY_WAKEUP,
-	KEY_WAKEUP,
+	GESTURE_EVENT_SWIPE_DOWN,
+	GESTURE_EVENT_SWIPE_LEFT,
+	GESTURE_EVENT_SWIPE_RIGHT,
 };
 /* Huaqin add by yuexinghan for gesture mode 20171030 end */
 #endif
@@ -1047,14 +1050,14 @@ int nvt_test_node_init(struct platform_device *tpinfo_device)
 #define ID_GESTURE_WORD_V			14
 #define ID_GESTURE_DOUBLE_CLICK 		15
 #define ID_GESTURE_WORD_Z			16
-//#define GESTURE_WORD_M			17
-//#define GESTURE_WORD_O			18
+#define GESTURE_WORD_M			17
+#define GESTURE_WORD_O			18
 #define ID_GESTURE_WORD_e			19
 #define ID_GESTURE_WORD_S			20
 #define ID_GESTURE_SLIDE_UP		21
-//#define GESTURE_SLIDE_DOWN		22
-//#define GESTURE_SLIDE_LEFT		23
-//#define GESTURE_SLIDE_RIGHT		24
+#define GESTURE_SLIDE_DOWN		22
+#define GESTURE_SLIDE_LEFT		23
+#define GESTURE_SLIDE_RIGHT		24
 
 static struct wake_lock gestrue_wakelock;
 
@@ -1082,19 +1085,19 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id)
 
 	switch (gesture_id) {
 		case ID_GESTURE_WORD_C:
-			if (screen_gesture) {
+			if (allow_gesture) {
 				NVT_LOG("Gesture : Word-C.\n");
 				keycode = gesture_key_array[0];
 			}
 			break;
 		case ID_GESTURE_WORD_W:
-			if (screen_gesture) {
+			if (allow_gesture) {
 				NVT_LOG("Gesture : Word-W.\n");
 				keycode = gesture_key_array[1];
 			}
 			break;
 		case ID_GESTURE_WORD_V:
-			if (screen_gesture) {
+			if (allow_gesture) {
 				NVT_LOG("Gesture : Word-V.\n");
 				keycode = gesture_key_array[2];
 			}
@@ -1107,38 +1110,38 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id)
 			}
 			break;
 		case ID_GESTURE_WORD_Z:
-			if (screen_gesture) {
+			if (allow_gesture) {
 				NVT_LOG("Gesture : Word-Z.\n");
 				keycode = gesture_key_array[4];
 			}
 			break;
-		/* case GESTURE_WORD_M:
+		case GESTURE_WORD_M:
 			NVT_LOG("Gesture : Word-M.\n");
 			keycode = gesture_key_array[5];
 			break;
 		case GESTURE_WORD_O:
 			NVT_LOG("Gesture : Word-O.\n");
 			keycode = gesture_key_array[6];
-			break; */
+			break;
 		case ID_GESTURE_WORD_e:
-			if (screen_gesture) {
+			if (allow_gesture) {
 				NVT_LOG("Gesture : Word-e.\n");
 				keycode = gesture_key_array[7];
 			}
 			break;
 		case ID_GESTURE_WORD_S:
-			if (screen_gesture) {
+			if (allow_gesture) {
 				NVT_LOG("Gesture : Word-S.\n");
 				keycode = gesture_key_array[8];
 			}
 			break;
 		case ID_GESTURE_SLIDE_UP:
-			if (screen_gesture) {
+			if (allow_gesture) {
 				NVT_LOG("Gesture : Slide UP.\n");
 				keycode = gesture_key_array[9];
 			}
 			break;
-		/* case GESTURE_SLIDE_DOWN:
+		 case GESTURE_SLIDE_DOWN:
 			NVT_LOG("Gesture : Slide DOWN.\n");
 			keycode = gesture_key_array[10];
 			break;
@@ -1149,7 +1152,7 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id)
 		case GESTURE_SLIDE_RIGHT:
 			NVT_LOG("Gesture : Slide RIGHT.\n");
 			keycode = gesture_key_array[12];
-			break; */
+			break;
 		default:
 			NVT_LOG("Still in gesture mode.\n");
 			break;

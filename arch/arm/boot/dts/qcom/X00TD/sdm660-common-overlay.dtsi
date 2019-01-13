@@ -1,11 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 
-&soc {
-	usb_nop_phy: usb_nop_phy {
-		compatible = "usb-nop-xceiv";
-	};
-};
-
 &usb3 {
 	extcon = <&pm660_charger>;
 	vbus_dwc3-supply = <&smb2_vbus>;

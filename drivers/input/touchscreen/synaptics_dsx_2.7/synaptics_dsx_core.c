@@ -155,7 +155,7 @@
 #define GESTURE_EVENT_W 		KEY_TP_GESTURE_W
 #define GESTURE_EVENT_Z 		KEY_TP_GESTURE_Z
 #define GESTURE_EVENT_SWIPE_UP 		258
-#define GESTURE_EVENT_DOUBLE_CLICK 	260
+#define GESTURE_EVENT_DOUBLE_CLICK 	KEY_WAKEUP
 #endif
 
 static int synaptics_rmi4_check_status(struct synaptics_rmi4_data *rmi4_data,

@@ -401,7 +401,7 @@ const uint16_t touch_key_array[TOUCH_KEY_NUM] = {
 #define GESTURE_EVENT_SWIPE_DOWN        256
 #define GESTURE_EVENT_SWIPE_LEFT        257
 #define GESTURE_EVENT_SWIPE_RIGHT       258
-#define GESTURE_EVENT_DOUBLE_CLICK      260
+#define GESTURE_EVENT_DOUBLE_CLICK      KEY_WAKEUP
 /* Huaqin modify gesture keycode by yuexinghan 20171109 end */
 
 const uint16_t gesture_key_array[] = {

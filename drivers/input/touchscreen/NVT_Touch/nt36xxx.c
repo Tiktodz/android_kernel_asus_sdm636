@@ -397,7 +397,10 @@ const uint16_t touch_key_array[TOUCH_KEY_NUM] = {
 #define GESTURE_EVENT_W 		KEY_TP_GESTURE_W
 #define GESTURE_EVENT_Z 		KEY_TP_GESTURE_Z
 /* Huaqin modify gesture keycode by yuexinghan 20171109 start */
-#define GESTURE_EVENT_SWIPE_UP 248
+#define GESTURE_EVENT_SWIPE_UP 255
+#define GESTURE_EVENT_SWIPE_DOWN 256
+#define GESTURE_EVENT_SWIPE_LEFT 257
+#define GESTURE_EVENT_SWIPE_RIGHT 258
 #define GESTURE_EVENT_DOUBLE_CLICK KEY_WAKEUP
 /* Huaqin modify gesture keycode by yuexinghan 20171109 end */
 
@@ -412,6 +415,9 @@ const uint16_t gesture_key_array[] = {
 	GESTURE_EVENT_E,
 	GESTURE_EVENT_S,
 	GESTURE_EVENT_SWIPE_UP,
+	GESTURE_EVENT_SWIPE_DOWN,
+	GESTURE_EVENT_SWIPE_LEFT,
+	GESTURE_EVENT_SWIPE_RIGHT,
 	KEY_WAKEUP,
 	KEY_WAKEUP,
 	KEY_WAKEUP,
@@ -423,8 +429,7 @@ static uint8_t bTouchIsAwake = 0;
 
 #if WAKEUP_GESTURE
 long gesture_mode = 0;
-static int allow_gesture = 0;
-static int screen_gesture = 1;
+static int allow_gesture = 1;
 static struct kobject *gesture_kobject;
 
 static ssize_t gesture_show(struct kobject *kobj, struct kobj_attribute *attr,
@@ -443,38 +448,16 @@ static ssize_t gesture_store(struct kobject *kobj, struct kobj_attribute *attr,
 static struct kobj_attribute gesture_attribute = __ATTR(dclicknode, 0664, gesture_show,
                                                    gesture_store);
 
-static ssize_t screengesture_show(struct kobject *kobj, struct kobj_attribute *attr,
-                      char *buf)
-{
-        return sprintf(buf, "%d\n", screen_gesture);
-}
-
-static ssize_t screengesture_store(struct kobject *kobj, struct kobj_attribute *attr,
-                      const char *buf, size_t count)
-{
-        sscanf(buf, "%du", &screen_gesture);
-        return count;
-}
-
-static struct kobj_attribute screengesture_attribute = __ATTR(gesture_node, 0664, screengesture_show,
-                                                   screengesture_store);
-
 int create_gesture_node(void) {
-	int error = 0, error2 = 0;
+	int error = 0;
+        NVT_LOG("[Nvt-ts] : Gesture Node initialized successfully \n");
 
         gesture_kobject = kobject_create_and_add("touchpanel",
                                                  kernel_kobj);
         if(!gesture_kobject)
                 return -ENOMEM;
 
-        NVT_LOG("[Nvt-ts] : Gesture Node initialized successfully \n");
-
         error = sysfs_create_file(gesture_kobject, &gesture_attribute.attr);
-        if (error) {
-                NVT_LOG("[Nvt-ts] : failed to create the gesture_node file in /sys/kernel/touchpanel \n");
-        }
-
-        error2 = sysfs_create_file(gesture_kobject, &screengesture_attribute.attr);
         if (error) {
                 NVT_LOG("[Nvt-ts] : failed to create the gesture_node file in /sys/kernel/touchpanel \n");
         }
@@ -1052,9 +1035,9 @@ int nvt_test_node_init(struct platform_device *tpinfo_device)
 #define ID_GESTURE_WORD_e			19
 #define ID_GESTURE_WORD_S			20
 #define ID_GESTURE_SLIDE_UP		21
-//#define GESTURE_SLIDE_DOWN		22
-//#define GESTURE_SLIDE_LEFT		23
-//#define GESTURE_SLIDE_RIGHT		24
+#define ID_GESTURE_SLIDE_DOWN		22
+#define ID_GESTURE_SLIDE_LEFT		23
+#define ID_GESTURE_SLIDE_RIGHT		24
 
 static struct wake_lock gestrue_wakelock;
 
@@ -1082,19 +1065,19 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id)
 
 	switch (gesture_id) {
 		case ID_GESTURE_WORD_C:
-			if (screen_gesture) {
+			if (allow_gesture) {
 				NVT_LOG("Gesture : Word-C.\n");
 				keycode = gesture_key_array[0];
 			}
 			break;
 		case ID_GESTURE_WORD_W:
-			if (screen_gesture) {
+			if (allow_gesture) {
 				NVT_LOG("Gesture : Word-W.\n");
 				keycode = gesture_key_array[1];
 			}
 			break;
 		case ID_GESTURE_WORD_V:
-			if (screen_gesture) {
+			if (allow_gesture) {
 				NVT_LOG("Gesture : Word-V.\n");
 				keycode = gesture_key_array[2];
 			}
@@ -1107,7 +1090,7 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id)
 			}
 			break;
 		case ID_GESTURE_WORD_Z:
-			if (screen_gesture) {
+			if (allow_gesture) {
 				NVT_LOG("Gesture : Word-Z.\n");
 				keycode = gesture_key_array[4];
 			}
@@ -1121,35 +1104,41 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id)
 			keycode = gesture_key_array[6];
 			break; */
 		case ID_GESTURE_WORD_e:
-			if (screen_gesture) {
+			if (allow_gesture) {
 				NVT_LOG("Gesture : Word-e.\n");
 				keycode = gesture_key_array[7];
 			}
 			break;
 		case ID_GESTURE_WORD_S:
-			if (screen_gesture) {
+			if (allow_gesture) {
 				NVT_LOG("Gesture : Word-S.\n");
 				keycode = gesture_key_array[8];
 			}
 			break;
 		case ID_GESTURE_SLIDE_UP:
-			if (screen_gesture) {
+			if (allow_gesture) {
 				NVT_LOG("Gesture : Slide UP.\n");
 				keycode = gesture_key_array[9];
 			}
 			break;
-		/* case GESTURE_SLIDE_DOWN:
-			NVT_LOG("Gesture : Slide DOWN.\n");
-			keycode = gesture_key_array[10];
+		case ID_GESTURE_SLIDE_DOWN:
+			if (allow_gesture) {
+				NVT_LOG("Gesture : Slide DOWN.\n");
+				keycode = gesture_key_array[10];
+			}
 			break;
-		case GESTURE_SLIDE_LEFT:
-			NVT_LOG("Gesture : Slide LEFT.\n");
-			keycode = gesture_key_array[11];
+		case ID_GESTURE_SLIDE_LEFT:
+			if (allow_gesture) {
+				NVT_LOG("Gesture : Slide LEFT.\n");
+				keycode = gesture_key_array[11];
+			}
 			break;
-		case GESTURE_SLIDE_RIGHT:
-			NVT_LOG("Gesture : Slide RIGHT.\n");
-			keycode = gesture_key_array[12];
-			break; */
+		case ID_GESTURE_SLIDE_RIGHT:
+			if (allow_gesture) {
+				NVT_LOG("Gesture : Slide RIGHT.\n");
+				keycode = gesture_key_array[12];
+			}
+			break;
 		default:
 			NVT_LOG("Still in gesture mode.\n");
 			break;
@@ -1924,7 +1913,7 @@ static int32_t nvt_ts_suspend(struct device *dev)
 // Huaqin add for esd check function. by zhengwu.lu. at 2018/2/28  end
 
 #if WAKEUP_GESTURE
-	if (!allow_gesture && !screen_gesture) {
+	if (!allow_gesture) {
 // Huaqin add for ctp lose efficacy by zhengwu.lu. at 2018/04/18 For Platform start
 		//disable_irq(ts->client->irq);
 		nvt_irq_disable();
@@ -1978,7 +1967,7 @@ static int32_t nvt_ts_suspend(struct device *dev)
 	msleep(50);
 
 	mutex_unlock(&ts->lock);
-	if (!allow_gesture && !screen_gesture) {
+	if (!allow_gesture) {
 	nvt_lcm_power_source_ctrl(data, 0);//disable vsp/vsn
 	NVT_LOG("sleep suspend end  disable vsp/vsn\n");
 	}

@@ -37,7 +37,8 @@
 #define GESTURE_EVENT_W 		KEY_TP_GESTURE_W
 #define GESTURE_EVENT_Z 		KEY_TP_GESTURE_Z
 #define GESTURE_EVENT_SWIPE_UP KEY_TP_GESTURE_SWIPE_UP
-#define GESTURE_EVENT_DOUBLE_CLICK KEY_TP_GESTURE_DOUBLE_CLICK
+#define GESTURE_EVENT_DOUBLE_CLICK 	KEY_WAKEUP
+
 /* Huaqin add for ZQL1820-701 by zhangxiude at 2018/9/19 end */
 #define GEST_SUP_NUM 26
 /*Setting cust key define (DF = double finger)*/

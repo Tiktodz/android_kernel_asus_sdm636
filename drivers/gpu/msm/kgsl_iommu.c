@@ -1808,7 +1808,7 @@ static int kgsl_iommu_sparse_dummy_map(struct kgsl_pagetable *pt,
 	}
 
 	map_flags = MMU_FEATURE(pt->mmu, KGSL_MMU_PAD_VA) ?
-				_get_protection_flags(pt, memdesc) :
+				_get_protection_flags(memdesc) :
 				IOMMU_READ | IOMMU_NOEXEC;
 
 	pages = kcalloc(count, sizeof(struct page *), GFP_KERNEL);

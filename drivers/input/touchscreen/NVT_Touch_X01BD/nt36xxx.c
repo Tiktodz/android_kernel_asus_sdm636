@@ -39,6 +39,7 @@
 #endif
 
 #include "nt36xxx.h"
+#if 0
 /* Huaqin add by zhangxiude for ITO test start */
 #include <linux/init.h>
 #include <linux/cdev.h>
@@ -52,6 +53,7 @@
 #include <linux/list.h>
 #include <linux/device.h>
 /* Huaqin add by zhangxiude for ITO test end */
+#endif
 #if NVT_TOUCH_ESD_PROTECT
 #include <linux/jiffies.h>
 #endif /* #if NVT_TOUCH_ESD_PROTECT */
@@ -903,6 +905,8 @@ int32_t nvt_tp_info_proc_init(void)
 	}
 	return 0;
 }
+
+#if 0
 /* Huaqin add by zhangxiude for ITO test start */
 /**********add ito test mode function  *******************/
 int nvt_TestResultLen=0;
@@ -954,6 +958,7 @@ int nvt_test_node_init(struct platform_device *tpinfo_device)
     return err;
 }
 /* Huaqin add by zhangxiude for ITO test end */
+#endif
 
 #if WAKEUP_GESTURE
 #define GESTURE_WORD_C          12
@@ -1714,11 +1719,13 @@ static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_i
 	/*Huaqin modify for work delay by lanshiming at 2018/11/6 end*/
 #endif
 
+#if 0
 	/* Huaqin add by zhangxiude for ITO test start */
 	//--------add ito node
 	platform_device_register(&hwinfo_device);
 	nvt_test_node_init(&hwinfo_device);
 	/* Huaqin add by zhangxiude for ITO test end */
+#endif
 	firmware_id=ts->fw_ver;
 	nvt_tp_info_proc_init();
 

@@ -18,10 +18,10 @@
 #ifndef 	_LINUX_NVT_TOUCH_H
 #define		_LINUX_NVT_TOUCH_H
 /* Huaqin add by zhangxiude for ITO test start */
-#include <linux/platform_device.h>
-#include <linux/device.h>
+/* #include <linux/platform_device.h>
+#include <linux/device.h> */
 #include <linux/regulator/consumer.h>
-#include <linux/debugfs.h>
+/* #include <linux/debugfs.h> */
 /* Huaqin add by zhangxiude for ITO test end */
 
 #include <linux/i2c.h>
@@ -32,7 +32,7 @@
 
 #include "nt36xxx_mem_map.h"
 
-#define NVT_DEBUG 1
+#define NVT_DEBUG 0
 
 //---GPIO number---
 #define NVTTOUCH_RST_PIN 980
@@ -70,11 +70,13 @@
 //---Input device info.---
 #define NVT_TS_NAME "NVTCapacitiveTouchScreen"
 
+#if 0
 /* Huaqin add by zhangxiude for ITO test start */
 #define HWINFO_NAME		"tp_wake_switch"
 //-------------add ito test
 extern int32_t ito_selftest_open(void);
 /* Huaqin add by zhangxiude for ITO test end */
+#endif
 
 //---Touch info.---
 #define TOUCH_DEFAULT_MAX_WIDTH 1080
@@ -94,7 +96,7 @@ extern const uint16_t touch_key_array[TOUCH_KEY_NUM];
 //---Customerized func.---
 #define NVT_TOUCH_PROC 1
 #define NVT_TOUCH_EXT_PROC 1
-#define NVT_TOUCH_MP 1
+#define NVT_TOUCH_MP 0
 #define MT_PROTOCOL_B 1
 #define WAKEUP_GESTURE 1
 #if WAKEUP_GESTURE
@@ -106,7 +108,7 @@ extern const uint16_t gesture_key_array[];
 //huaqin modify for update firmware by limengxia at 20190213 end
 //---ESD Protect.---
 /* Huaqin add ZQL1820-663 by zhangxiude for ESD  function on start */
-#define NVT_TOUCH_ESD_PROTECT 1
+#define NVT_TOUCH_ESD_PROTECT 0
 /* Huaqin add ZQL1820-663 by zhangxiude for ESD  function on end */
 #define NVT_TOUCH_ESD_CHECK_PERIOD 1500	/* ms */
 
@@ -174,9 +176,11 @@ typedef enum {
 
 //---extern structures---
 extern struct nvt_ts_data *ts;
+#if 0
 /* Huaqin add by zhangxiude for ITO test start */
 extern int nvt_TestResultLen;
 /* Huaqin add by zhangxiude for ITO test end */
+#endif
 
 //---extern functions---
 extern int32_t CTP_I2C_READ(struct i2c_client *client, uint16_t address, uint8_t *buf, uint16_t len);

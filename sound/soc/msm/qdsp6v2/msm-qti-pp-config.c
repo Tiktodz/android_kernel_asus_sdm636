@@ -886,6 +886,7 @@ int msm_adsp_init_mixer_ctl_pp_event_queue(struct snd_soc_pcm_runtime *rtd)
 	snprintf(mixer_str, ctl_len, "%s %d", mixer_ctl_name,
 		rtd->pcm->device);
 	kctl = snd_soc_card_get_kcontrol(rtd->card, mixer_str);
+	kctl->private_data = NULL;
 	kfree(mixer_str);
 	if (!kctl) {
 		pr_err("%s: failed to get kctl.\n", __func__);

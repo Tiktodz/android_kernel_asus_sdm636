@@ -20,8 +20,7 @@
 static noinline size_t
 lzo1x_1_do_compress(const unsigned char *in, size_t in_len,
 		    unsigned char *out, size_t *out_len,
-		    size_t ti, void *wrkmem, signed char *state_offset,
-		    const unsigned char bitstream_version)
+		    size_t ti, void *wrkmem, signed char *state_offset)
 {
 	const unsigned char *ip;
 	unsigned char *op;
@@ -36,9 +35,10 @@ lzo1x_1_do_compress(const unsigned char *in, size_t in_len,
 	ip += ti < 4 ? 4 - ti : 0;
 
 	for (;;) {
-		const unsigned char *m_pos;
+		const unsigned char *m_pos = NULL;
 		size_t t, m_len, m_off;
 		u32 dv;
+		u32 run_length = 0;
 literal:
 		ip += 1 + ((ip - ii) >> 5);
 next:
@@ -46,7 +46,7 @@ next:
 			break;
 		dv = get_unaligned_le32(ip);
 
-		if (dv == 0 && bitstream_version) {
+		if (dv == 0) {
 			const unsigned char *ir = ip + 4;
 			const unsigned char *limit = ip_end
 				< (ip + MAX_ZERO_RUN_LENGTH + 1)
@@ -113,7 +113,7 @@ next:
 		t = ip - ii;
 		if (t != 0) {
 			if (t <= 3) {
-				op[-2] |= t;
+				op[*state_offset] |= t;
 				COPY4(op, ii);
 				op += t;
 			} else if (t <= 16) {
@@ -144,6 +144,17 @@ next:
 					*op++ = *ii++;
 				} while (--t > 0);
 			}
+		}
+
+		if (unlikely(run_length)) {
+			ip += run_length;
+			run_length -= MIN_ZERO_RUN_LENGTH;
+			put_unaligned_le32((run_length << 21) | 0xfffc18
+					   | (run_length & 0x7), op);
+			op += 4;
+			run_length = 0;
+			*state_offset = -3;
+			goto finished_writing_instruction;
 		}
 
 		m_len = 4;
@@ -228,7 +239,6 @@ m_len_done:
 
 		m_off = ip - m_pos;
 		ip += m_len;
-		ii = ip;
 		if (m_len <= M2_MAX_LEN && m_off <= M2_MAX_OFFSET) {
 			m_off -= 1;
 			*op++ = (((m_len - 1) << 5) | ((m_off & 7) << 2));
@@ -265,6 +275,9 @@ m_len_done:
 			*op++ = (m_off << 2);
 			*op++ = (m_off >> 6);
 		}
+		*state_offset = -2;
+finished_writing_instruction:
+		ii = ip;
 		goto next;
 	}
 	*out_len = op - out;
@@ -280,17 +293,11 @@ int lzogeneric1x_1_compress(const unsigned char *in, size_t in_len,
 	size_t l = in_len;
 	size_t t = 0;
 	signed char state_offset = -2;
-	unsigned int m4_max_offset;
 
 	// LZO v0 will never write 17 as first byte,
 	// so this is used to version the bitstream
-	if (bitstream_version > 0) {
-		*op++ = 17;
-		*op++ = bitstream_version;
-		m4_max_offset = M4_MAX_OFFSET_V1;
-	} else {
-		m4_max_offset = M4_MAX_OFFSET_V0;
-	}
+	*op++ = 17;
+	*op++ = LZO_VERSION;
 
 	while (l > 20) {
 		size_t ll = l <= (m4_max_offset + 1) ? l : (m4_max_offset + 1);
@@ -299,8 +306,8 @@ int lzogeneric1x_1_compress(const unsigned char *in, size_t in_len,
 			break;
 		BUILD_BUG_ON(D_SIZE * sizeof(lzo_dict_t) > LZO1X_1_MEM_COMPRESS);
 		memset(wrkmem, 0, D_SIZE * sizeof(lzo_dict_t));
-		t = lzo1x_1_do_compress(ip, ll, op, out_len, t, wrkmem,
-					&state_offset, bitstream_version);
+		t = lzo1x_1_do_compress(ip, ll, op, out_len,
+					t, wrkmem, &state_offset);
 		ip += ll;
 		op += *out_len;
 		l  -= ll;
@@ -313,7 +320,7 @@ int lzogeneric1x_1_compress(const unsigned char *in, size_t in_len,
 		if (op == out && t <= 238) {
 			*op++ = (17 + t);
 		} else if (t <= 3) {
-			op[-2] |= t;
+			op[state_offset] |= t;
 		} else if (t <= 18) {
 			*op++ = (t - 3);
 		} else {

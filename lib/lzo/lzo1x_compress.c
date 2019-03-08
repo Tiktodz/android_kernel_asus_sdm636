@@ -20,7 +20,8 @@
 static noinline size_t
 lzo1x_1_do_compress(const unsigned char *in, size_t in_len,
 		    unsigned char *out, size_t *out_len,
-		    size_t ti, void *wrkmem, signed char *state_offset)
+		    size_t ti, void *wrkmem, signed char *state_offset,
+		    const unsigned char bitstream_version)
 {
 	const unsigned char *ip;
 	unsigned char *op;
@@ -46,7 +47,7 @@ next:
 			break;
 		dv = get_unaligned_le32(ip);
 
-		if (dv == 0) {
+		if (dv == 0 && bitstream_version) {
 			const unsigned char *ir = ip + 4;
 			const unsigned char *limit = ip_end
 				< (ip + MAX_ZERO_RUN_LENGTH + 1)
@@ -293,11 +294,17 @@ int lzogeneric1x_1_compress(const unsigned char *in, size_t in_len,
 	size_t l = in_len;
 	size_t t = 0;
 	signed char state_offset = -2;
+	unsigned int m4_max_offset;
 
 	// LZO v0 will never write 17 as first byte,
 	// so this is used to version the bitstream
-	*op++ = 17;
-	*op++ = LZO_VERSION;
+	if (bitstream_version > 0) {
+		*op++ = 17;
+		*op++ = bitstream_version;
+		m4_max_offset = M4_MAX_OFFSET_V1;
+	} else {
+		m4_max_offset = M4_MAX_OFFSET_V0;
+	}
 
 	while (l > 20) {
 		size_t ll = l <= (m4_max_offset + 1) ? l : (m4_max_offset + 1);
@@ -306,8 +313,8 @@ int lzogeneric1x_1_compress(const unsigned char *in, size_t in_len,
 			break;
 		BUILD_BUG_ON(D_SIZE * sizeof(lzo_dict_t) > LZO1X_1_MEM_COMPRESS);
 		memset(wrkmem, 0, D_SIZE * sizeof(lzo_dict_t));
-		t = lzo1x_1_do_compress(ip, ll, op, out_len,
-					t, wrkmem, &state_offset);
+		t = lzo1x_1_do_compress(ip, ll, op, out_len, t, wrkmem,
+					&state_offset, bitstream_version);
 		ip += ll;
 		op += *out_len;
 		l  -= ll;

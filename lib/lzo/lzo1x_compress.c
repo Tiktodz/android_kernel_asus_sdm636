@@ -20,7 +20,8 @@
 static noinline size_t
 lzo1x_1_do_compress(const unsigned char *in, size_t in_len,
 		    unsigned char *out, size_t *out_len,
-		    size_t ti, void *wrkmem)
+		    size_t ti, void *wrkmem, signed char *state_offset,
+		    const unsigned char bitstream_version)
 {
 	const unsigned char *ip;
 	unsigned char *op;
@@ -44,11 +45,68 @@ next:
 		if (unlikely(ip >= ip_end))
 			break;
 		dv = get_unaligned_le32(ip);
-		t = ((dv * 0x1824429d) >> (32 - D_BITS)) & D_MASK;
-		m_pos = in + dict[t];
-		dict[t] = (lzo_dict_t) (ip - in);
-		if (unlikely(dv != get_unaligned_le32(m_pos)))
-			goto literal;
+
+		if (dv == 0 && bitstream_version) {
+			const unsigned char *ir = ip + 4;
+			const unsigned char *limit = ip_end
+				< (ip + MAX_ZERO_RUN_LENGTH + 1)
+				? ip_end : ip + MAX_ZERO_RUN_LENGTH + 1;
+#if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) && \
+	defined(LZO_FAST_64BIT_MEMORY_ACCESS)
+			u64 dv64;
+
+			for (; (ir + 32) <= limit; ir += 32) {
+				dv64 = get_unaligned((u64 *)ir);
+				dv64 |= get_unaligned((u64 *)ir + 1);
+				dv64 |= get_unaligned((u64 *)ir + 2);
+				dv64 |= get_unaligned((u64 *)ir + 3);
+				if (dv64)
+					break;
+			}
+			for (; (ir + 8) <= limit; ir += 8) {
+				dv64 = get_unaligned((u64 *)ir);
+				if (dv64) {
+#  if defined(__LITTLE_ENDIAN)
+					ir += __builtin_ctzll(dv64) >> 3;
+#  elif defined(__BIG_ENDIAN)
+					ir += __builtin_clzll(dv64) >> 3;
+#  else
+#    error "missing endian definition"
+#  endif
+					break;
+				}
+			}
+#else
+			while ((ir < (const unsigned char *)
+					ALIGN((uintptr_t)ir, 4)) &&
+					(ir < limit) && (*ir == 0))
+				ir++;
+			for (; (ir + 4) <= limit; ir += 4) {
+				dv = *((u32 *)ir);
+				if (dv) {
+#  if defined(__LITTLE_ENDIAN)
+					ir += __builtin_ctz(dv) >> 3;
+#  elif defined(__BIG_ENDIAN)
+					ir += __builtin_clz(dv) >> 3;
+#  else
+#    error "missing endian definition"
+#  endif
+					break;
+				}
+			}
+#endif
+			while (likely(ir < limit) && unlikely(*ir == 0))
+				ir++;
+			run_length = ir - ip;
+			if (run_length > MAX_ZERO_RUN_LENGTH)
+				run_length = MAX_ZERO_RUN_LENGTH;
+		} else {
+			t = ((dv * 0x1824429d) >> (32 - D_BITS)) & D_MASK;
+			m_pos = in + dict[t];
+			dict[t] = (lzo_dict_t) (ip - in);
+			if (unlikely(dv != get_unaligned_le32(m_pos)))
+				goto literal;
+		}
 
 		ii -= ti;
 		ti = 0;
@@ -213,23 +271,36 @@ m_len_done:
 	return in_end - (ii - ti);
 }
 
-int lzo1x_1_compress(const unsigned char *in, size_t in_len,
+int lzogeneric1x_1_compress(const unsigned char *in, size_t in_len,
 		     unsigned char *out, size_t *out_len,
-		     void *wrkmem)
+		     void *wrkmem, const unsigned char bitstream_version)
 {
 	const unsigned char *ip = in;
 	unsigned char *op = out;
 	size_t l = in_len;
 	size_t t = 0;
+	signed char state_offset = -2;
+	unsigned int m4_max_offset;
+
+	// LZO v0 will never write 17 as first byte,
+	// so this is used to version the bitstream
+	if (bitstream_version > 0) {
+		*op++ = 17;
+		*op++ = bitstream_version;
+		m4_max_offset = M4_MAX_OFFSET_V1;
+	} else {
+		m4_max_offset = M4_MAX_OFFSET_V0;
+	}
 
 	while (l > 20) {
-		size_t ll = l <= (M4_MAX_OFFSET + 1) ? l : (M4_MAX_OFFSET + 1);
+		size_t ll = l <= (m4_max_offset + 1) ? l : (m4_max_offset + 1);
 		uintptr_t ll_end = (uintptr_t) ip + ll;
 		if ((ll_end + ((t + ll) >> 5)) <= ll_end)
 			break;
 		BUILD_BUG_ON(D_SIZE * sizeof(lzo_dict_t) > LZO1X_1_MEM_COMPRESS);
 		memset(wrkmem, 0, D_SIZE * sizeof(lzo_dict_t));
-		t = lzo1x_1_do_compress(ip, ll, op, out_len, t, wrkmem);
+		t = lzo1x_1_do_compress(ip, ll, op, out_len, t, wrkmem,
+					&state_offset, bitstream_version);
 		ip += ll;
 		op += *out_len;
 		l  -= ll;
@@ -273,7 +344,24 @@ int lzo1x_1_compress(const unsigned char *in, size_t in_len,
 	*out_len = op - out;
 	return LZO_E_OK;
 }
+
+int lzo1x_1_compress(const unsigned char *in, size_t in_len,
+		     unsigned char *out, size_t *out_len,
+		     void *wrkmem)
+{
+	return lzogeneric1x_1_compress(in, in_len, out, out_len, wrkmem, 0);
+}
+
+int lzorle1x_1_compress(const unsigned char *in, size_t in_len,
+		     unsigned char *out, size_t *out_len,
+		     void *wrkmem)
+{
+	return lzogeneric1x_1_compress(in, in_len, out, out_len,
+				       wrkmem, LZO_VERSION);
+}
+
 EXPORT_SYMBOL_GPL(lzo1x_1_compress);
+EXPORT_SYMBOL_GPL(lzorle1x_1_compress);
 
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("LZO1X-1 Compressor");

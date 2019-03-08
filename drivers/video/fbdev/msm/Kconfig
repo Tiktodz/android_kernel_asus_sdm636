@@ -131,7 +131,7 @@ config FB_MSM_MDSS_KCAL_CTRL
 	  in the MDSS sub-system.
 
 config KLAPSE
-    bool CONFIG_KLAPSE
+    bool "KLapse dynamic RGB scaling module"
     depends on FB_MSM_MDSS
     default n
     help

@@ -286,6 +286,10 @@ struct msm_fb_data_type {
 	u32 idle_state;
 	struct msm_fb_fps_info fps_info;
 	struct delayed_work idle_notify_work;
+#ifdef CONFIG_MACH_ASUS_X00T
+	struct delayed_work early_unblank_work;
+	bool early_unblank_work_queued;
+#endif
 
 	bool atomic_commit_pending;
 

@@ -162,9 +162,15 @@ static struct usb_interface_descriptor rndis_qc_control_intf = {
 	/* .bInterfaceNumber = DYNAMIC */
 	/* status endpoint is optional; this could be patched later */
 	.bNumEndpoints =	1,
+#ifdef CONFIG_MACH_ASUS_X00T
+	.bInterfaceClass =	USB_CLASS_WIRELESS_CONTROLLER,
+	.bInterfaceSubClass =   0x01,
+	.bInterfaceProtocol =   0x03, /* RNDIS over ethernet */
+#else
 	.bInterfaceClass =	USB_CLASS_MISC,
 	.bInterfaceSubClass =   0x04,
 	.bInterfaceProtocol =   0x01, /* RNDIS over ethernet */
+#endif
 	/* .iInterface = DYNAMIC */
 };
 

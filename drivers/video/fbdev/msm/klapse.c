@@ -59,17 +59,17 @@ static void flush_timer(void)
 static void calc_active_minutes(void)
 {
     bool isPulse = ((enable_klapse == 1) || (brightness_factor_auto_enable == 1));
-    
+
     if (isPulse)
         flush_timer();
-    
+
     if(klapse_start_hour > klapse_stop_hour)
         active_minutes = (24 + klapse_stop_hour - klapse_start_hour)*60;
     else
         active_minutes = (klapse_stop_hour - klapse_start_hour)*60;
-        
+
     klapse_scaling_rate = (active_minutes*10)/target_minute;
-    
+
     if (isPulse)
         klapse_pulse(0);
 }
@@ -93,10 +93,14 @@ static int get_minutes_before_stop(void)
 
 static void set_rgb(int r, int g, int b)
 {
+#if KLAPSE_MDSS
+    klapse_kcal_push(r,g,b);
+#else
     K_RED = r;
     K_GREEN = g;
     K_BLUE = b;
-    
+#endif
+
     current_r = r;
     current_g = g;
     current_b = b;
@@ -156,7 +160,7 @@ static bool hour_within_range(int start, int stop, int check)
 static void klapse_pulse(unsigned long data)
 {
     int backtime;        
-       
+
     // Get time
     do_gettimeofday(&time);
     local_time = (u32)(time.tv_sec - (sys_tz.tz_minuteswest * 60));
@@ -175,7 +179,7 @@ static void klapse_pulse(unsigned long data)
     if (enable_klapse == 1)
     {
         backtime = get_minutes_before_stop();
-    
+
         if(hour_within_range(klapse_start_hour, klapse_stop_hour, tm.tm_hour) == 0) //Means not in klapse time period.
         {
             set_rgb_brightness(daytime_r,daytime_g,daytime_b);
@@ -186,7 +190,7 @@ static void klapse_pulse(unsigned long data)
         else if (backtime > fadeback_minutes)
         {
             backtime = get_minutes_since_start();
-            
+
             // For optimisation, this >= can be turned to an ==
             // But doing so will break reverse "time jumps" due to clock change
             // And a wrong RGB value will be calculated.                        
@@ -209,14 +213,14 @@ static void klapse_pulse(unsigned long data)
             current_g = target_g + (((daytime_g - target_g)*(fadeback_minutes - backtime))/fadeback_minutes);
             current_b = target_b + (((daytime_b - target_b)*(fadeback_minutes - backtime))/fadeback_minutes);           
         }
-        
+
         set_rgb_brightness(current_r, current_g, current_b);
     }
     else
     {
         set_rgb_brightness(K_RED, K_GREEN, K_BLUE);
     }
-    
+
     if (!timer_pending(&pulse_timer))
       restart_timer();
 }
@@ -239,7 +243,7 @@ void set_rgb_slider(u32 bl_lvl)
         set_rgb_brightness(current_r, current_g, current_b);
       }
     }
-  
+
     last_bl = bl_lvl;
   }
 }
@@ -261,13 +265,13 @@ static void set_enable_klapse(int val)
             current_r = daytime_r;
             current_g = daytime_g;
             current_b = daytime_b;
-            
+
             if (brightness_factor_auto_enable == 0)
               flush_timer();
         }
         else if (enable_klapse == 2)
             set_rgb_slider(last_bl);
-        
+
         enable_klapse = val;
     }
 }
@@ -699,7 +703,7 @@ static ssize_t brightness_factor_auto_enable_dump(struct kobject *kobj,
     {
         if (brightness_factor_auto_enable == tmpval) // Do nothing if the same value is entered
             return count;
-        
+
         // At this point, the brightness_factor could already have been changed, so to apply new brightness
         // the actual brightness RGB values must be restored. Here, check whether the current RGB have been reduced :
         if (brightness_factor != 10)  // Guarantess that the brightness_factor was changed
@@ -708,7 +712,7 @@ static ssize_t brightness_factor_auto_enable_dump(struct kobject *kobj,
             {
                 if (enable_klapse == 1)         // Pulse is already running, for thread-safety, stop it and then modify RGB
                     flush_timer();
-                    
+
                 set_rgb_brightness((K_RED*10)/b_cache, (K_GREEN*10)/b_cache, (K_BLUE*10)/b_cache);
                 brightness_factor_auto_enable = tmpval;
                 klapse_pulse(0);
@@ -729,7 +733,7 @@ static ssize_t brightness_factor_auto_enable_dump(struct kobject *kobj,
         else // if brightness_factor is 10, auto_enable could be within active range, or it could be off
         {
             brightness_factor_auto_enable = tmpval;
-            
+
             if ((tmpval == 1) || (enable_klapse == 1)) // Force restart pulse, if it is to be used
             {
               flush_timer();
@@ -840,10 +844,10 @@ static ssize_t backlight_range_dump(struct kobject *kobj,
           tmp_u = tmp_l;
           tmp_l = tmp;
         }
-        
+
         backlight_lower = tmp_l;
         backlight_upper = tmp_u;
-        
+
         if (enable_klapse == 2)
           set_rgb_slider(last_bl);
     }
@@ -1015,7 +1019,7 @@ static int __init klapse_init(void)
 {
     int rc;
     printk(KERN_INFO "KLapse init entered!!!.\n");
-    
+
     values_setup();
 
     klapse_kobj = kobject_create_and_add("klapse", NULL);

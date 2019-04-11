@@ -3984,6 +3984,9 @@ static void *ipc_router_create_log_ctx(char *name)
 {
 #ifdef CONFIG_IPC_LOGGING
 	struct ipc_rtr_log_ctx *sub_log_ctx;
+	
+		if (!IS_ENABLED(CONFIG_IPC_LOGGING))
+		return NULL;
 
 	if (!IS_ENABLED(CONFIG_IPC_LOGGING))
 		return NULL;

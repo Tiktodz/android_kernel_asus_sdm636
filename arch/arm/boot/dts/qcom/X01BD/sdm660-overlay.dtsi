@@ -9,6 +9,17 @@
 			reg = <0x0 0x9ff00000 0x0 0x00100000>;
 			label = "pstore_reserve_mem";
 		};
+
+		cont_splash_mem: splash_region@9d400000 {
+			reg = <0x0 0x9d400000 0x0 0x02400000>;
+		};
+
+		/delete-node/ dfps_data_mem@0x9f7ff000;
+
+		dfps_data_mem: dfps_data_mem@0x9f800000 {
+			reg = <0x0 0x9f800000 0x0 0x00001000>;
+			label = "dfps_data_mem";
+		};
 	};
 };
 

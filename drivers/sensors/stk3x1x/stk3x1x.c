@@ -1093,7 +1093,7 @@ static void stk_ps_report(struct stk3x1x_data *ps_data, int nf)
 	ps_data->ps_distance_last = nf;
 	input_report_abs(ps_data->ps_input_dev, ABS_DISTANCE, nf);
 	input_sync(ps_data->ps_input_dev);
-	wake_lock_timeout(&ps_data->ps_wakelock, 3*HZ);
+	wake_lock_timeout(&ps_data->ps_wakelock, msecs_to_jiffies(50));
 }
 
 static void stk_als_report(struct stk3x1x_data *ps_data, int als)

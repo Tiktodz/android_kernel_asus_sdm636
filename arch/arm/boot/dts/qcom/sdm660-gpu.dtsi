@@ -122,10 +122,6 @@
 		qcom,gpu-cx-ipeak = <&cx_ipeak_lm 1>;
 		qcom,gpu-cx-ipeak-clk = <700000000>;
 
-		/* CPU latency parameter */
-		qcom,pm-qos-active-latency = <518>;
-		qcom,pm-qos-wakeup-latency = <518>;
-
 		/* Avoid L2PC on big cluster CPUs (CPU 4,5,6,7) */
 		qcom,l2pc-cpu-mask = <0x000000f0>;
 

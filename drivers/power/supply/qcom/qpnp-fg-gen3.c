@@ -955,21 +955,25 @@ static int fg_batt_missing_config(struct fg_chip *chip, bool enable)
 }
 
 #ifdef CONFIG_MACH_ASUS_X00T
-ssize_t battery_print_name(struct switch_dev *sdev,char *buf)
+ssize_t battery_print_name(struct switch_dev *sdev, char *buf)
 {
-	return sprintf(buf,"%s\n",battery_name.battery_name_type);
+	return sprintf(buf, "%s\n", battery_name.battery_name_type);
 }
 static int battery_switch_register(void)
 {
 	int ret;
-	battery_name.battery_switch_dev.name="battery";
-	battery_name.battery_switch_dev.print_name=battery_print_name;
+
+	battery_name.battery_switch_dev.name = "battery";
+	battery_name.battery_switch_dev.print_name = battery_print_name;
+
 	ret = switch_dev_register(&battery_name.battery_switch_dev);
-	if(ret<0)
+	if (ret < 0)
 		return ret;
-	battery_name.battery_switch_dev.state=0;
+
+	battery_name.battery_switch_dev.state = 0;
 	switch_set_state(&battery_name.battery_switch_dev,
-		battery_name.battery_switch_dev.state);
+				battery_name.battery_switch_dev.state);
+
 	return 0;
 }
 #endif
@@ -5543,14 +5547,15 @@ static void fg_gen3_shutdown(struct platform_device *pdev)
 #ifdef CONFIG_MACH_ASUS_X00T
 	u8 status;
 	rc = fg_read(chip, BATT_INFO_BATT_MISS_CFG(chip), &status, 1);
-	printk("fg_gen3_shutdown status0=%d\n",status);
+	pr_debug("fg_gen3_shutdown status0=%d\n", status);
+
 	rc = fg_masked_write(chip, BATT_INFO_BATT_MISS_CFG(chip),
-			BM_FROM_BATT_ID_BIT, 0);
+				BM_FROM_BATT_ID_BIT, 0);
 	if (rc < 0)
 		pr_err("Error in writing to %04x, rc=%d\n",
 			BATT_INFO_BATT_MISS_CFG(chip), rc);
 	rc = fg_read(chip, BATT_INFO_BATT_MISS_CFG(chip), &status, 1);
-	printk("fg_gen3_shutdown status1=%d\n",status);
+	pr_debug("fg_gen3_shutdown status1=%d\n", status);
 #endif
 
 	if (chip->charge_full) {

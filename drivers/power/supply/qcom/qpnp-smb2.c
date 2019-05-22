@@ -199,7 +199,6 @@ struct smb2 {
 struct smb_charger *smbchg_dev;
 struct timespec last_jeita_time;
 struct wake_lock asus_chg_lock;
-int BR_countrycode =0;
 bool demo_app_property_flag = 0;
 extern void smblib_asus_monitor_start(struct smb_charger *chg, int time);
 extern bool asus_get_prop_usb_present(struct smb_charger *chg);
@@ -2570,59 +2569,6 @@ int32_t get_ID_vadc_voltage(void){
 	}
 	return adc;
 }
-
-#define COUNTRY_CODE_PATH "/persist/flag/countrycode.txt"
-
-void read_BR_countrycode_work(struct work_struct *work)
-{
-	struct file *fp = NULL;
-	mm_segment_t old_fs;
-	loff_t pos_lsts = 0;
-	char buf[32];
-    int readlen = 0;
-	int cnt = 5;
-
-	fp = filp_open(COUNTRY_CODE_PATH, O_RDONLY, 0);
-	if (IS_ERR_OR_NULL(fp)) {
-        printk("[BAT][CHG] OPEN (%s) failed !! \n", COUNTRY_CODE_PATH);
-		if(--cnt >=0)
-			schedule_delayed_work(&smbchg_dev->read_countrycode_work, msecs_to_jiffies(3000));
-		return ;	/*No such file or directory*/
-	}
-	/* For purpose that can use read/write system call */
-	if (fp->f_op != NULL) {
-		old_fs = get_fs();
-		set_fs(KERNEL_DS);
-		pos_lsts = 0;
-		readlen = vfs_read(fp, buf,strlen(buf), &pos_lsts);
-		if(readlen < 0) {
-			set_fs(old_fs);
-			filp_close(fp, NULL);
-			printk("[BAT][CHG] Readlen <0\n");
-			if(--cnt >=0)
-				schedule_delayed_work(&smbchg_dev->read_countrycode_work, msecs_to_jiffies(3000));
-			return ;
-		}
-		buf[readlen]='\0';
-	} else {
-		printk("[BAT][CHG] Read (%s) error\n", COUNTRY_CODE_PATH);
-		if(--cnt >=0)
-			schedule_delayed_work(&smbchg_dev->read_countrycode_work, msecs_to_jiffies(3000));
-		return;
-	}
-
-	if (strcmp(buf, "BR") == 0)
-		BR_countrycode = COUNTRY_BR;
-	else if(strcmp(buf, "IN") == 0)
-		BR_countrycode = COUNTRY_IN;
-	else
-		BR_countrycode = COUNTRY_OTHER;
-
-	printk("country code : %s, type %d\n", buf, BR_countrycode);
-	set_fs(old_fs);
-	filp_close(fp, NULL);
-	return ;
-}
 #endif
 
 static int smb2_probe(struct platform_device *pdev)
@@ -2688,10 +2634,6 @@ static int smb2_probe(struct platform_device *pdev)
 		pr_err("parent regmap is missing\n");
 		return -EINVAL;
 	}
-#ifdef CONFIG_MACH_ASUS_X00T
-	INIT_DELAYED_WORK(&chg->read_countrycode_work, read_BR_countrycode_work);
-	schedule_delayed_work(&chg->read_countrycode_work, msecs_to_jiffies(8000));
-#endif
 	rc = smb2_chg_config_init(chip);
 	if (rc < 0) {
 		if (rc != -EPROBE_DEFER)

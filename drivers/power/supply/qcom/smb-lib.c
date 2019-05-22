@@ -27,7 +27,6 @@
 #include "storm-watch.h"
 
 #ifdef CONFIG_MACH_ASUS_X00T
-#include <linux/switch.h>
 #include <linux/qpnp/qpnp-adc.h>
 #include "fg-core.h"
 #include <linux/gpio.h>
@@ -67,12 +66,7 @@ static int ASUS_ADAPTER_ID;
 #define THM_ALERT_NONE		0 /* temp good */
 #define THM_ALERT_NO_AC		1 /* temp hot with otg */
 #define THM_ALERT_WITH_AC	2 /* temp hot with AC */
-extern struct switch_dev usb_alert_dev;
-static bool usb_alert_usb_otg_disable;
-static bool need_replugin_usb;
-static bool usb_otg_present;
 void smblib_asus_monitor_start(struct smb_charger *chg, int time);
-extern struct switch_dev usb_otg_dev;
 
 bool smartchg_stop_flag;
 extern int charger_limit_enable_flag;
@@ -847,7 +841,6 @@ static void smblib_uusb_removal(struct smb_charger *chg)
 	alarm_cancel(&bat_alarm);
 	asus_flow_processing = 0;
 	ASUS_ADAPTER_ID = 0;
-	need_replugin_usb = true;
 
 	asus_smblib_relax(smbchg_dev);
 #endif
@@ -1574,11 +1567,8 @@ static int _smblib_vbus_regulator_enable(struct regulator_dev *rdev)
 			smblib_err(chg, "Couldn't enable OTG rc=%d\n", rc);
 	}
 #ifdef CONFIG_MACH_ASUS_X00T
-	usb_otg_present = true;
-
 	smblib_asus_monitor_start(smbchg_dev, 10000);
 	asus_smblib_stay_awake(chg);
-	switch_set_state(&usb_otg_dev, 1);
 #endif
 	return rc;
 }
@@ -1636,14 +1626,10 @@ static int _smblib_vbus_regulator_disable(struct regulator_dev *rdev)
 
 	smblib_dbg(chg, PR_OTG, "start 1 in 8 mode\n");
 #ifdef CONFIG_MACH_ASUS_X00T
-	usb_otg_present = false;
-	need_replugin_usb = true;
-
 	cancel_delayed_work(&chg->asus_min_monitor_work);
 	cancel_delayed_work(&chg->asus_batt_RTC_work);
 	alarm_cancel(&bat_alarm);
 	asus_smblib_relax(smbchg_dev);
-	switch_set_state(&usb_otg_dev, 0);
 #endif
 	rc = smblib_masked_write(chg, OTG_ENG_OTG_CFG_REG,
 				 ENG_BUCKBOOST_HALT1_8_MODE_BIT, 0);
@@ -3408,12 +3394,6 @@ void asus_batt_RTC_work(struct work_struct *dat)
 		return;
 	}
 
-	if ((!asus_get_prop_usb_present(smbchg_dev)) && (!usb_otg_present)) {
-		alarm_cancel(&bat_alarm);
-		pr_err("%s: usb not present, cancel\n", __func__);
-		return;
-	}
-
 	mtNow = current_kernel_time();
 	new_batAlarm_time.tv_sec = 0;
 	new_batAlarm_time.tv_nsec = 0;
@@ -3648,43 +3628,6 @@ void asus_update_usb_connector_state(struct smb_charger *chip)
 		pr_debug("NONE gpio12_vadc_dev\n");
 		return;
 	}
-
-	if (phy_volta < CHG_ALERT_HOT_NTC_VOLTAFE) {
-		if (!usb_otg_present) {
-			switch_set_state(&usb_alert_dev, THM_ALERT_WITH_AC);
-			smblib_set_usb_suspend(chip, 1);
-		} else
-			switch_set_state(&usb_alert_dev, THM_ALERT_NO_AC);
-
-		usb_alert_usb_otg_disable = true;
-		need_replugin_usb = false;
-
-		switch_set_state(&usb_otg_dev, 0);
-		rc = smblib_masked_write(chip, CMD_OTG_REG, OTG_EN_BIT, 0);
-		if (rc < 0)
-			dev_err(chip->dev,
-				"Couldn't set CMD_OTG_REG rc=%d\n", rc);
-
-		pr_debug("USB connector hot, suspend charger and otg\n");
-	} else if ((phy_volta >= CHG_ALERT_HOT_NTC_VOLTAFE) &&
-			(phy_volta <= CHG_ALERT_WARM_NTC_VOLTAGE)) {
-		if (usb_alert_usb_otg_disable == true)
-			pr_debug("USB alert former state is hot, now is warm\n");
-		else
-			pr_debug("USB alert former state is GOOD, now is warm\n");
-	} else if ((phy_volta > CHG_ALERT_WARM_NTC_VOLTAGE) &&
-			need_replugin_usb){
-		switch_set_state(&usb_alert_dev, THM_ALERT_NONE);
-		usb_alert_usb_otg_disable = false;
-		need_replugin_usb = false;
-
-		rc = smblib_set_usb_suspend(chip, 0);
-		if (rc < 0)
-			dev_err(chip->dev,
-				"Couldn't set CMD_OTG_REG rc=%d\n", rc);
-
-		pr_debug("USB connector temp is GOOD, recover charge\n");
-	}
 }
 
 void jeita_rule(void)
@@ -3821,16 +3764,6 @@ void asus_min_monitor_work(struct work_struct *work)
 	if (!smbchg_dev) {
 		pr_err("%s: smbchg_dev is null due to driver probed isn't ready\n",
 			__func__);
-		return;
-	}
-
-	if (usb_otg_present) {
-		asus_update_usb_connector_state(smbchg_dev);
-		last_jeita_time = current_kernel_time();
-		schedule_delayed_work(&smbchg_dev->asus_min_monitor_work,
-					msecs_to_jiffies(ASUS_MONITOR_CYCLE));
-		schedule_delayed_work(&smbchg_dev->asus_batt_RTC_work, 0);
-		asus_smblib_relax(smbchg_dev);
 		return;
 	}
 

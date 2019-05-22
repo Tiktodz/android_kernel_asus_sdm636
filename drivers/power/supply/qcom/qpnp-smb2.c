@@ -34,7 +34,6 @@
 #include <linux/wakelock.h>
 #include <linux/uaccess.h>
 #include <linux/proc_fs.h>
-#include <linux/switch.h>
 #include <linux/qpnp/qpnp-adc.h>
 #include <asm-generic/errno-base.h>
 #endif
@@ -1510,38 +1509,6 @@ static int smb2_disable_typec(struct smb_charger *chg)
 	return rc;
 }
 
-#ifdef CONFIG_MACH_ASUS_X00T
-struct switch_dev usb_alert_dev;
-void register_usb_alert(void)
-{
-	int ret;
-	usb_alert_dev.name = "usb_connector";
-	usb_alert_dev.index = 0;
-	ret = switch_dev_register(&usb_alert_dev);
-	if (ret < 0)
-		pr_err("%s Failed to register switch usb_alert uevent\n",
-			__func__);
-	else
-		pr_info("%s Success to register switch usb_alert uevent\n",
-			__func__);
-}
-
-struct switch_dev usb_otg_dev;
-void register_usb_otg(void)
-{
-	int ret;
-	usb_otg_dev.name = "usb_otg";
-	usb_otg_dev.index = 0;
-	ret = switch_dev_register(&usb_otg_dev);
-	if (ret < 0)
-		pr_err("%s Failed to register switch usb_otg uevent\n",
-			__func__);
-	else
-		pr_info("%s Success to register switch usb_otg uevent\n",
-			__func__);
-}
-#endif
-
 static int smb2_init_hw(struct smb2 *chip)
 {
 	struct smb_charger *chg = &chip->chg;
@@ -2795,9 +2762,6 @@ static int smb2_probe(struct platform_device *pdev)
 				&USBIN_AICL_reg);
 	if (rc < 0)
 		pr_err("%s: Failed to set USBIN_OPTIONS_1_CFG_REG\n", __func__);
-
-	register_usb_alert();
-	register_usb_otg();
 #endif
 
 	pr_info("QPNP SMB2 probed successfully usb:present=%d type=%d batt:present = %d health = %d charge = %d\n",

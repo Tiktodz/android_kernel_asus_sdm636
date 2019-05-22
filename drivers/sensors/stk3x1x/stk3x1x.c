@@ -632,12 +632,45 @@ static int stk3x1x_i2c_smbus_write_byte_data(struct i2c_client *client, unsigned
 	return err;
 }
 
+/* Ambient Ligh Sensor Gain Table
+ * {lux, value}, */
+static uint32_t als_level_table[][2] = {
+	{0, 0},
+	{18, 22},
+	{300, 336},
+	{350, 413},
+	{600, 984},
+	{1000, 1840},
+	{4000, 5840},
+	{9000, 9810},
+	{30000, 30000}, //alignment
+	{40000, 40000},
+};
+
+static int als_gain(int alscode)
+{
+	int i = 0;
+	int max = sizeof(als_level_table) / sizeof(als_level_table[0]);
+
+	if (alscode <= 0)
+		return 0;
+
+	for (i = 1 ; i < max; i++) {
+		if (alscode <= als_level_table[i][0])
+			return als_level_table[i-1][1] + ((als_level_table[i][1]-als_level_table[i-1][1]) * 
+					(alscode - als_level_table[i-1][0])) / (als_level_table[i][0] - als_level_table[i-1][0]);
+	}
+
+	return als_level_table[max-2][1] + ((als_level_table[max-1][1] - als_level_table[max-2][1]) * 
+				(alscode - als_level_table[max-2][0])) / (als_level_table[max-1][0] - als_level_table[max-2][0]);
+}
+
 uint32_t stk_alscode2lux(struct stk3x1x_data *ps_data, uint32_t alscode)
 {
 	alscode += ((alscode<<7)+(alscode<<3)+(alscode>>1));
 	alscode<<=3;
 	alscode/=ps_data->als_transmittance;
-	return alscode;
+	return als_gain(alscode);
 }
 
 uint32_t stk_lux2alscode(struct stk3x1x_data *ps_data, uint32_t lux)

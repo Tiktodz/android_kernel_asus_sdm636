@@ -75,9 +75,9 @@ enum print_reason {
 #define WEAK_CHG_STORM_COUNT	8
 
 #ifdef CONFIG_MACH_ASUS_X00T
-#define COUNTRY_BR 1
-#define COUNTRY_IN 1
-#define COUNTRY_OTHER 2
+#define COUNTRY_BR	1
+#define COUNTRY_IN	1
+#define COUNTRY_OTHER	2
 #endif
 
 enum smb_mode {
@@ -320,8 +320,8 @@ struct smb_charger {
 	struct delayed_work	asus_chg_flow_work;
 	struct delayed_work	asus_adapter_adc_work;
 	struct delayed_work	asus_min_monitor_work;
-	struct delayed_work asus_batt_RTC_work;
-	struct qpnp_vadc_chip			*gpio12_vadc_dev;
+	struct delayed_work	asus_batt_RTC_work;
+	struct qpnp_vadc_chip	*gpio12_vadc_dev;
 	struct delayed_work read_countrycode_work;
 #endif
 
@@ -384,6 +384,7 @@ struct smb_charger {
 };
 
 #ifdef CONFIG_MACH_ASUS_X00T
+/* ASUS BSP: Add gpio control struct */
 struct gpio_control {
 	u32 ADC_SW_EN;
 	u32 ADCPWREN_PMI_GP1;

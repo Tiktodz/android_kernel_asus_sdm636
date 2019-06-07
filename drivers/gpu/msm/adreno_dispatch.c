@@ -42,6 +42,8 @@ unsigned int adreno_dispatch_time_slice = 25;
  */
 unsigned int adreno_disp_preempt_fair_sched;
 
+extern int idle_timeout;
+
 /* Number of commands that can be queued in a context before it sleeps */
 static unsigned int _context_drawqueue_size = 50;
 
@@ -1478,7 +1480,7 @@ int adreno_dispatcher_queue_cmds(struct kgsl_device_private *dev_priv,
 
 	if (device->pwrctrl.l2pc_update_queue)
 		kgsl_pwrctrl_update_l2pc(&adreno_dev->dev,
-				KGSL_L2PC_QUEUE_TIMEOUT);
+				idle_timeout * 1000);
 
 	/* Add the context to the dispatcher pending list */
 	dispatcher_queue_context(adreno_dev, drawctxt);

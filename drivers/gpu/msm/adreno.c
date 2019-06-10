@@ -57,7 +57,7 @@ MODULE_PARM_DESC(nopreempt, "Disable GPU preemption");
 /* Number of times to try hard reset */
 #define NUM_TIMES_RESET_RETRY 5
 
-#define KGSL_LOG_LEVEL_DEFAULT 3
+#define KGSL_LOG_LEVEL_DEFAULT 0
 
 unsigned int is_gpu_overclocked = 0;
 

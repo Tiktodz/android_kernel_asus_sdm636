@@ -1906,7 +1906,7 @@ static int32_t q6asm_callback(struct apr_client_data *data, void *priv)
 
 	session_id = q6asm_get_session_id_from_audio_client(ac);
 	if (session_id <= 0 || session_id > ASM_ACTIVE_STREAMS_ALLOWED) {
-		pr_err("%s: Session ID is invalid, session = %d\n", __func__,
+		pr_debug("%s: Session ID is invalid, session = %d\n", __func__,
 			session_id);
 		return -EINVAL;
 	}
@@ -2028,7 +2028,7 @@ static int32_t q6asm_callback(struct apr_client_data *data, void *priv)
 					data->opcode, data->token,
 					payload[0], payload[1],
 					data->src_port, data->dest_port);
-				pr_err("%s: cmd = 0x%x returned error = 0x%x\n",
+				pr_debug("%s: cmd = 0x%x returned error = 0x%x\n",
 					__func__,
 					payload[0],
 					payload[1]);

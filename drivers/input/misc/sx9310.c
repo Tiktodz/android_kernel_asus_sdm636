@@ -143,8 +143,9 @@ static void sx93XX_process_interrupt(psx93XX_t this, u8 nirqlow)
 		 * checking penup, perform this here
 		 */
 		cancel_delayed_work(&this->dworker);
-		schedule_delayed_work(&this->dworker,
-				      msecs_to_jiffies(this->irqTimeout));
+		queue_delayed_work(system_power_efficient_wq,
+				   &this->dworker,
+				   msecs_to_jiffies(this->irqTimeout));
 		dev_info(this->pdev, "Schedule Irq timer");
 	}
 }
@@ -195,7 +196,8 @@ static void sx93XX_schedule_work(psx93XX_t this, unsigned long delay)
 		/* Stop any pending penup queues */
 		cancel_delayed_work(&this->dworker);
 		/* after waiting for a delay, this put the job in the kernel-global workqueue. so no need to create new thread in work queue. */
-		schedule_delayed_work(&this->dworker, delay);
+		queue_delayed_work(system_power_efficient_wq,
+				   &this->dworker, delay);
 		spin_unlock_irqrestore(&this->lock, flags);
 	} else
 		dev_err(this->pdev, "sx93XX_schedule_work, NULL psx93XX_t\n");

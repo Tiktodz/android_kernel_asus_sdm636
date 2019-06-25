@@ -4333,7 +4333,7 @@ exit:
 	pr_debug("exit\n");
 }
 
-static int mdss_dp_usbpd_setup(struct mdss_dp_drv_pdata *dp_drv)
+static int __maybe_unused mdss_dp_usbpd_setup(struct mdss_dp_drv_pdata *dp_drv)
 {
 	int ret = 0;
 	const char *pd_phandle = "qcom,dp-usbpd-detection";

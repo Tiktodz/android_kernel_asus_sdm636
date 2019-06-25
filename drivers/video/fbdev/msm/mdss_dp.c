@@ -4414,12 +4414,14 @@ static int mdss_dp_probe(struct platform_device *pdev)
 	init_completion(&dp_drv->idle_comp);
 	init_completion(&dp_drv->video_comp);
 
+#ifndef CONFIG_MACH_ASUS_X00T
 	if (mdss_dp_usbpd_setup(dp_drv)) {
 		pr_err("Error usbpd setup!\n");
 		devm_kfree(&pdev->dev, dp_drv);
 		dp_drv = NULL;
 		return -EPROBE_DEFER;
 	}
+#endif
 
 	ret = mdss_retrieve_dp_ctrl_resources(pdev, dp_drv);
 	if (ret)

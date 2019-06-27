@@ -1105,7 +1105,7 @@ long syna_gesture_mode;
 struct synaptics_rmi4_data *syna_rmi4_data;
 
 static int allow_gesture = 0;
-static int screen_gesture = 1;
+static int screen_gesture = 0;
 static struct kobject *gesture_kobject;
 
 static ssize_t gesture_show(struct kobject *kobj, struct kobj_attribute *attr,

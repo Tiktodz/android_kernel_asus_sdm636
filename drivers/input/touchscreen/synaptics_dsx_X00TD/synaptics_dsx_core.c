@@ -1111,22 +1111,28 @@ static struct kobject *gesture_kobject;
 static ssize_t gesture_show(struct kobject *kobj, struct kobj_attribute *attr,
                       char *buf)
 {
-        return sprintf(buf, "%d\n", allow_gesture);
+    return sprintf(buf, "%d\n", allow_gesture);
 }
 
-static ssize_t gesture_store(struct kobject *kobj, struct kobj_attribute *attr,
-                      const char *buf, size_t count)
+static void gesture_status()
 {
-        sscanf(buf, "%du", &allow_gesture);
-	if (allow_gesture == 0) {
+	if (!allow_gesture && !screen_gesture) {
 		syna_gesture_mode = 0;
 		syna_rmi4_data->enable_wakeup_gesture = 0;
 	} else {
 		syna_gesture_mode = 0x1FF;
 		syna_rmi4_data->enable_wakeup_gesture = 1;
 	}
-	pr_err("syna_gesture_mode = 0x%x, enable_wakeup_gesture = %d \n", (unsigned int)syna_gesture_mode, syna_rmi4_data->enable_wakeup_gesture);
-        return count;
+    pr_err("syna_gesture_mode = 0x%x, enable_wakeup_gesture = %d \n", (unsigned int)syna_gesture_mode, syna_rmi4_data->enable_wakeup_gesture);
+}
+
+static ssize_t gesture_store(struct kobject *kobj, struct kobj_attribute *attr,
+                      const char *buf, size_t count)
+{
+    sscanf(buf, "%du", &allow_gesture);
+    gesture_status();
+
+    return count;
 }
 
 static struct kobj_attribute gesture_attribute = __ATTR(dclicknode, 0664, gesture_show,
@@ -1135,22 +1141,16 @@ static struct kobj_attribute gesture_attribute = __ATTR(dclicknode, 0664, gestur
 static ssize_t screengesture_show(struct kobject *kobj, struct kobj_attribute *attr,
                       char *buf)
 {
-        return sprintf(buf, "%d\n", screen_gesture);
+    return sprintf(buf, "%d\n", screen_gesture);
 }
 
 static ssize_t screengesture_store(struct kobject *kobj, struct kobj_attribute *attr,
                       const char *buf, size_t count)
 {
-        sscanf(buf, "%du", &screen_gesture);
-	if (screen_gesture == 0) {
-		syna_gesture_mode = 0;
-		syna_rmi4_data->enable_wakeup_gesture = 0;
-	} else {
-		syna_gesture_mode = 0x1FF;
-		syna_rmi4_data->enable_wakeup_gesture = 1;
-	}
-	pr_err("syna_gesture_mode = 0x%x, enable_wakeup_gesture = %d \n", (unsigned int)syna_gesture_mode, syna_rmi4_data->enable_wakeup_gesture);
-        return count;
+    sscanf(buf, "%du", &screen_gesture);
+    gesture_status();
+
+    return count;
 }
 
 static struct kobj_attribute screengesture_attribute = __ATTR(gesture_node, 0664, screengesture_show,
@@ -1159,24 +1159,24 @@ static struct kobj_attribute screengesture_attribute = __ATTR(gesture_node, 0664
 int create_gesture_node_syna(void) {
 	int error = 0, error2 = 0;
 
-        gesture_kobject = kobject_create_and_add("touchpanel",
+    gesture_kobject = kobject_create_and_add("touchpanel",
                                                  kernel_kobj);
-        if(!gesture_kobject)
-                return -ENOMEM;
+    if(!gesture_kobject)
+        return -ENOMEM;
 
-        pr_err("[Syna-ts] : Gesture Node initialized successfully \n");
+    pr_err("[Syna-ts] : Gesture Node initialized successfully \n");
 
-        error = sysfs_create_file(gesture_kobject, &gesture_attribute.attr);
-        if (error) {
-                pr_err("[Syna-ts] : failed to create the gesture_node file in /sys/kernel/touchpanel \n");
-        }
+    error = sysfs_create_file(gesture_kobject, &gesture_attribute.attr);
+    if (error) {
+        pr_err("[Syna-ts] : failed to create the gesture_node file in /sys/kernel/touchpanel \n");
+    }
 
-        error2 = sysfs_create_file(gesture_kobject, &screengesture_attribute.attr);
-        if (error) {
-                pr_err("[Syna-ts] : failed to create the gesture_node file in /sys/kernel/touchpanel \n");
-        }
+    error2 = sysfs_create_file(gesture_kobject, &screengesture_attribute.attr);
+    if (error) {
+        pr_err("[Syna-ts] : failed to create the gesture_node file in /sys/kernel/touchpanel \n");
+    }
 
-        return error;
+    return error;
 }
 
 void destroy_gesture_syna(void) {
@@ -1631,28 +1631,36 @@ static int synaptics_rmi4_f12_abs_report(struct synaptics_rmi4_data *rmi4_data,
 		if (gesture_type != F12_UDG_DETECT) {
 			switch (gesture_type) {
 			case F12_DOUBLECLICK_DETECT:
-				pr_debug("Gesture: Double click.\n");
-				keycode = GESTURE_EVENT_DOUBLE_CLICK;
+                if (allow_gesture) {
+				    pr_debug("Gesture: Double click.\n");
+				    keycode = GESTURE_EVENT_DOUBLE_CLICK;
+                }
 				break;
 			case F12_UNICODE_DETECT:
-				pr_debug("Gesture: Unicode detect.\n");
-				keycode = synaptics_check_unicode_gesture(rmi4_data,rmi4_data->gesture_detection[2]);
+                if (screen_gesture) {
+				    pr_debug("Gesture: Unicode detect.\n");
+				    keycode = synaptics_check_unicode_gesture(rmi4_data,rmi4_data->gesture_detection[2]);
+                }
 				break;
 			case F12_VEE_DETECT:
-				pr_debug("Gesture: Word_V.\n");
-				keycode = GESTURE_EVENT_V;
+                if (screen_gesture) {
+				    pr_debug("Gesture: Word_V.\n");
+				    keycode = GESTURE_EVENT_V;
+                }
 				break;
 			case F12_SWIPE_DETECT:
-				abs_x = abs(gesture_x_distance);
-				abs_y = abs(gesture_y_distance);
-				direction = (abs_x > abs_y) ?
-						horizontal_direction :
-						vertical_direction;
-				if ((direction == vertical_direction) &&
-					(gesture_y_distance > 0)){
-					pr_debug("Gesture: Swipe up.\n");
-					keycode = GESTURE_EVENT_SWIPE_UP;
-				}
+                if (screen_gesture) {
+				    abs_x = abs(gesture_x_distance);
+				    abs_y = abs(gesture_y_distance);
+				    direction = (abs_x > abs_y) ?
+					    	horizontal_direction :
+					    	vertical_direction;
+				    if ((direction == vertical_direction) &&
+					    (gesture_y_distance > 0)){
+					    pr_debug("Gesture: Swipe up.\n");
+				    	keycode = GESTURE_EVENT_SWIPE_UP;
+				    }
+                }
 				break;
 			default:
 				break;

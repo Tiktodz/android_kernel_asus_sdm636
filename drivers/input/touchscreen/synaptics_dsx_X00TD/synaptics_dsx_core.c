@@ -1114,7 +1114,7 @@ static ssize_t gesture_show(struct kobject *kobj, struct kobj_attribute *attr,
     return sprintf(buf, "%d\n", allow_gesture);
 }
 
-static void gesture_status()
+static void gesture_status(void)
 {
 	if (!allow_gesture && !screen_gesture) {
 		syna_gesture_mode = 0;

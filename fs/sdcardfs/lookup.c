@@ -30,7 +30,8 @@ int sdcardfs_init_dentry_cache(void)
 	sdcardfs_dentry_cachep =
 		kmem_cache_create("sdcardfs_dentry",
 				  sizeof(struct sdcardfs_dentry_info),
-				  0, SLAB_RECLAIM_ACCOUNT, NULL);
+				  0, SLAB_RECLAIM_ACCOUNT | SLAB_HWCACHE_ALIGN,
+				  NULL);
 
 	return sdcardfs_dentry_cachep ? 0 : -ENOMEM;
 }

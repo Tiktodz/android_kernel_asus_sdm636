@@ -69,16 +69,6 @@ typedef struct {
 } ff_ctl_context_t;
 static ff_ctl_context_t *g_context = NULL;
 
-#define FP_BOOST_MS   500
-#define FP_BOOST_INTERVAL   (500*USEC_PER_MSEC)
-
-static struct workqueue_struct *fp_boost_wq_ff;
-
-static struct work_struct fp_boost_work;
-static struct delayed_work fp_boost_rem;
-static bool fp_boost_active=false;
-
-
 /*
  * Driver configuration.
  */
@@ -137,52 +127,6 @@ int ff_log_printf(ff_log_level_t level, const char *tag, const char *fmt, ...)
         break;
     }
     return n;
-}
-
-static void do_fp_boost_rem(struct work_struct *work)
-{
-	unsigned int ret;
-
-	/* Update policies for all online CPUs */
-	if(fp_boost_active) {
-		ret = sched_set_boost(0);
-		if (ret)
-			pr_err("cpu-boost: HMP boost disable failed\n");
-		fp_boost_active = false;
-	}
-}
-
-static void do_fp_boost(struct work_struct *work)
-{
-	unsigned int ret;
-
-	cancel_delayed_work_sync(&fp_boost_rem);
-	if(fp_boost_active==false) {
-		ret = sched_set_boost(1);
-		if (ret)
-			pr_err("cpu-boost: HMP boost enable failed\n");
-		else
-			fp_boost_active=true;
-	}
-	queue_delayed_work(fp_boost_wq_ff, &fp_boost_rem,
-					msecs_to_jiffies(FP_BOOST_MS));
-}
-
-
-static void fp_cpuboost(void)
-{
-	u64 now;
-	static u64 last_time=0;
-
-	now = ktime_to_us(ktime_get());
-	if (now - last_time <FP_BOOST_INTERVAL)
-		return;
-
-	if (work_pending(&fp_boost_work))
-		return;
-
-	queue_work(fp_boost_wq_ff, &fp_boost_work);
-	last_time = ktime_to_us(ktime_get());
 }
 
 const char *ff_err_strerror(int err)
@@ -275,7 +219,6 @@ static void ff_ctl_device_event(struct work_struct *ws)
 static irqreturn_t ff_ctl_device_irq(int irq, void *dev_id)
 {
     ff_ctl_context_t *ctx = (ff_ctl_context_t *)dev_id;
-    fp_cpuboost();
     disable_irq_nosync(irq);
     if (likely(irq == ctx->irq_num)) {
         if (g_config && g_config->enable_fasync && g_context->async_queue) {
@@ -716,11 +659,6 @@ static int __init ff_ctl_driver_init(void)
         return err;
     }
 
-	fp_boost_wq_ff = alloc_workqueue("fp_cpuboost_wq_ff", WQ_HIGHPRI, 0);
-	if (!fp_boost_wq_ff)
-		return -EFAULT;
-	INIT_WORK(&fp_boost_work, do_fp_boost);
-	INIT_DELAYED_WORK(&fp_boost_rem, do_fp_boost_rem);
     /* Init the interrupt workqueue. */
     INIT_WORK(&ff_ctl_context.work_queue, ff_ctl_device_event);
 

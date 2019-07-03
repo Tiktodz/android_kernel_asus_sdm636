@@ -119,7 +119,6 @@
  */
 
 struct menu_device {
-	int		last_state_idx;
 	int             needs_update;
 
 	unsigned int	next_timer_us;
@@ -299,7 +298,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
 		data->needs_update = 0;
 	}
 
-	data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
+	dev->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
 
 	/* Special case when user has set very strict latency requirement */
 	if (unlikely(latency_req == 0))
@@ -338,7 +337,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
 	if (data->next_timer_us > 5 &&
 	    !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
 		dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
-		data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
+		dev->last_state_idx = CPUIDLE_DRIVER_STATE_START;
 
 	/*
 	 * Find the idle state with the lowest power while satisfying
@@ -355,10 +354,10 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
 		if (s->exit_latency > latency_req)
 			continue;
 
-		data->last_state_idx = i;
+		dev->last_state_idx = i;
 	}
 
-	return data->last_state_idx;
+	return dev->last_state_idx;
 }
 
 /**
@@ -373,7 +372,7 @@ static void menu_reflect(struct cpuidle_device *dev, int index)
 {
 	struct menu_device *data = this_cpu_ptr(&menu_devices);
 
-	data->last_state_idx = index;
+	dev->last_state_idx = index;
 	data->needs_update = 1;
 }
 
@@ -385,7 +384,7 @@ static void menu_reflect(struct cpuidle_device *dev, int index)
 static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
 {
 	struct menu_device *data = this_cpu_ptr(&menu_devices);
-	int last_idx = data->last_state_idx;
+	int last_idx = dev->last_state_idx;
 	struct cpuidle_state *target = &drv->states[last_idx];
 	unsigned int measured_us;
 	unsigned int new_factor;

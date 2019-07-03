@@ -76,6 +76,7 @@ struct cpuidle_device {
 	unsigned int		enabled:1;
 	unsigned int		cpu;
 
+	int			last_state_idx;
 	int			last_residency;
 	struct cpuidle_state_usage	states_usage[CPUIDLE_STATE_MAX];
 	struct cpuidle_state_kobj *kobjs[CPUIDLE_STATE_MAX];

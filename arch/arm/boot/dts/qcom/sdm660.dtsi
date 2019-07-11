@@ -1773,6 +1773,7 @@
 		qcom,irq-mask = <0x1>;
 		interrupts = <0 168 1>;
 		label = "rpm";
+		cpu-affinity = <1 2>;
 	};
 
 	glink_mpss: qcom,glink-ssr-modem {

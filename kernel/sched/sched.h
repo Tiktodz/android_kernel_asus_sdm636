@@ -228,8 +228,6 @@ struct cfs_bandwidth {
 	ktime_t period;
 	u64 quota, runtime;
 	s64 hierarchical_quota;
-	u64 runtime_expires;
-	int expires_seq;
 
 	short idle, period_active;
 	struct hrtimer period_timer, slack_timer;
@@ -434,8 +432,6 @@ struct cfs_rq {
 
 
 	int runtime_enabled;
-	int expires_seq;
-	u64 runtime_expires;
 	s64 runtime_remaining;
 
 	u64 throttled_clock, throttled_clock_task;

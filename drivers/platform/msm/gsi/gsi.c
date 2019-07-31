@@ -30,6 +30,13 @@
 
 #define GSI_RESET_WA_MIN_SLEEP 1000
 #define GSI_RESET_WA_MAX_SLEEP 2000
+
+#ifndef CONFIG_DEBUG_FS
+static inline void gsi_debugfs_init(void)
+{
+}
+#endif
+
 static const struct of_device_id msm_gsi_match[] = {
 	{ .compatible = "qcom,msm_gsi", },
 	{ },

@@ -51,8 +51,6 @@ msm_drm-y := \
 	sde/sde_vbif.o \
 	sde/sde_splash.o \
 	sde/sde_recovery_manager.o \
-	sde_dbg.o \
-	sde_dbg_evtlog.o \
 	sde_io_util.o \
 	dba_bridge.o \
 	sde_edid_parser.o \
@@ -78,6 +76,9 @@ msm_drm-y += adreno/adreno_device.o \
 	adreno/a5xx_snapshot.o \
 	adreno/a5xx_counters.o
 endif
+
+msm_drm-$(CONFIG_DEBUG_FS) += sde_dbg.o \
+        sde_dbg_evtlog.o
 
 msm_drm-$(CONFIG_DRM_MSM_MDP4) += mdp/mdp4/mdp4_crtc.o \
 	mdp/mdp4/mdp4_dtv_encoder.o \

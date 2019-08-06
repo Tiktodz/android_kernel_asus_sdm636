@@ -5052,6 +5052,8 @@ static int fg_parse_dt(struct fg_chip *chip)
 			pr_warn("Error reading Jeita thresholds, default values will be used rc:%d\n",
 				rc);
 	}
+	chip->dt.jeita_thresholds[JEITA_WARM] = 97;
+	chip->dt.jeita_thresholds[JEITA_HOT] = 97;
 
 	if (of_property_count_elems_of_size(node,
 		"qcom,battery-thermal-coefficients",

@@ -43,6 +43,9 @@ rsa_generic-y += rsa.o
 rsa_generic-y += rsa_helper.o
 obj-$(CONFIG_CRYPTO_RSA) += rsa_generic.o
 
+obj-$(CONFIG_CRYPTO_ACOMP2) += acompress.o
+obj-$(CONFIG_CRYPTO_ACOMP2) += scompress.o
+
 cryptomgr-y := algboss.o testmgr.o
 
 obj-$(CONFIG_CRYPTO_MANAGER2) += cryptomgr.o

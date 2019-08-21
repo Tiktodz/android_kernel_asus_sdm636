@@ -209,6 +209,11 @@ config MACH_ASUS_X00TD
 	help
 	  This enables support for ASUS ZenFone Max Pro (M1).
 
+config MACH_ASUS_X01BD
+	bool "ZenFone Max Pro (M2)"
+	select MACH_ASUS_SDM660
+	help
+	  This enables support for ASUS ZenFone Max Pro (M2).
 endchoice
 
 endif

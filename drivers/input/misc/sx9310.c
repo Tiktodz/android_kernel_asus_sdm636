@@ -763,12 +763,12 @@ void sar_switch(bool switcher)
 
 	if (sar_switcher) {//sar_switcher is 1 for Indonesia, open sarsensor
 		if (switcher) {//switch on
-			dev_info(psx93XX_this->pdev, "Indonesia: going to enable SAR!\n");
+			dev_dbg(psx93XX_this->pdev, "Indonesia: going to enable SAR!\n");
 			write_register(psx93XX_this, SX9310_IRQ_ENABLE_REG, 0x70);
 			write_register(psx93XX_this, SX9310_CPS_CTRL0_REG, 0x51);
 			enable_irq(psx93XX_this->irq);
 		} else {//switch off
-			dev_info(psx93XX_this->pdev, "Indonesia: going to disable SAR!\n");
+			dev_dbg(psx93XX_this->pdev, "Indonesia: going to disable SAR!\n");
 			disable_irq(psx93XX_this->irq);
 			write_register(psx93XX_this, SX9310_IRQ_ENABLE_REG, 0);
 			write_register(psx93XX_this, SX9310_CPS_CTRL0_REG, 0);
@@ -784,7 +784,7 @@ void sar_switch(bool switcher)
 			/* Huaqin add to report near event when sar switche off by chenyijun5 at 2018/03/22 end*/
 		}
 	} else {//other countries, do nothing
-		dev_info(psx93XX_this->pdev, "not Indonesia: do nothing about SAR!\n");
+		dev_dbg(psx93XX_this->pdev, "not Indonesia: do nothing about SAR!\n");
 		return;
 	}
 

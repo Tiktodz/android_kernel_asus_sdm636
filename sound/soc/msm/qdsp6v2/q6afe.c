@@ -30,6 +30,12 @@
 #include <linux/qdsp6v2/apr_tal.h>
 #include <sound/q6core.h>
 
+#ifdef CONFIG_MACH_ASUS_X00T
+#define AFE_PARAM_ID_TFADSP_RX_CFG 	(0x1000B921)
+#define AFE_MODULE_ID_TFADSP_RX		(0x1000B911)
+#define AFE_PARAM_ID_TFADSP_RX_GET_RESULT	(0x1000B922)
+#endif
+
 #define WAKELOCK_TIMEOUT	5000
 enum {
 	AFE_COMMON_RX_CAL = 0,
@@ -128,6 +134,10 @@ struct afe_ctl {
 	bool alloced_rddma[AFE_MAX_RDDMA];
 	int num_alloced_wrdma;
 	bool alloced_wrdma[AFE_MAX_WRDMA];
+#ifdef CONFIG_SND_SOC_TFA9874
+	struct rtac_cal_block_data tfa_cal;
+	atomic_t tfa_state;
+#endif
 };
 
 static atomic_t afe_ports_mad_type[SLIMBUS_PORT_LAST - SLIMBUS_0_RX];
@@ -598,6 +608,19 @@ static int32_t afe_callback(struct apr_client_data *data, void *priv)
 			av_dev_drift_afe_cb_handler(data->opcode, data->payload,
 						    data->payload_size);
 		} else {
+#ifdef CONFIG_SND_SOC_TFA9874
+			if (atomic_read(&this_afe.tfa_state) == 1) {
+				if (data->payload_size == sizeof(uint32_t))
+					atomic_set(&this_afe.status, payload[0]);
+				else if (data->payload_size == (2*sizeof(uint32_t)))
+					atomic_set(&this_afe.status, payload[1]);
+
+				atomic_set(&this_afe.tfa_state, 0);
+				wake_up(&this_afe.wait[data->token]);
+
+				return 0;
+			}
+#endif
 			if (sp_make_afe_callback(data->opcode, data->payload,
 						 data->payload_size))
 				return -EINVAL;
@@ -640,6 +663,19 @@ static int32_t afe_callback(struct apr_client_data *data, void *priv)
 				if (rtac_make_afe_callback(payload,
 							   data->payload_size))
 					return 0;
+#ifdef CONFIG_SND_SOC_TFA9874
+				if (atomic_read(&this_afe.tfa_state) == 1) {
+					if (data->payload_size == sizeof(uint32_t))
+						atomic_set(&this_afe.status, payload[0]);
+					else if (data->payload_size == (2*sizeof(uint32_t)))
+						atomic_set(&this_afe.status, payload[1]);
+
+					atomic_set(&this_afe.tfa_state, 0);
+					wake_up(&this_afe.wait[data->token]);
+
+					return 0;
+				}
+#endif
 			case AFE_PORT_CMD_DEVICE_STOP:
 			case AFE_PORT_CMD_DEVICE_START:
 			case AFE_PSEUDOPORT_CMD_START:
@@ -1671,6 +1707,11 @@ static int afe_spk_prot_prepare(int src_port, int dst_port, int param_id,
 	case AFE_PARAM_ID_SP_V2_EX_VI_FTM_CFG:
 		param_info.module_id = AFE_MODULE_SPEAKER_PROTECTION_V2_EX_VI;
 		break;
+#ifdef CONFIG_MACH_ASUS_X00T
+	case AFE_PARAM_ID_TFADSP_RX_CFG:
+		param_info.module_id = AFE_MODULE_ID_TFADSP_RX;
+		break;
+#endif
 	default:
 		pr_err("%s: default case 0x%x\n", __func__, param_id);
 		goto fail_cmd;
@@ -7112,6 +7153,264 @@ done:
 	return result;
 }
 
+#ifdef CONFIG_SND_SOC_TFA9874
+static int fill_afe_apr_hdr(struct apr_hdr *apr_hdr, uint32_t port,
+				uint32_t opcode, uint32_t apr_msg_size)
+{
+	if (apr_hdr == NULL) {
+		pr_err("%s: invalid APR pointer", __func__);
+		return -EINVAL;
+	}
+
+	apr_hdr->hdr_field = APR_HDR_FIELD(APR_MSG_TYPE_SEQ_CMD,
+					APR_HDR_LEN(APR_HDR_SIZE), APR_PKT_VER);
+	apr_hdr->pkt_size = apr_msg_size;
+	apr_hdr->src_svc = APR_SVC_AFE;
+	apr_hdr->src_domain = APR_DOMAIN_APPS;
+	apr_hdr->src_port = 0;
+	apr_hdr->dest_svc = APR_SVC_AFE;
+	apr_hdr->dest_domain = APR_DOMAIN_ADSP;
+	apr_hdr->dest_port = 0;
+	apr_hdr->token = port;
+	apr_hdr->opcode = opcode;
+
+	return 0;
+}
+
+int send_tfa_cal_apr(void *buf, int cmd_size, bool bRead)
+{
+	int32_t result, port_id = AFE_PORT_ID_TERTIARY_MI2S_RX;
+	uint32_t port_index = 0, opcode;
+	uint32_t rawdata_size = 0;
+	uint32_t apr_msg_size = 0;
+	uint32_t apr_msg[48];
+	size_t len;
+	struct rtac_cal_block_data *tfa_cal = &(this_afe.tfa_cal);
+	struct param_hdr_v3 param_hdr;
+
+	memset(&param_hdr, 0x00, sizeof(struct param_hdr_v3));
+	memset(&apr_msg[0], 0x00, sizeof(apr_msg));
+
+	if (tfa_cal->map_data.ion_handle == NULL) {
+		/* Minimal chunk size is 4K */
+		tfa_cal->map_data.map_size = SZ_4K;
+		result = msm_audio_ion_alloc("tfa_cal",
+					&(tfa_cal->map_data.ion_client),
+					&(tfa_cal->map_data.ion_handle),
+					tfa_cal->map_data.map_size,
+					&(tfa_cal->cal_data.paddr), &len,
+					&(tfa_cal->cal_data.kvaddr));
+		if (result < 0) {
+			pr_err("%s: allocate buffer failed! ret = %d\n",
+				__func__, result);
+			goto err;
+		}
+	}
+
+	if (tfa_cal->map_data.map_handle == 0) {
+		result = afe_map_rtac_block(tfa_cal);
+		if (result < 0) {
+			pr_err("%s: map buffer failed! ret = %d\n",
+				__func__, result);
+			goto err;
+		}
+	}
+
+	port_index = q6audio_get_port_index(port_id);
+	if (port_index >= AFE_MAX_PORTS) {
+		pr_err("%s: Invalid AFE port = 0x%x\n", __func__, port_id);
+		goto err;
+	}
+
+	if (cmd_size > (SZ_4K - sizeof(struct param_hdr_v3))) {
+		pr_err("%s: Invalid payload size = %d\n", __func__, cmd_size);
+		result = -EINVAL;
+		goto err;
+	}
+
+	/* set header info in raw data. */
+	param_hdr.instance_id = INSTANCE_ID_0;
+	param_hdr.module_id = AFE_MODULE_ID_TFADSP_RX;
+	param_hdr.param_size = cmd_size;
+
+	if (!bRead)
+		param_hdr.param_id = AFE_PARAM_ID_TFADSP_RX_CFG;
+	else
+		param_hdr.param_id = AFE_PARAM_ID_TFADSP_RX_GET_RESULT;
+
+	/* build raw data struct. */
+	result = q6common_pack_pp_params((u8 *)tfa_cal->cal_data.kvaddr,
+					&param_hdr, (u8 *)buf, &rawdata_size);
+	if (result) {
+		pr_err("%s: Failed to pack param header and data, error %d\n",
+			__func__, result);
+		goto err;
+	}
+
+	if (!bRead) {
+		if (q6common_is_instance_id_supported()) {
+			struct afe_port_cmd_set_param_v3 *afe_set_apr_msg_v3 =
+				(struct afe_port_cmd_set_param_v3 *)apr_msg;
+
+			opcode = AFE_PORT_CMD_SET_PARAM_V3;
+			afe_set_apr_msg_v3->port_id = port_id;
+			afe_set_apr_msg_v3->mem_hdr.data_payload_addr_lsw =
+					lower_32_bits(tfa_cal->cal_data.paddr);
+			afe_set_apr_msg_v3->mem_hdr.data_payload_addr_msw =
+					msm_audio_populate_upper_32_bits(
+						tfa_cal->cal_data.paddr);
+			afe_set_apr_msg_v3->mem_hdr.mem_map_handle =
+						tfa_cal->map_data.map_handle;
+			afe_set_apr_msg_v3->payload_size = rawdata_size;
+			apr_msg_size = sizeof(struct afe_port_cmd_set_param_v3);
+		} else {
+			struct afe_port_cmd_set_param_v2 *afe_set_apr_msg_v2 =
+				(struct afe_port_cmd_set_param_v2 *)apr_msg;
+
+			opcode = AFE_PORT_CMD_SET_PARAM_V2;
+			afe_set_apr_msg_v2->port_id = port_id;
+			afe_set_apr_msg_v2->payload_size = rawdata_size;
+			afe_set_apr_msg_v2->mem_hdr.data_payload_addr_lsw =
+					lower_32_bits(tfa_cal->cal_data.paddr);
+			afe_set_apr_msg_v2->mem_hdr.data_payload_addr_msw =
+					msm_audio_populate_upper_32_bits(
+						tfa_cal->cal_data.paddr);
+			afe_set_apr_msg_v2->mem_hdr.mem_map_handle =
+						tfa_cal->map_data.map_handle;
+			apr_msg_size = sizeof(struct afe_port_cmd_set_param_v2);
+		}
+	} else {
+		if (q6common_is_instance_id_supported()) {
+			struct afe_port_cmd_get_param_v3 *afe_get_apr_msg_v3 =
+				(struct afe_port_cmd_get_param_v3 *)apr_msg;
+
+			opcode = AFE_PORT_CMD_GET_PARAM_V3;
+			afe_get_apr_msg_v3->port_id = port_id;
+			afe_get_apr_msg_v3->mem_hdr.data_payload_addr_lsw =
+					lower_32_bits(tfa_cal->cal_data.paddr);
+			afe_get_apr_msg_v3->mem_hdr.data_payload_addr_msw =
+					msm_audio_populate_upper_32_bits(
+						tfa_cal->cal_data.paddr);
+			afe_get_apr_msg_v3->mem_hdr.mem_map_handle =
+						tfa_cal->map_data.map_handle;
+			afe_get_apr_msg_v3->param_hdr = param_hdr;
+			apr_msg_size = sizeof(struct afe_port_cmd_get_param_v3);
+		} else {
+			struct afe_port_cmd_get_param_v2 *afe_get_apr_msg_v2 =
+				(struct afe_port_cmd_get_param_v2 *)apr_msg;
+
+			opcode = AFE_PORT_CMD_GET_PARAM_V2;
+			afe_get_apr_msg_v2->port_id = port_id;
+			afe_get_apr_msg_v2->payload_size =
+						sizeof(struct param_hdr_v1);
+			afe_get_apr_msg_v2->mem_hdr.data_payload_addr_lsw =
+					lower_32_bits(tfa_cal->cal_data.paddr);
+			afe_get_apr_msg_v2->mem_hdr.data_payload_addr_msw =
+					msm_audio_populate_upper_32_bits(
+						tfa_cal->cal_data.paddr);
+			afe_get_apr_msg_v2->mem_hdr.mem_map_handle =
+						tfa_cal->map_data.map_handle;
+			afe_get_apr_msg_v2->module_id = param_hdr.module_id;
+			afe_get_apr_msg_v2->param_id = param_hdr.param_id;
+			apr_msg_size = sizeof(struct afe_port_cmd_get_param_v2);
+		}
+	}
+
+	fill_afe_apr_hdr((struct apr_hdr *) apr_msg,
+			port_index, opcode, apr_msg_size);
+
+	pr_debug("%s: Sending tfa cal 0x%x, handle 0x%x paddr 0x%pK\n",
+		__func__, opcode, tfa_cal->map_data.map_handle,
+		&tfa_cal->cal_data.paddr);
+
+	atomic_set(&this_afe.tfa_state, 1);
+	atomic_set(&this_afe.status, 0);
+	result = apr_send_pkt(this_afe.apr, (uint32_t *) apr_msg);
+	if (result < 0) {
+		pr_err("%s: Set params failed port = 0x%x, ret = %d\n",
+			__func__, port_id, result);
+		goto err;
+	}
+
+	result = wait_event_timeout(this_afe.wait[port_index],
+					(atomic_read(&this_afe.tfa_state) == 0),
+					msecs_to_jiffies(TIMEOUT_MS));
+	if (!result) {
+		pr_err("%s: wait_event timeout\n", __func__);
+		result = -EINVAL;
+		goto err;
+	} else
+		result = 0;
+
+	if (atomic_read(&this_afe.status) > 0) {
+		pr_err("%s: config cmd failed [%s]\n",
+			__func__, adsp_err_get_err_str(
+						atomic_read(&this_afe.status)));
+		result = adsp_err_get_lnx_err_code(
+						atomic_read(&this_afe.status));
+		goto err;
+	}
+
+	if (opcode == AFE_PORT_CMD_GET_PARAM_V2) {
+		/* the retured buffer struct is
+		 * struct afe_port_cmdrsp_get_param_v2.
+		 */
+		struct param_hdr_v1 *get_resp_v2 = tfa_cal->cal_data.kvaddr;
+
+		if (get_resp_v2->param_size > cmd_size) {
+			if (get_resp_v2->module_id != AFE_MODULE_ID_TFADSP_RX) {
+				pr_err("%s: user size = 0x%x, returned size = 0x%x\n",
+					__func__, cmd_size,
+					get_resp_v2->param_size);
+				pr_err("%s: user size = 0x%x, returned param_id = 0x%x\n",
+					__func__, cmd_size,
+					get_resp_v2->param_id);
+				pr_err("%s: user size = 0x%x, returned module_id = 0x%x\n",
+					__func__, cmd_size,
+					get_resp_v2->module_id);
+				result = -EINVAL;
+				goto err;
+			}
+		}
+
+		memcpy(buf, (void *)(get_resp_v2 + 1), get_resp_v2->param_size);
+	} else if (opcode == AFE_PORT_CMD_GET_PARAM_V3) {
+		/* the retured buffer struct is
+		 * struct afe_port_cmdrsp_get_param_v3.
+		 */
+		struct param_hdr_v3 *get_resp_v3 = tfa_cal->cal_data.kvaddr;
+
+		if (get_resp_v3->param_size > cmd_size) {
+			pr_err("%s: user size = 0x%x, returned size = 0x%x\n",
+				__func__, cmd_size, get_resp_v3->param_size);
+			result = -EINVAL;
+			goto err;
+		}
+
+		memcpy(buf, (void *)(get_resp_v3 + 1), get_resp_v3->param_size);
+	}
+
+err:
+	return result;
+}
+EXPORT_SYMBOL(send_tfa_cal_apr);
+
+int send_tfa_cal_in_band(void *buf, int cmd_size)
+{
+	int32_t port_id = AFE_PORT_ID_TERTIARY_MI2S_RX;
+	union afe_spkr_prot_config prot_config;
+
+	if (cmd_size > sizeof(prot_config))
+		return -EINVAL;
+
+	memcpy(&prot_config, buf, cmd_size);
+
+	return afe_spk_prot_prepare(port_id, 0, AFE_PARAM_ID_TFADSP_RX_CFG,
+					&prot_config);
+}
+EXPORT_SYMBOL(send_tfa_cal_in_band);
+#endif /* CONFIG_SND_SOC_TFA9874 */
+
 int afe_request_dma_resources(uint8_t dma_type, uint8_t num_read_dma_channels,
 				uint8_t num_write_dma_channels)
 {
@@ -7316,6 +7615,9 @@ static int __init afe_init(void)
 
 static void __exit afe_exit(void)
 {
+#ifdef CONFIG_SND_SOC_TFA9874
+	afe_unmap_rtac_block(&this_afe.tfa_cal.map_data.map_handle);
+#endif
 	afe_delete_cal_data();
 
 	config_debug_fs_exit();

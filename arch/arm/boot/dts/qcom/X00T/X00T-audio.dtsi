@@ -1,0 +1,175 @@
+/*
+ * Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	qcom,msm-dai-mi2s {
+		ai_mi2s2: qcom,msm-dai-q6-mi2s-tert {
+			qcom,msm-mi2s-rx-lines = <1>;
+			qcom,msm-mi2s-tx-lines = <2>;
+		};
+	};
+
+	int_codec: sound {
+		qcom,msm-micbias1-ext-cap;
+		qcom,msm-hs-micbias-type = "internal";
+		qcom,wsa-disable;
+		qcom,msm-spk-ext-pa = <&tlmm 24 0>;
+		qcom,msm-hph-ext-sw = <&tlmm 66 0>, <&tlmm 94 0>;
+		qcom,tert-mi2s-gpios = <&tert_mi2s_gpios>;
+
+		/delete-property/ qcom,msm-micbias2-ext-cap;
+
+		qcom,audio-routing =
+			"RX_BIAS", "INT_MCLK0",
+			"SPK_RX_BIAS", "INT_MCLK0",
+			"INT_LDO_H", "INT_MCLK0",
+			"RX_I2S_CLK", "INT_MCLK0",
+			"TX_I2S_CLK", "INT_MCLK0",
+			"MIC BIAS External", "Handset Mic",
+			"MIC BIAS Internal2", "Headset Mic",
+			"MIC BIAS External", "Secondary Mic",
+			"AMIC1", "MIC BIAS External",
+			"AMIC2", "MIC BIAS Internal2",
+			"AMIC3", "MIC BIAS External",
+			"DMIC1", "MIC BIAS External",
+			"MIC BIAS External", "Digital Mic1",
+			"DMIC2", "MIC BIAS External",
+			"MIC BIAS External", "Digital Mic2",
+			"DMIC3", "MIC BIAS External",
+			"MIC BIAS External", "Digital Mic3",
+			"DMIC4", "MIC BIAS External",
+			"MIC BIAS External", "Digital Mic4",
+			"SpkrLeft IN", "SPK1 OUT",
+			"SpkrRight IN", "SPK2 OUT",
+			"PDM_IN_RX1", "PDM_OUT_RX1",
+			"PDM_IN_RX2", "PDM_OUT_RX2",
+			"PDM_IN_RX3", "PDM_OUT_RX3",
+			"ADC1_IN", "ADC1_OUT",
+			"ADC2_IN", "ADC2_OUT",
+			"ADC3_IN", "ADC3_OUT";
+	};
+
+	tert_mi2s_gpios: tert_mi2s_pinctrl {
+		compatible = "qcom,msm-cdc-pinctrl";
+		pinctrl-names = "aud_active", "aud_sleep";
+		pinctrl-0 = <&ter_mi2s_clk_active &ter_mi2s_ws_active
+			&ter_mi2s_sd0_active &ter_mi2s_sd1_active>;
+		pinctrl-1 = <&ter_mi2s_clk_sleep &ter_mi2s_ws_sleep
+			&ter_mi2s_sd0_sleep &ter_mi2s_sd1_sleep>;
+		qcom,lpi-gpios;
+	};
+
+	lpi_tlmm: lpi_pinctrl@15070000 {
+		ter_mi2s_clk_active: ter_mi2s_clk_active {
+			mux {
+				pins = "gpio4";
+				function = "func4";
+			};
+
+			config {
+				pins = "gpio4";
+				drive-strength = <8>;
+			};
+		};
+
+		ter_mi2s_clk_sleep: ter_mi2s_clk_sleep {
+			mux {
+				pins = "gpio4";
+				function = "func4";
+			};
+
+			config {
+				pins = "gpio4";
+				drive-strength = <2>;
+			};
+		};
+
+		ter_mi2s_ws_active: ter_mi2s_ws_active {
+			mux {
+				pins = "gpio5";
+				function = "func4";
+			};
+
+			config {
+				pins = "gpio5";
+				drive-strength = <8>;
+			};
+		};
+
+		ter_mi2s_ws_sleep: ter_mi2s_ws_sleep {
+			mux {
+				pins = "gpio5";
+				function = "func4";
+			};
+
+			config {
+				pins = "gpio5";
+				drive-strength = <2>;
+			};
+		};
+		ter_mi2s_sd0_active: ter_mi2s_sd0_active {
+			mux {
+				pins = "gpio6";
+				function = "func4";
+			};
+
+			config {
+				pins = "gpio6";
+				drive-strength = <8>;
+			};
+		};
+
+		ter_mi2s_sd0_sleep: ter_mi2s_sd0_sleep {
+			mux {
+				pins = "gpio6";
+				function = "func4";
+			};
+
+			config {
+				pins = "gpio6";
+				drive-strength = <2>;
+			};
+		};
+		ter_mi2s_sd1_active: ter_mi2s_sd1_active {
+			mux {
+				pins = "gpio7";
+				function = "func4";
+			};
+
+			config {
+				pins = "gpio7";
+				drive-strength = <8>;
+			};
+		};
+
+		ter_mi2s_sd1_sleep: ter_mi2s_sd1_sleep {
+			mux {
+				pins = "gpio7";
+				function = "func4";
+			};
+
+			config {
+				pins = "gpio7";
+				drive-strength = <2>;
+			};
+		};
+	};
+};
+
+&msm_sdw_codec {
+	status = "disabled";
+};
+
+&cdc_sdw_gpios {
+	status = "disabled";
+};

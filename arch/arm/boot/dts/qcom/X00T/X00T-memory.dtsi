@@ -1,0 +1,67 @@
+/*
+ * Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/ {
+	reserved-memory {
+		pstore_reserve_mem: pstore_reserve_mem_region@0 {
+			linux,reserve-contiguous-region;
+			linux,reserve-region;
+			linux,remove-completely;
+			reg = <0x0 0x9ff00000 0x0 0x00100000>;
+			label = "pstore_reserve_mem";
+		};
+		cont_splash_mem: splash_region@9d400000 {
+			reg = <0x0 0x9d400000 0x0 0x02400000>;
+		};
+		/delete-node/ dfps_data_mem@0x9f7ff000;
+		dfps_data_mem: dfps_data_mem@0x9f800000 {
+			label = "dfps_data_mem";
+			linux,phandle = <0x276>;
+			phandle = <0x276>;
+			reg = <0x0 0x9f800000 0x0 0x1000>;
+		};
+	};
+
+	firmware: firmware {
+		android {
+			compatible = "android,firmware";
+			fstab {
+				compatible = "android,fstab";
+				vendor {
+					compatible = "android,vendor";
+					dev = "/dev/block/platform/soc/c0c4000.sdhci/by-name/vendor";
+					type = "ext4";
+					mnt_flags = "ro,barrier=1,discard";
+					fsmgr_flags = "wait";
+					status = "ok";
+				};
+				system {
+					compatible = "android,system";
+					dev = "/dev/block/platform/soc/c0c4000.sdhci/by-name/system";
+					type = "ext4";
+					mnt_flags = "ro,barrier=1,discard";
+					fsmgr_flags = "wait";
+					status = "ok";
+				};
+			};
+		};
+	};
+};
+
+&sdhc_1 {
+	qcom,vdd-always-on;
+};
+
+&sdhc_2 {
+	cd-gpios = <&tlmm 54 0x0>;
+};

@@ -1,0 +1,394 @@
+/*
+ * Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	common_fp {
+		compatible = "common,fingerprint";
+		interrupt-parent = <&tlmm>;
+		interrupts = <72 0x0>;
+
+		common,gpio_reset   = <&tlmm 20 0>;
+		common,gpio_irq		= <&tlmm 72 0>;
+		common,gpio_vdd		= <&pm660l_gpios 5 0>;
+		pinctrl-names		=	"commonfp_reset_reset",
+								"commonfp_reset_active",
+								"commonfp_irq_active";
+		pinctrl-0 = <&commonfp_reset_reset>;
+		pinctrl-1 = <&commonfp_reset_active>;
+		pinctrl-2 = <&commonfp_irq_active>;
+	};
+
+	cdfinger_fingerprint {
+		compatible = "cdfinger,fingerprint";
+		interrupt-parent = <&tlmm>;
+		interrupts = <72 0x0>;
+		cdfinger,reset_gpio = <&tlmm 20 0>;
+		cdfinger,gpio_vdd  = <&pm660l_gpios 5 0>;
+		cdfinger,irq_gpio = <&tlmm 72 0>;
+	};
+
+	goodix_fingerprint {
+		compatible = "goodix,fingerprint";
+	};
+
+	gpio_keys {
+		status = "okay";
+		/delete-node/ camera_snapshot;
+		/delete-node/ camera_focus;
+		/delete-node/ home;
+
+		vol_up {
+			label = "volume_up";
+			gpios = <&tlmm 44 0x1>;
+			linux,input-type = <1>;
+			linux,code = <115>;
+			gpio-key,wakeup;
+			debounce-interval = <15>;
+		};
+
+		vol_down {
+			label = "volume_down";
+			gpios = <&tlmm 43 0x1>;
+			linux,input-type = <1>;
+			linux,code = <114>;
+			gpio-key,wakeup;
+			debounce-interval = <15>;
+		};
+	};
+
+	usb3: ssusb@a800000 {
+		extcon = <&pm660_charger>;
+		vbus_dwc3-supply = <&smb2_vbus>;
+		dwc3@a800000 {
+			usb-phy = <&qusb_phy0>, <&usb_nop_phy>;
+			maximum-speed = "high-speed";
+		};
+	};
+
+	qusb_phy0: qusb@c012000 {
+		qcom,tune2-efuse-correction = <(-4)>;
+	};
+
+	usb_nop_phy: usb_nop_phy {
+		compatible = "usb-nop-xceiv";
+	};
+
+	ssphy: ssphy@c010000 {
+		status = "disable";
+	};
+
+	wdog: qcom,wdt@17817000 {
+		qcom,bark-time = <20000>;
+	};
+
+};
+
+&spmi_bus {
+	qcom,pm660@0 {
+		qcom,power-on@800 {
+			qcom,pon_1 {
+				qcom,support-reset = <1>;
+				qcom,s1-timer = <10256>;
+				qcom,s2-timer = <10>;
+				qcom,s2-type = <4>;
+			};
+		};
+
+		pm660_gpios: gpios {
+			gpio@c200 {
+				status = "okay";
+				qcom,mode = <3>; /* Analog Pass Through */
+				qcom,pull = <5>; /* Input No pull */
+				qcom,vin-sel = <0>; /* VIN0 */
+				qcom,src-sel = <0>; /* Constant */
+				qcom,master-en = <0>; /* Eanble GPIO */
+				/delete-property/ qcom,out-strength;
+			};
+			gpio@cb00 {
+				/* USB alert start */
+				status = "ok";
+				qcom,master-en = <0>;
+			};
+		};
+
+		pm660_vadc: vadc@3100 {
+			chan@13 {
+				label = "gpio3_adc";
+				reg = <0x13>;
+				qcom,decimation = <2>;
+				qcom,pre-div-channel-scaling = <0>;
+				qcom,calibration-type = "absolute";
+				qcom,scale-function = <0>;
+				qcom,hw-settle-time = <2>;
+				qcom,fast-avg-setup = <0>;
+			};
+			chan@19 {
+				label = "chg-alert";
+				reg = <0x19>;
+				qcom,decimation = <0>;
+				qcom,pre-div-channel-scaling = <0>;
+				qcom,calibration-type = "absolute";
+				qcom,scale-function = <0>;
+				qcom,hw-settle-time = <2>;
+				qcom,fast-avg-setup = <0>;
+			};
+			chan@4f {
+				qcom,hw-settle-time = <15>;
+			};
+		};
+
+		pm660_charger: qcom,qpnp-smb2 {
+			qcom,chg-alert-vadc = <&pm660_vadc>;
+			qcom,micro-usb;
+			qcom,fcc-max-ua = <1000000>;
+			qcom,fv-max-uv = <4350000>;
+			qcom,usb-icl-ua = <1000000>;
+			qcom,float-option = <1>;
+			qcom,auto-recharge-soc;
+			qcom,pm-gpio3-vadc = <&pm660_vadc>;
+		};
+
+		pm660_pdphy: qcom,usb-pdphy@1700 {
+			status = "disable"; //remove Type-C for micro-usb
+		};
+
+		pm660_fg: qpnp,fg {
+			qcom,fg-esr-timer-asleep = <160 256>;
+			qcom,fg-cutoff-voltage = <3400>;
+			qcom,fg-empty-voltage = <2800>;
+			qcom,fg-esr-tight-filter-micro-pct = <20000>;
+			qcom,fg-esr-broad-filter-micro-pct = <25000>;
+			qcom,fg-esr-tight-lt-filter-micro-pct = <2000>;
+			qcom,fg-esr-broad-lt-filter-micro-pct = <2200>;
+			qcom,slope-limit-temp-threshold = <150>;
+			qcom,slope-limit-coeffs = <1 1 1 1>;
+			qcom,fg-chg-term-current = <150>;
+			qcom,fg-sys-term-current = <(-200)>;
+			qcom,hold-soc-while-full;
+			qcom,linearize-soc;
+			qcom,fg-force-load-profile;
+			qcom,fg-jeita-thresholds = <0 1 59 60>;
+			qcom,fg-jeita-hyst-temp = <3>;
+			qcom,fg-recharge-voltage = <4150>;
+			qcom,fg-recharge-soc-thr = <98>;
+			qcom,fg-auto-recharge-soc;
+			qcom,fg-rsense-sel=<1>;
+		};
+	};
+
+	qcom,pm660@1 {
+		pm660_haptics: qcom,haptic@c000 {
+			qcom,actuator-type = "erm";
+		};
+	};
+
+	qcom,pm660l@2 {
+		pm660l_gpios: gpios {
+			gpio@c400 {
+				status = "ok";
+			};
+		};
+	};
+
+	pm660l_3: qcom,pm660l@3 {
+		pm660l_pwm_3: pwm@b300 {
+			/delete-node/ qcom,lpg;
+		};
+
+		qcom,leds@d000 {
+			red_led: qcom,rgb_0 {
+				qcom,idx-len = <2>;
+				qcom,lut-flags = <19>;
+				qcom,pause-lo = <3400>;
+				qcom,ramp-step-ms = <300>;
+				qcom,duty-pcts = [00 22];
+			};
+
+			green_led: qcom,rgb_1 {
+				qcom,start-idx = <0>;
+				qcom,idx-len = <2>;
+				qcom,lut-flags = <19>;
+				qcom,pause-lo = <1400>;
+				qcom,ramp-step-ms = <300>;
+				qcom,duty-pcts = [00 40];
+				qcom,use-blink;
+			};
+		};
+
+		flash_led: qcom,leds@d300 {
+			pm660l_flash0: qcom,flash_0 {
+				qcom,max-current = <1000>;
+				qcom,current-ma = <900>;
+			};
+
+			pm660l_flash1: qcom,flash_1 {
+				qcom,max-current = <280>;
+				qcom,current-ma = <250>;
+			};
+
+			pm660l_torch1: qcom,torch_1 {
+				qcom,max-current = <150>;
+				qcom,current-ma = <110>;
+			};
+
+			pm660l_switch0: qcom,led_switch_0 {
+				qcom,led-mask = <1>;
+			};
+
+			pm660l_switch1: qcom,led_switch_1 {
+				qcom,led-mask = <2>;
+			};
+		};
+
+		pm660a_labibb: qpnp-labibb-regulator {
+			status = "okay";
+			ibb_regulator: qcom,ibb@dc00 {
+				qcom,qpnp-ibb-limit-maximum-current = <200>;
+				qcom,qpnp-ibb-limit-max-current-enable;
+			};
+
+			lab_regulator: qcom,lab@de00 {
+				qcom,qpnp-lab-limit-maximum-current = <200>;
+				qcom,qpnp-lab-limit-max-current-enable;
+			};
+		};	
+	};
+};
+
+&rpm_bus {
+	rpm-regulator-ldob3 {
+		regulator-l3 {
+			qcom,init-ldo-mode = <1>;
+			regulator-always-on;
+		};
+	};
+	rpm-regulator-ldob7 {
+		pm660l_l7: regulator-l7 {
+			/delete-property/ parent-supply;
+			qcom,init-voltage = <3125000>;
+			regulator-always-on;
+		};
+	};
+	rpm-regulator-ldob8 {
+		status = "okay";
+		pm660l_l8: regulator-l8 {
+			regulator-min-microvolt = <2800000>;
+			regulator-max-microvolt = <2800000>;
+			status = "okay";
+		};
+	};
+};
+
+&i2c_2 {/* BLSP2 */
+	status = "okay";
+	semtech@28{             /*sar sensor*/
+		compatible = "Semtech,sx9310";
+		reg = <0x28>;
+		vdd-supply  =<&pm660l_l3>;
+		vdd1-supply =<&pm660_l13>;  // for svdd
+		interrupt-parent = <&tlmm>;
+		Semtech,gpio-irq= <&tlmm 77 0x2008>; // gpio 77
+		interrupts = <77 0x2>;
+		pinctrl-names = "sarsensor_active", "sarsensor_suspend";
+		pinctrl-0 = <&sarsensor_int_active>;
+		pinctrl-1 = <&sarsensor_int_suspend>;
+	};
+};
+
+&i2c_6 {
+	status = "okay";
+	aw87339@58 {
+		status = "disabled";
+		compatible = "awinic,aw87339_pa_spk";
+		reg = <0x58>;
+		reset-gpio = <&tlmm 24 0x01>;
+	};
+
+	tfa98xx@34 {
+		compatible = "nxp,tfa98xx";
+		reg = <0x34>;
+	};
+};
+
+&i2c_7 {        /* for P/L Sensor */
+	status = "okay";
+	stk@48 {
+		compatible = "stk,stk3x1x";
+		reg = <0x48>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <45 0x2>;
+		vdd-supply = <&pm660l_l3>;
+		vio-supply = <&pm660_l14>;
+		stk,irq-gpio = <&tlmm 45 0x02>;
+		pinctrl-names = "psensor_active", "psensor_suspend";
+		pinctrl-0 = <&psensor_int_active>;
+		pinctrl-1 = <&psensor_int_suspend>;
+		stk,state-reg = <0x0>;
+		stk,psctrl-reg = <0x31>;
+		stk,alsctrl-reg = <0x39>;
+		stk,ledctrl-reg = <0xFF>;
+		stk,wait-reg = <0x0A>;
+		stk,ps-thdh = <120>;
+		stk,ps-thdl = <90>;
+		stk,transmittance = <1100>;
+	};
+};
+
+&pm660_charger {
+       ADC_SW_EN-gpios59 = <&tlmm 71 0x0>;
+       ADCPWREN_PMI_GP1-gpios34 = <&tlmm 3 0x0>;
+};
+
+&pm660l_wled {
+	status = "okay";
+};
+
+&pm660l_lcdb {
+	status = "okay";
+};
+
+&pm660a_oledb {
+	status = "disabled";
+};
+
+&qrd_batterydata {
+        qcom,batt-id-range-pct = <15>;
+	#include "batterydata/fg-gen3-batterydata-3292665_Huaqin_QL1650cos_5000mAh.dtsi"
+	/delete-node/ qcom,qrd_msm8998_skuk_3000mah;
+};
+
+&qusb_phy0 {
+	qcom,qusb-phy-init-seq = <0xf8 0x80
+				0x83 0x84
+				0x81 0x88
+				0xc7 0x8c
+				0x30 0x08
+				0x79 0x0c
+				0x21 0x10
+				0x14 0x9c
+				0x9f 0x1c
+				0x00 0x18>;
+};
+
+&qusb_phy1 {
+	qcom,qusb-phy-init-seq = <0xf8 0x80
+				0x83 0x84
+				0x81 0x88
+				0xc7 0x8c
+				0x30 0x08
+				0x79 0x0c
+				0x21 0x10
+				0x14 0x9c
+				0x9f 0x1c
+				0x00 0x18>;
+};

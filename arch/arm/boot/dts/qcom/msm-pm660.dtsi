@@ -545,6 +545,7 @@
 			compatible = "qcom,fg-gen3";
 			#address-cells = <1>;
 			#size-cells = <1>;
+			qcom,vadc_therm-vadc = <&pm660_vadc>;
 			qcom,pmic-revid = <&pm660_revid>;
 			io-channels = <&pm660_rradc 0>,
 				      <&pm660_rradc 7>;

@@ -4107,8 +4107,8 @@ void asus_insertion_initial_settings(struct smb_charger *chg)
 			"Couldn't set default PRE_CHARGE_CURRENT_CFG_REG rc=%d\n",
 			rc);
 
-	/* reg=1061, 0x38, 1475mA, gaiwei, 0x28, 1000mA */
-	rc = smblib_write(chg, FAST_CHARGE_CURRENT_CFG_REG, 0x28);
+	/* reg=1061, 0x38, 1475mA, gaiwei, 0x78, 3000mA */
+	rc = smblib_write(chg, FAST_CHARGE_CURRENT_CFG_REG, 0x78);
 	if (rc < 0)
 		dev_err(chg->dev,
 			"Couldn't set default FAST_CHARGE_CURRENT_CFG_REG rc=%d\n",

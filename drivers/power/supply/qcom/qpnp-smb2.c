@@ -44,44 +44,44 @@ static struct smb_params v1_params = {
 	.fcc			= {
 		.name	= "fast charge current",
 		.reg	= FAST_CHARGE_CURRENT_CFG_REG,
-		.min_u	= 0,
+		.min_u	= 4500000,
 		.max_u	= 4500000,
-		.step_u	= 25000,
+		.step_u	= 0,
 	},
 	.fv			= {
 		.name	= "float voltage",
 		.reg	= FLOAT_VOLTAGE_CFG_REG,
 		.min_u	= 3487500,
 		.max_u	= 4920000,
-		.step_u	= 7500,
+		.step_u	= 0,
 	},
 	.usb_icl		= {
 		.name	= "usb input current limit",
 		.reg	= USBIN_CURRENT_LIMIT_CFG_REG,
-		.min_u	= 0,
-		.max_u	= 4800000,
-		.step_u	= 25000,
+		.min_u	= 3000000,
+		.max_u	= 6000000,
+		.step_u	= 0,
 	},
 	.icl_stat		= {
 		.name	= "input current limit status",
 		.reg	= ICL_STATUS_REG,
-		.min_u	= 0,
-		.max_u	= 4800000,
-		.step_u	= 25000,
+		.min_u	= 3000000,
+		.max_u	= 6000000,
+		.step_u	= 0,
 	},
 	.otg_cl			= {
 		.name	= "usb otg current limit",
 		.reg	= OTG_CURRENT_LIMIT_CFG_REG,
 		.min_u	= 250000,
 		.max_u	= 2000000,
-		.step_u	= 250000,
+		.step_u	= 0,
 	},
 	.dc_icl			= {
 		.name	= "dc input current limit",
 		.reg	= DCIN_CURRENT_LIMIT_CFG_REG,
-		.min_u	= 0,
+		.min_u	= 6000000,
 		.max_u	= 6000000,
-		.step_u	= 25000,
+		.step_u	= 0,
 	},
 	.dc_icl_pt_lv		= {
 		.name	= "dc icl PT <8V",
@@ -129,8 +129,8 @@ static struct smb_params v1_params = {
 		.name	= "jeita fcc reduction",
 		.reg	= JEITA_CCCOMP_CFG_REG,
 		.min_u	= 0,
-		.max_u	= 1575000,
-		.step_u	= 25000,
+		.max_u	= 500000,
+		.step_u	= 0,
 	},
 	.freq_buck		= {
 		.name	= "buck switching frequency",
@@ -214,7 +214,7 @@ module_param_named(
 	try_sink_enabled, __try_sink_enabled, int, 0600
 );
 
-#define MICRO_1P5A		1500000
+#define MICRO_1P5A		2000000
 #define MICRO_P1A		100000
 #define OTG_DEFAULT_DEGLITCH_TIME_MS	50
 #define MIN_WD_BARK_TIME		16

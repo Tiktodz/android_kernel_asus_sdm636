@@ -235,5 +235,10 @@ typedef void (*call_rcu_func_t)(struct rcu_head *head, rcu_callback_t func);
 /* clocksource cycle base type */
 typedef u64 cycle_t;
 
+typedef void (*swap_func_t)(void *a, void *b, int size);
+
+typedef int (*cmp_r_func_t)(const void *a, const void *b, const void *priv);
+typedef int (*cmp_func_t)(const void *a, const void *b);
+
 #endif /*  __ASSEMBLY__ */
 #endif /* _LINUX_TYPES_H */

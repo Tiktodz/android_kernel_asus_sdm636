@@ -79,8 +79,8 @@ size_t zpool_huge_class_size(struct zpool *zpool);
  * @unmap:	unmap a handle.
  * @compact:	try to run compaction over a pool
  * @get_num_compacted:	get amount of compacted pages for a pool
- * @total_size:	get total size of a pool.
- * @huge_class_size: huge class threshold for pool pages
+ * @total_size:	get total size of a pool
+ * @huge_class_size: huge class threshold for pool pages.
  *
  * This is created by a zpool implementation and registered
  * with zpool.

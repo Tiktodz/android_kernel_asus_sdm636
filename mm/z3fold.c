@@ -26,6 +26,7 @@
 #include <linux/atomic.h>
 #include <linux/sched.h>
 #include <linux/cpumask.h>
+#include <linux/dcache.h>
 #include <linux/list.h>
 #include <linux/mm.h>
 #include <linux/module.h>
@@ -35,14 +36,12 @@
 #include <linux/compaction.h>
 #include <linux/percpu.h>
 #include <linux/mount.h>
-#include <linux/pseudo_fs.h>
 #include <linux/fs.h>
 #include <linux/preempt.h>
 #include <linux/workqueue.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>
 #include <linux/zpool.h>
-#include <linux/magic.h>
 
 /*
  * NCHUNKS_ORDER determines the internal allocation granularity, effectively
@@ -246,14 +245,15 @@ static inline void free_handle(unsigned long handle)
 	}
 }
 
-static int z3fold_init_fs_context(struct fs_context *fc)
+static struct dentry *z3fold_do_mount(struct file_system_type *fs_type,
+				int flags, const char *dev_name, void *data)
 {
-	return init_pseudo(fc, Z3FOLD_MAGIC) ? 0 : -ENOMEM;
+	return mount_pseudo(fs_type, "z3fold:", NULL, NULL, 0x33);
 }
 
 static struct file_system_type z3fold_fs = {
 	.name		= "z3fold",
-	.init_fs_context = z3fold_init_fs_context,
+	.mount		= z3fold_do_mount,
 	.kill_sb	= kill_anon_super,
 };
 

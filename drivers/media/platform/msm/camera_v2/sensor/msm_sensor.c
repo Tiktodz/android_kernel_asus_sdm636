@@ -264,6 +264,14 @@ int msm_sensor_match_id(struct msm_sensor_ctrl_t *s_ctrl)
 	slave_info = s_ctrl->sensordata->slave_info;
 	sensor_name = s_ctrl->sensordata->sensor_name;
 
+	if ((strcmp(sensor_name, "ov13855_chicony_rear") == 0) ||
+	    (strcmp(sensor_name, "hi556_holitech_13m") == 0) ||
+	    (strcmp(sensor_name, "hi556_holitech_16m") == 0)) {
+		pr_warn("%s: not going to check ov13855 or hi556\n",
+			__func__);
+		return -ENODEV;
+	}
+
 	if (!sensor_i2c_client || !slave_info || !sensor_name) {
 		pr_err("%s:%d failed: %pK %pK %pK\n",
 			__func__, __LINE__, sensor_i2c_client, slave_info,

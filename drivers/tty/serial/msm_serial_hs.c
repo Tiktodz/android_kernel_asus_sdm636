@@ -3425,7 +3425,9 @@ static int msm_hs_probe(struct platform_device *pdev)
 	int core_irqres, bam_irqres, wakeup_irqres;
 	struct msm_serial_hs_platform_data *pdata = pdev->dev.platform_data;
 	unsigned long data;
+#ifdef CONFIG_IPC_LOGGING
 	char name[30];
+#endif
 	char boot_marker[40];
 
 	if (pdev->dev.of_node) {
@@ -3525,6 +3527,7 @@ static int msm_hs_probe(struct platform_device *pdev)
 		return -ENOMEM;
 	}
 
+#ifdef CONFIG_IPC_LOGGING
 	memset(name, 0, sizeof(name));
 	scnprintf(name, sizeof(name), "%s%s", dev_name(msm_uport->uport.dev),
 									"_state");
@@ -3541,6 +3544,7 @@ static int msm_hs_probe(struct platform_device *pdev)
 		if (unlikely(ret))
 			MSM_HS_WARN("%s: Failed to create dev. attr", __func__);
 	}
+#endif
 
 	uport->irq = core_irqres;
 	msm_uport->bam_irq = bam_irqres;
@@ -3615,6 +3619,7 @@ static int msm_hs_probe(struct platform_device *pdev)
 	msm_uport->tx.flush = FLUSH_SHUTDOWN;
 	msm_uport->rx.flush = FLUSH_SHUTDOWN;
 
+#ifdef CONFIG_IPC_LOGGING
 	memset(name, 0, sizeof(name));
 	scnprintf(name, sizeof(name), "%s%s", dev_name(msm_uport->uport.dev),
 									"_tx");
@@ -3641,6 +3646,7 @@ static int msm_hs_probe(struct platform_device *pdev)
 	if (!msm_uport->ipc_msm_hs_pwr_ctxt)
 		dev_err(&pdev->dev, "%s: error creating usr logging context",
 								__func__);
+#endif
 
 	uport->irq = core_irqres;
 	msm_uport->bam_irq = bam_irqres;

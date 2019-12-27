@@ -928,7 +928,7 @@ static void touchProcess(psx93XX_t this)
 				if (((i & pCurrentButton->mask) ==
 				     pCurrentButton->mask)) {
 					/* User pressed button */
-					dev_info(this->pdev,
+					dev_dbg(this->pdev,
 						 "cap button %d touched\n",
 						 counter);
 					/*
@@ -949,7 +949,7 @@ static void touchProcess(psx93XX_t this)
 				if (((i & pCurrentButton->mask) !=
 				     pCurrentButton->mask)) {
 					/* User released button */
-					dev_info(this->pdev,
+					dev_dbg(this->pdev,
 						 "cap button %d released\n",
 						 counter);
 					/*
@@ -984,7 +984,7 @@ static int sx9310_get_nirq_state(void)
 		pr_err("sx9310 irq_gpio was not assigned properly");
 	}
 	value = gpio_get_value(PSX9310Device->hw->irq_gpio);
-	pr_info("sx9310 irq gpio status(%d)", value);
+	pr_debug("sx9310 irq gpio status(%d)", value);
 	return !value;
 }
 

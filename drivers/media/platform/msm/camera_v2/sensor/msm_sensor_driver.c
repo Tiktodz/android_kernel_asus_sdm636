@@ -1056,6 +1056,18 @@ CSID_TG:
 	s_ctrl->sensordata->actuator_name = slave_info->actuator_name;
 	s_ctrl->sensordata->ois_name = slave_info->ois_name;
 	s_ctrl->sensordata->flash_name = slave_info->flash_name;
+
+	/*
+	 * don't bother check for nonexistent camera
+	 */
+	if (!strcmp(slave_info->sensor_name, "ov13855_chicony_rear") ||
+	    !strcmp(slave_info->sensor_name, "hi556_holitech_13m") ||
+	    !strcmp(slave_info->sensor_name, "hi556_holitech_16m")) {
+		pr_info("%s: skip probe for %s\n", __func__,
+			slave_info->sensor_name);
+		goto free_camera_info;
+	}
+
 	/*
 	 * Update eeporm subdevice Id by input eeprom name
 	 */

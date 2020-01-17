@@ -26,6 +26,7 @@
 #include <linux/compiler.h>
 #include <linux/blktrace_api.h>
 #include <linux/hrtimer.h>
+#include <linux/version.h>
 
 /*
  * enum row_queue_prio - Priorities of the ROW queues
@@ -275,8 +276,7 @@ static enum hrtimer_restart row_idle_hrtimer_fn(struct hrtimer *hr_timer)
 	if (!rd->nr_reqs[READ] && !rd->nr_reqs[WRITE])
 		row_log(rd->dispatch_queue, "No requests in scheduler");
 	else
-		kblockd_schedule_work(rd->dispatch_queue,
-			&read_data->idle_work);
+		kblockd_schedule_work(&read_data->idle_work);
 	return HRTIMER_NORESTART;
 }
 
@@ -335,7 +335,7 @@ static void row_add_request(struct request_queue *q,
 	list_add_tail(&rq->queuelist, &rqueue->fifo);
 	rd->nr_reqs[rq_data_dir(rq)]++;
 	rqueue->nr_req++;
-	rq_set_fifo_time(rq, jiffies); /* for statistics*/
+	rq->fifo_time = jiffies; /* for statistics*/
 
 	if (rq->cmd_flags & REQ_URGENT) {
 		WARN_ON(1);
@@ -397,6 +397,7 @@ static void row_add_request(struct request_queue *q,
 			"added request (total on queue=%d)", rqueue->nr_req);
 }
 
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(3, 11, 0))
 /**
  * row_reinsert_req() - Reinsert request back to the scheduler
  * @q:	requests queue
@@ -448,6 +449,7 @@ static int row_reinsert_req(struct request_queue *q,
 	}
 	return 0;
 }
+#endif
 
 static void row_completed_req(struct request_queue *q, struct request *rq)
 {
@@ -467,6 +469,7 @@ static void row_completed_req(struct request_queue *q, struct request *rq)
 		(rq_data_dir(rq) == READ ? "READ" : "WRITE"));
 }
 
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(3, 11, 0))
 /**
  * row_urgent_pending() - Return TRUE if there is an urgent
  *			  request on scheduler
@@ -490,6 +493,7 @@ static bool row_urgent_pending(struct request_queue *q)
 	row_log(rd->dispatch_queue, "no urgent request pending/in flight");
 	return false;
 }
+#endif
 
 /**
  * row_remove_request() -  Remove given request from scheduler
@@ -1070,8 +1074,10 @@ static struct elevator_type iosched_row = {
 		.elevator_merge_req_fn		= row_merged_requests,
 		.elevator_dispatch_fn		= row_dispatch_requests,
 		.elevator_add_req_fn		= row_add_request,
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(3, 11, 0))
 		.elevator_reinsert_req_fn	= row_reinsert_req,
 		.elevator_is_urgent_fn		= row_urgent_pending,
+#endif
 		.elevator_completed_req_fn	= row_completed_req,
 		.elevator_former_req_fn		= elv_rb_former_request,
 		.elevator_latter_req_fn		= elv_rb_latter_request,

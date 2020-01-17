@@ -118,6 +118,17 @@ config IOSCHED_ANXIETY
 	  the current processes until they are dispatched. By biasing
 	  and batching synchronous requests, process initialization is
 	  expedited.
+ 
+config IOSCHED_ROW
+	tristate "ROW I/O scheduler"
+	default y
+	---help---
+	  The ROW I/O scheduler gives priority to READ requests over the
+	  WRITE requests when dispatching, without starving WRITE requests.
+	  Requests are kept in priority queues. Dispatching is done in a RR
+	  manner when the dispatch quantum for each queue is calculated
+	  according to queue priority.
+	  Most suitable for mobile devices.
 
 choice
 	prompt "Default I/O scheduler"
@@ -163,6 +174,9 @@ choice
 	config DEFAULT_MAPLE
 		bool "Maple" if IOSCHED_MAPLE=y
 
+	config DEFAULT_ROW
+		bool "ROW" if IOSCHED_ROW=y
+
 endchoice
 
 config DEFAULT_IOSCHED
@@ -177,6 +191,7 @@ config DEFAULT_IOSCHED
 	default "maple" if DEFAULT_MAPLE
 	default "fiops" if DEFAULT_FIOPS
 	default "sio" if DEFAULT_SIO
+	default "row" if DEFAULT_ROW
 
 endmenu
 

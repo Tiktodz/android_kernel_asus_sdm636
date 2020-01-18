@@ -20,15 +20,13 @@ enum FP_MODE{
 #define SUPPORT_NAV_EVENT
 
 #if defined(SUPPORT_NAV_EVENT)
-/* Huaqin add define for fingerprint nav-keycode by leiyu at 2018/04/12 start */
-#define GF_NAV_INPUT_UP			FP_KEY_UP
-#define GF_NAV_INPUT_DOWN		FP_KEY_DOWN
-#define GF_NAV_INPUT_LEFT		FP_KEY_LEFT
-#define GF_NAV_INPUT_RIGHT		FP_KEY_RIGHT
-#define GF_NAV_INPUT_CLICK		FP_KEY_CLICK
-#define GF_NAV_INPUT_DOUBLE_CLICK	FP_KEY_DOUBLE_CLICK
-#define GF_NAV_INPUT_LONG_PRESS		FP_KEY_LONG_PRESS
-/* Huaqin add define for fingerprint nav-keycode by leiyu at 2018/04/12 end */
+#define GF_NAV_INPUT_UP			KEY_UP
+#define GF_NAV_INPUT_DOWN		KEY_DOWN
+#define GF_NAV_INPUT_LEFT		KEY_LEFT
+#define GF_NAV_INPUT_RIGHT		KEY_RIGHT
+#define GF_NAV_INPUT_CLICK		KEY_VOLUMEDOWN
+#define GF_NAV_INPUT_DOUBLE_CLICK	KEY_VOLUMEUP
+#define GF_NAV_INPUT_LONG_PRESS		KEY_SEARCH
 #define GF_NAV_INPUT_HEAVY		KEY_CHAT
 #endif
 

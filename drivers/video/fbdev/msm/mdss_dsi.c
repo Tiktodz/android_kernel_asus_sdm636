@@ -370,11 +370,6 @@ static int mdss_dsi_regulator_init(struct platform_device *pdev,
 	return rc;
 }
 
-#ifdef CONFIG_MACH_ASUS_X00T
-extern void mdss_dsi_panel_cmds_send(struct mdss_dsi_ctrl_pdata *ctrl,
-					struct dsi_panel_cmds *pcmds,
-					u32 flags);
-#endif
 static int mdss_dsi_panel_power_off(struct mdss_panel_data *pdata)
 {
 	int ret = 0;

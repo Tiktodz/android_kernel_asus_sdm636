@@ -3479,8 +3479,8 @@ void smblib_asus_monitor_start(struct smb_charger *chg, int time)
 #define SMBCHG_FLOAT_VOLTAGE_VALUE_4P064		0x4D
 #define SMBCHG_FLOAT_VOLTAGE_VALUE_4P350		0x73
 #define SMBCHG_FLOAT_VOLTAGE_VALUE_4P357		0x74
-#define SMBCHG_FLOAT_VOLTAGE_VALUE_4P385		0x78
-#define SMBCHG_FLOAT_VOLTAGE_VALUE_4P392		0x79
+#define SMBCHG_FLOAT_VOLTAGE_VALUE_4P385		0xF8
+#define SMBCHG_FLOAT_VOLTAGE_VALUE_4P392		0xF9
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_850MA 	0x22
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_925MA 	0x25
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_1400MA 	0x38
@@ -3488,7 +3488,7 @@ void smblib_asus_monitor_start(struct smb_charger *chg, int time)
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_1500MA 	0x3C
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_2000MA 	0x50
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_2050MA 	0x52
-#define SMBCHG_FAST_CHG_CURRENT_VALUE_3000MA 	0x78
+#define SMBCHG_FAST_CHG_CURRENT_VALUE_3000MA 	0xF8
 
 #ifdef CONFIG_MACH_ASUS_X01BD
 #define ASUS_CUSTOM_JEITA_SET_MODIFY
@@ -3572,21 +3572,21 @@ int smbchg_jeita_judge_state(int old_State, int batt_tempr)
 		result_State = JEITA_STATE_RANGE_0_to_100;
 #ifdef ASUS_CUSTOM_JEITA_SET_MODIFY
 	/* 10 <= batt_tempr < 45 */
-	} else if (batt_tempr < 450) {
+	} else if (batt_tempr < 550) {
 		result_State = JEITA_STATE_RANGE_100_to_450;
 	/* 45 <= batt_tempr < 55 */
-	} else if (batt_tempr < 550) {
-		result_State = JEITA_STATE_RANGE_450_to_550;
+	// } else if (batt_tempr < 550) {
+		// result_State = JEITA_STATE_RANGE_450_to_550;
 	/* 55 <= batt_tempr */
 	} else
 		result_State = JEITA_STATE_LARGER_THAN_550;
 #else
 	/* 10 <= batt_tempr < 50 */
-	} else if (batt_tempr < 500) {
+	} else if (batt_tempr < 600) {
 		result_State = JEITA_STATE_RANGE_100_to_500;
 	/* 50 <= batt_tempr < 60 */
-	} else if (batt_tempr < 600) {
-		result_State = JEITA_STATE_RANGE_500_to_600;
+	// } else if (batt_tempr < 600) {
+		// result_State = JEITA_STATE_RANGE_500_to_600;
 	/* 60 <= batt_tempr */
 	} else
 		result_State = JEITA_STATE_LARGER_THAN_600;

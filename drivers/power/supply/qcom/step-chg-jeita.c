@@ -74,7 +74,7 @@ struct step_chg_info {
 
 static struct step_chg_info *the_chip;
 
-#define STEP_CHG_HYSTERISIS_DELAY_US		5000000 /* 5 secs */
+#define STEP_CHG_HYSTERISIS_DELAY_US		10000000 /* 10 secs */
 
 /*
  * Step Charging Configuration
@@ -89,8 +89,8 @@ static struct step_chg_cfg step_chg_config = {
 	.fcc_cfg	= {
 		/* VBAT_LOW	VBAT_HIGH	FCC */
 		{3600000,	4000000,	3000000},
-		{4001000,	4200000,	2800000},
-		{4201000,	4400000,	2000000},
+		{4001000,	4200000,	4800000},
+		{4201000,	4400000,	5000000},
 	},
 	/*
 	 *	SOC STEP-CHG configuration example.
@@ -121,10 +121,10 @@ static struct jeita_fcc_cfg jeita_fcc_config = {
 	.hysteresis	= 10, /* 1degC hysteresis */
 	.fcc_cfg	= {
 		/* TEMP_LOW	TEMP_HIGH	FCC */
-		{0,		100,		600000},
-		{101,		200,		2000000},
-		{201,		450,		3000000},
-		{451,		550,		600000},
+		{0,		100,		2000000},
+		{101,		200,		3000000},
+		{201,		450,		4000000},
+		{451,		550,		5000000},
 	},
 };
 
@@ -135,8 +135,8 @@ static struct jeita_fv_cfg jeita_fv_config = {
 	.fv_cfg		= {
 		/* TEMP_LOW	TEMP_HIGH	FCC */
 		{0,		100,		4200000},
-		{101,		450,		4400000},
-		{451,		550,		4200000},
+		{101,		450,		5400000},
+		{451,		550,		6200000},
 	},
 };
 

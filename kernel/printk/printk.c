@@ -618,6 +618,7 @@ struct devkmsg_user {
 
 static ssize_t devkmsg_write(struct kiocb *iocb, struct iov_iter *from)
 {
+#if 0
 	char *buf, *line;
 	int level = default_message_loglevel;
 	int facility = 1;	/* LOG_USER */
@@ -671,6 +672,9 @@ static ssize_t devkmsg_write(struct kiocb *iocb, struct iov_iter *from)
 ignore:
 	kfree(buf);
 	return ret;
+#else
+	return iov_iter_count(from);
+#endif
 }
 
 static ssize_t devkmsg_read(struct file *file, char __user *buf,

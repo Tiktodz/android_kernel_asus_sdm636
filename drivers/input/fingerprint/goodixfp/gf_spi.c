@@ -537,12 +537,13 @@ static int gf_open(struct inode *inode, struct file *filp)
 				pr_err("failed to request IRQ:%d\n", status);
 				return status;
 			}
-			commonfp_irq_enable();
+			//	commonfp_irq_enable();
 			gf_dev->irq_enabled = 1;
 			commonfp_irq_disable();
-
+		      /*
 			if (gf_dev->users == 1)
-				commonfp_irq_enable();
+				commonfp_irq_enable();	
+		      */
 			gf_hw_reset(gf_dev, 3);
 			gf_dev->device_available = 1;
 		}

@@ -1102,53 +1102,42 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id)
 /* Huaqin add by yuexinghan for gesture mode 20171030 start */
 		case ID_GESTURE_WORD_C:
 			if (get_android_version() < 11) {
-				NVT_LOG("Gesture : Word-C.\n");
 				keycode = gesture_key_array[10];
 			} else if (gesture_mode & MASK_GESTURE_C) {
-				NVT_LOG("Gesture : Word-C.\n");
 				keycode = gesture_key_array[0];
 			}
 			break;
 		case ID_GESTURE_WORD_W:
 			if (get_android_version() < 11) {
-				NVT_LOG("Gesture : Word-W.\n");
 				keycode = gesture_key_array[14];
 			} else if (gesture_mode & MASK_GESTURE_W) {
-				NVT_LOG("Gesture : Word-W.\n");
 				keycode = gesture_key_array[1];
 			}
 			break;
 		case ID_GESTURE_WORD_V:
 			if (get_android_version() < 11) {
-				NVT_LOG("Gesture : Word-V.\n");
 				keycode = gesture_key_array[13];
 			} else if (gesture_mode & MASK_GESTURE_V) {
-				NVT_LOG("Gesture : Word-V.\n");
 				keycode = gesture_key_array[2];
 			}
 			break;
 		case ID_GESTURE_DOUBLE_CLICK:
-				NVT_LOG("Gesture : Double Click.\n");
 				keycode = gesture_key_array[3];
 			break;
 		case ID_GESTURE_WORD_Z:
 			if (get_android_version() < 11) {
-				NVT_LOG("Gesture : Word-Z.\n");
 				keycode = gesture_key_array[15];
 			} else if (gesture_mode & MASK_GESTURE_Z) {
-				NVT_LOG("Gesture : Word-Z.\n");
 				keycode = gesture_key_array[4];
 			}
 			break;
 		case GESTURE_WORD_M:
-			NVT_LOG("Gesture : Word-M.\n");
 			if (get_android_version() < 11) {
 				keycode = gesture_key_array[24];
 			} else
 				keycode = gesture_key_array[5];
 			break;
 		case GESTURE_WORD_O:
-			NVT_LOG("Gesture : Word-O.\n");
 			if (get_android_version() < 11) {
 				keycode = gesture_key_array[25];
 			} else
@@ -1156,47 +1145,38 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id)
 			break;
 		case ID_GESTURE_WORD_e:
 			if (get_android_version() < 11) {
-				NVT_LOG("Gesture : Word-e.\n");
 				keycode = gesture_key_array[11];
 			} else if (gesture_mode & MASK_GESTURE_E) {
-				NVT_LOG("Gesture : Word-e.\n");
 				keycode = gesture_key_array[7];
 			}
 			break;
 		case ID_GESTURE_WORD_S:
 			if (get_android_version() < 11) {
-				NVT_LOG("Gesture : Word-C.\n");
 				keycode = gesture_key_array[12];
 			} else if (gesture_mode & MASK_GESTURE_S) {
-				NVT_LOG("Gesture : Word-S.\n");
 				keycode = gesture_key_array[8];
 			}
 			break;
 		case ID_GESTURE_SLIDE_UP:
 			if (get_android_version() < 11) {
-				NVT_LOG("Gesture : Slide UP.\n");
 				keycode = gesture_key_array[16];
 			} else if (gesture_mode & MASK_GESTURE_SLIDE_UP) {
-				NVT_LOG("Gesture : Slide UP.\n");
 				keycode = gesture_key_array[9];
 			}
 			break;
 		case GESTURE_SLIDE_DOWN:
-			NVT_LOG("Gesture : Slide DOWN.\n");
 			if (get_android_version() < 11) {
 				keycode = gesture_key_array[17];
 			} else
 				keycode = gesture_key_array[21];
 			break;
 		case GESTURE_SLIDE_LEFT:
-			NVT_LOG("Gesture : Slide LEFT.\n");
 			if (get_android_version() < 11) {
 				keycode = gesture_key_array[18];
 			} else
 				keycode = gesture_key_array[22];
 			break;
 		case GESTURE_SLIDE_RIGHT:
-			NVT_LOG("Gesture : Slide RIGHT.\n");
 			if (get_android_version() < 11) {
 				keycode = gesture_key_array[19];
 			} else
@@ -1229,7 +1209,6 @@ static void nvt_parse_dt(struct device *dev)
 	struct device_node *np = dev->of_node;
 
 	ts->irq_gpio = of_get_named_gpio_flags(np, "novatek,irq-gpio", 0, &ts->irq_flags);
-	NVT_LOG("novatek,irq-gpio=%d\n", ts->irq_gpio);
 
 }
 #else
@@ -1549,8 +1528,6 @@ static int8_t nvt_ts_check_chip_ver_trim(void)
 		buf[5] = 0x00;
 		buf[6] = 0x00;
 		CTP_I2C_READ(ts->client, I2C_BLDR_Address, buf, 7);
-		NVT_LOG("buf[1]=0x%02X, buf[2]=0x%02X, buf[3]=0x%02X, buf[4]=0x%02X, buf[5]=0x%02X, buf[6]=0x%02X\n",
-			buf[1], buf[2], buf[3], buf[4], buf[5], buf[6]);
 
 		// compare read chip id on supported list
 		for (list = 0; list < (sizeof(trim_id_table) / sizeof(struct nvt_ts_trim_id_table)); list++) {
@@ -1569,7 +1546,6 @@ static int8_t nvt_ts_check_chip_ver_trim(void)
 			}
 
 			if (found_nvt_chip) {
-				NVT_LOG("This is NVT touch IC\n");
 				ts->mmap = trim_id_table[list].mmap;
 				ts->carrier_system = trim_id_table[list].carrier_system;
 				ret = 0;
@@ -1600,8 +1576,6 @@ static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_i
 #if ((TOUCH_KEY_NUM > 0) || WAKEUP_GESTURE)
 	int32_t retry = 0;
 #endif
-
-	NVT_LOG("start\n");
 
 	ts = kmalloc(sizeof(struct nvt_ts_data), GFP_KERNEL);
 	if (ts == NULL) {
@@ -1743,7 +1717,6 @@ static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_i
 	//---set int-pin & request irq---
 	client->irq = gpio_to_irq(ts->irq_gpio);
 	if (client->irq) {
-		NVT_LOG("int_trigger_type=%d\n", ts->int_trigger_type);
 
 #if WAKEUP_GESTURE
 		ret = request_irq(client->irq, nvt_ts_irq_handler, ts->int_trigger_type | IRQF_NO_SUSPEND, client->name, ts);
@@ -1758,7 +1731,6 @@ static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_i
 			//disable_irq(client->irq);
 			nvt_irq_disable();
 // Huaqin add for ctp lose efficacy by zhengwu.lu. at 2018/04/18 For Platform end
-			NVT_LOG("request irq %d succeed\n", client->irq);
 		}
 	}
 
@@ -1846,7 +1818,6 @@ static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_i
 #endif
 
 	bTouchIsAwake = 1;
-	NVT_LOG("end\n");
 // Huaqin add for ctp lose efficacy by zhengwu.lu. at 2018/04/18 For Platform start
 	//enable_irq(client->irq);
 	nvt_irq_enable();
@@ -1906,8 +1877,6 @@ static int32_t nvt_ts_remove(struct i2c_client *client)
 
 	mutex_destroy(&ts->lock);
 
-	NVT_LOG("Removing driver...\n");
-
 	free_irq(client->irq, ts);
 	input_unregister_device(ts->input_dev);
 	i2c_set_clientdata(client, NULL);
@@ -1924,7 +1893,6 @@ long get_gesture_mode(void)
 
 void set_gesture_mode(long enable)
 {
-	NVT_LOG("%s gesture mode\n", (enable == 0)?"disable":"enable");
 	gesture_mode = enable;
 	return;
 }
@@ -1948,13 +1916,10 @@ static int32_t nvt_ts_suspend(struct device *dev)
 #endif
 
 	if (!bTouchIsAwake) {
-		NVT_LOG("Touch is already suspend\n");
 		return 0;
 	}
 
 	mutex_lock(&ts->lock);
-
-	NVT_LOG("start\n");
 
 	bTouchIsAwake = 0;
 // Huaqin add for esd check function. by zhengwu.lu. at 2018/2/28  start
@@ -1976,7 +1941,6 @@ static int32_t nvt_ts_suspend(struct device *dev)
 		buf[0] = EVENT_MAP_HOST_CMD;
 		buf[1] = 0x11;
 		CTP_I2C_WRITE(ts->client, I2C_FW_Address, buf, 2);
-		NVT_LOG("Enter sleep mode\n");
 	}
 	else {
 		//---write i2c command to enter "wakeup gesture mode"---
@@ -1986,7 +1950,6 @@ static int32_t nvt_ts_suspend(struct device *dev)
 
 		enable_irq_wake(ts->client->irq);
 
-		NVT_LOG("Enter gesture mode\n");
 	}
 	/* Huaqin add by yuexinghan for gesture mode 20171030 end */
 #else // WAKEUP_GESTURE
@@ -2024,14 +1987,10 @@ static int32_t nvt_ts_suspend(struct device *dev)
 // Huaqin add for vsp/vsn. by zhengwu.lu. at 2018/03/07  start
 	if (((gesture_mode & 0x100) == 0) || ((gesture_mode & 0x0FF) == 0)) {
 	nvt_lcm_power_source_ctrl(data, 0);//disable vsp/vsn
-	NVT_LOG("sleep suspend end  disable vsp/vsn\n");
 	}
 	else{
-	NVT_LOG("gesture suspend end not disable vsp/vsn\n");
 	}
 // Huaqin add for vsp/vsn. by zhengwu.lu. at 2018/03/07  end
-
-	NVT_LOG("end\n");
 
 	return 0;
 }
@@ -2050,13 +2009,10 @@ static int32_t nvt_ts_resume(struct device *dev)
 	nvt_lcm_power_source_ctrl(data, 1);//enable vsp/vsn
 // Huaqin add for vsp/vsn. by zhengwu.lu. at 2018/03/07  end
 	if (bTouchIsAwake) {
-		NVT_LOG("Touch is already resume\n");
 		return 0;
 	}
 
 	mutex_lock(&ts->lock);
-
-	NVT_LOG("start\n");
 
 	// please make sure display reset(RESX) sequence and mipi dsi cmds sent before this
 	nvt_bootloader_reset();
@@ -2076,8 +2032,6 @@ static int32_t nvt_ts_resume(struct device *dev)
 	bTouchIsAwake = 1;
 
 	mutex_unlock(&ts->lock);
-
-	NVT_LOG("end\n");
 
 	return 0;
 }
@@ -2196,7 +2150,6 @@ static int32_t __init nvt_driver_init(void)
 {
 	int32_t ret = 0;
 
-	NVT_LOG("start\n");
 	//---add i2c driver---
 	ret = i2c_add_driver(&nvt_i2c_driver);
 	if (ret) {

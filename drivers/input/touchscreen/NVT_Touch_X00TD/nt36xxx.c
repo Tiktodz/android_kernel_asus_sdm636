@@ -1085,32 +1085,27 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id)
 /* Huaqin add by yuexinghan for gesture mode 20171030 start */
 		case ID_GESTURE_WORD_C:
 			if (letter_c_state) {
-				NVT_LOG("Gesture : Word-C.\n");
 				keycode = gesture_key_array[0];
 			}
 			break;
 		case ID_GESTURE_WORD_W:
 			if (letter_w_state) {
-				NVT_LOG("Gesture : Word-W.\n");
 				keycode = gesture_key_array[1];
 			}
 			break;
 		case ID_GESTURE_WORD_V:
 			if (letter_v_state) {
-				NVT_LOG("Gesture : Word-V.\n");
 				keycode = gesture_key_array[2];
 			}
 			break;
 		case ID_GESTURE_DOUBLE_CLICK:
 			if (double_tap_state) {
 				is_double_tap = 1;
-				NVT_LOG("Gesture : Double Click.\n");
 				keycode = gesture_key_array[3];
 			}
 			break;
 		case ID_GESTURE_WORD_Z:
 			if (letter_z_state) {
-				NVT_LOG("Gesture : Word-Z.\n");
 				keycode = gesture_key_array[4];
 			}
 			break;
@@ -1119,24 +1114,20 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id)
 			keycode = gesture_key_array[5];
 			break;
 		case GESTURE_WORD_O:
-			NVT_LOG("Gesture : Word-O.\n");
 			keycode = gesture_key_array[6];
 			break; */
 		case ID_GESTURE_WORD_e:
 			if (letter_e_state) {
-				NVT_LOG("Gesture : Word-e.\n");
 				keycode = gesture_key_array[7];
 			}
 			break;
 		case ID_GESTURE_WORD_S:
 			if (letter_s_state) {
-				NVT_LOG("Gesture : Word-S.\n");
 				keycode = gesture_key_array[8];
 			}
 			break;
 		case ID_GESTURE_SLIDE_UP:
 			if (up_swipe_state) {
-				NVT_LOG("Gesture : Slide UP.\n");
 				keycode = gesture_key_array[9];
 			}
 			break;
@@ -1160,7 +1151,6 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id)
 			break; */
 /* Huaqin add by yuexinghan for gesture mode 20171030 end */
 		default:
-			NVT_LOG("Still in gesture mode.\n");
 			break;
 	}
 
@@ -1172,7 +1162,6 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id)
 			input_sync(ts->input_dev);
 			is_double_tap = 0;
 		} else {
-			NVT_LOG("[NVT-ts] : gesture key code = %d\n", keycode);
 			input_report_key(ts->input_dev, keycode, 1);
 			input_sync(ts->input_dev);
 			input_report_key(ts->input_dev, keycode, 0);
@@ -1907,8 +1896,6 @@ static int32_t nvt_ts_suspend(struct device *dev)
 
 	mutex_lock(&ts->lock);
 
-	NVT_LOG("start\n");
-
 	bTouchIsAwake = 0;
 // Huaqin add for esd check function. by zhengwu.lu. at 2018/2/28  start
 #if NVT_TOUCH_ESD_PROTECT
@@ -1930,7 +1917,6 @@ static int32_t nvt_ts_suspend(struct device *dev)
 		buf[0] = EVENT_MAP_HOST_CMD;
 		buf[1] = 0x11;
 		CTP_I2C_WRITE(ts->client, I2C_FW_Address, buf, 2);
-		NVT_LOG("Enter sleep mode\n");
 	}
 	else {
 		//---write i2c command to enter "wakeup gesture mode"---
@@ -1940,7 +1926,6 @@ static int32_t nvt_ts_suspend(struct device *dev)
 
 		enable_irq_wake(ts->client->irq);
 
-		NVT_LOG("Enter gesture mode\n");
 	}
 	/* Huaqin add by yuexinghan for gesture mode 20171030 end */
 #else // WAKEUP_GESTURE
@@ -1979,14 +1964,7 @@ static int32_t nvt_ts_suspend(struct device *dev)
 	if (!double_tap_state && !letter_c_state && !letter_e_state && !letter_s_state 
             && !letter_v_state && !letter_w_state && !letter_z_state && !up_swipe_state) {
 	nvt_lcm_power_source_ctrl(data, 0);//disable vsp/vsn
-	NVT_LOG("sleep suspend end  disable vsp/vsn\n");
 	}
-	else{
-	NVT_LOG("gesture suspend end not disable vsp/vsn\n");
-	}
-// Huaqin add for vsp/vsn. by zhengwu.lu. at 2018/03/07  end
-
-	NVT_LOG("end\n");
 
 	return 0;
 }
@@ -2011,7 +1989,6 @@ static int32_t nvt_ts_resume(struct device *dev)
 
 	mutex_lock(&ts->lock);
 
-	NVT_LOG("start\n");
 
 	// please make sure display reset(RESX) sequence and mipi dsi cmds sent before this
 	nvt_bootloader_reset();
@@ -2031,8 +2008,6 @@ static int32_t nvt_ts_resume(struct device *dev)
 	bTouchIsAwake = 1;
 
 	mutex_unlock(&ts->lock);
-
-	NVT_LOG("end\n");
 
 	return 0;
 }

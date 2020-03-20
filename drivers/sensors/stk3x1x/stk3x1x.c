@@ -1071,7 +1071,7 @@ static void stk_ps_report(struct stk3x1x_data *ps_data, int nf)
 	input_event(ps_data->ps_input_dev, EV_SYN, SYN_REPORT,0);
 #endif
 	input_sync(ps_data->ps_input_dev);
-	wake_lock_timeout(&ps_data->ps_wakelock, 3*HZ);
+	wake_lock_timeout(&ps_data->ps_wakelock, msecs_to_jiffies(20));
 }
 
 static void stk_als_report(struct stk3x1x_data *ps_data, int als)

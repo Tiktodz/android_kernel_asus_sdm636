@@ -105,3 +105,7 @@ obj-$(CONFIG_PROCESS_RECLAIM)	+= process_reclaim.o
 obj-$(CONFIG_HARDENED_USERCOPY) += usercopy.o
 
 CFLAGS_kmemleak.o += -DCONFIG_DEBUG_FS
+
+# Squeeze a little bit more juice
+ccflags-y += $(call cc-option, -g0)
+ccflags-y += $(call cc-option, -Os)

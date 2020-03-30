@@ -1049,6 +1049,12 @@ static int fg_get_batt_profile(struct fg_chip *chip)
 		return -ENODATA;
 	}
 
+	data = of_get_property(profile_node, "qcom,fg-profile-data", &len);
+	if (!data) {
+		pr_err("No profile data available\n");
+		return -ENODATA;
+	}
+
 	if (len != PROFILE_LEN) {
 		pr_err("battery profile incorrect size: %d\n", len);
 		return -EINVAL;

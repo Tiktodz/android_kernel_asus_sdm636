@@ -664,14 +664,18 @@
 #define BTN_TRIGGER_HAPPY40		0x2e7
 
 #ifdef CONFIG_MACH_ASUS_SDM660
-#define KEY_TP_GESTURE_SWIPE_UP		0x2F6
-#define KEY_TP_GESTURE_DOUBLE_CLICK	0x2F7
-#define KEY_TP_GESTURE_C		0x2F0
-#define KEY_TP_GESTURE_E		0x2ED
-#define KEY_TP_GESTURE_S		0x2EE
-#define KEY_TP_GESTURE_V		0x2F1
-#define KEY_TP_GESTURE_W		0x2EC
-#define KEY_TP_GESTURE_Z		0x2EF
+#define KEY_TP_GESTURE_C		748
+#define KEY_TP_GESTURE_E		749
+#define KEY_TP_GESTURE_M		750
+#define KEY_TP_GESTURE_O		751
+#define KEY_TP_GESTURE_S		752
+#define KEY_TP_GESTURE_V		753
+#define KEY_TP_GESTURE_W		754
+#define KEY_TP_GESTURE_Z		755
+#define KEY_TP_GESTURE_SWIPE_UP		756
+#define KEY_TP_GESTURE_SWIPE_DOWN	757
+#define KEY_TP_GESTURE_SWIPE_LEFT	758
+#define KEY_TP_GESTURE_SWIPE_RIGHT	759
 #endif
 
 /* We avoid low common keys in module aliases so they don't get huge. */

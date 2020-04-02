@@ -2656,7 +2656,7 @@ int smblib_get_prop_die_health(struct smb_charger *chg,
 #ifdef CONFIG_MACH_ASUS_X00T
 #define DCP_CURRENT_UA			500000
 #else
-#define DCP_CURRENT_UA			1500000
+#define DCP_CURRENT_UA			2100000
 #endif
 #define HVDCP_CURRENT_UA		3000000
 #define TYPEC_DEFAULT_CURRENT_UA	900000

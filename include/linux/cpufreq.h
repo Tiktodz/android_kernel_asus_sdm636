@@ -542,6 +542,12 @@ extern struct cpufreq_governor cpufreq_gov_blu_active;
 #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_NEBULA)
 extern struct cpufreq_governor cpufreq_gov_nebula;
 #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_nebula)
+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_INTERACTIVEX)
+extern struct cpufreq_governor cpufreq_gov_interactivex;
+#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_interactivex)
+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_INTELLIACTIVE)
+extern struct cpufreq_governor cpufreq_gov_intelliactive;
+#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_intelliactive)
 #endif
 
 static inline void cpufreq_policy_apply_limits(struct cpufreq_policy *policy)

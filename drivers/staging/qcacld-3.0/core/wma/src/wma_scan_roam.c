@@ -1209,6 +1209,7 @@ static const char *wma_roam_notif_to_string(uint32_t notif)
 		return "unknown";
 	}
 }
+#endif
 
 /**
  * wma_roam_scan_offload_scan_period() - set roam offload scan period

@@ -3348,7 +3348,7 @@ static int msm_internal_init(struct platform_device *pdev,
 	atomic_set(&pdata->int_mclk0_rsc_ref, 0);
 	atomic_set(&pdata->int_mclk0_enabled, false);
 
-	dev_info(&pdev->dev, "%s: default codec configured\n", __func__);
+	dev_dbg(&pdev->dev, "%s: default codec configured\n", __func__);
 
 	return 0;
 err:

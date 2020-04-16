@@ -302,4 +302,11 @@ config DYNAMIC_FSYNC
 	help
 	  An experimental file sync control using new power_suspend driver 
 
+config DYNAMIC_FSYNC_SYSCHANGES_SYNC
+	bool "dynamic file sync - force sync on reboot/panic/power off"
+	depends on DYNAMIC_FSYNC
+	default n
+	help
+	  An experimental file sync control using new power_suspend driver
+
 endmenu

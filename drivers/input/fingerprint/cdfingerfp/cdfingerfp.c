@@ -84,13 +84,13 @@ struct cdfinger_key_map {
 
 /*if want change key value for event , do it*/
 /* Huaqin add define for fingerprint nav-keycode by leiyu at 2018/04/12 start */
-#define CF_NAV_INPUT_UP						FP_KEY_UP
-#define CF_NAV_INPUT_DOWN					FP_KEY_DOWN
-#define CF_NAV_INPUT_LEFT					FP_KEY_LEFT
-#define CF_NAV_INPUT_RIGHT					FP_KEY_RIGHT
-#define CF_NAV_INPUT_CLICK					FP_KEY_CLICK
-#define CF_NAV_INPUT_DOUBLE_CLICK			FP_KEY_DOUBLE_CLICK
-#define CF_NAV_INPUT_LONG_PRESS				FP_KEY_LONG_PRESS
+#define CF_NAV_INPUT_UP						KEY_UP
+#define CF_NAV_INPUT_DOWN					KEY_DOWN
+#define CF_NAV_INPUT_LEFT					KEY_LEFT
+#define CF_NAV_INPUT_RIGHT					KEY_RIGHT
+#define CF_NAV_INPUT_CLICK					KEY_VOLUMEDOWN
+#define CF_NAV_INPUT_DOUBLE_CLICK			KEY_VOLUMEUP
+#define CF_NAV_INPUT_LONG_PRESS				KEY_SEARCH
 /* Huaqin add define for fingerprint nav-keycode by leiyu at 2018/04/12 start */
 #define CF_KEY_INPUT_HOME					KEY_HOME
 #define CF_KEY_INPUT_MENU					KEY_MENU

@@ -664,7 +664,7 @@ static int cpuidle_latency_notify(struct notifier_block *b,
 
 	/* Notifier is called with preemption disabled */
 	if (update_mask)
-		arch_send_call_function_ipi_mask(to_cpumask(&update_mask));
+		arch_send_wakeup_ipi_mask(to_cpumask(&update_mask));
 	return NOTIFY_OK;
 }
 

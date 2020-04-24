@@ -40,7 +40,7 @@
 #include <linux/fb.h>
 #include <linux/pm_qos.h>
 #include <linux/cpufreq.h>
-// #include <linux/wakelock.h>
+#include <linux/pm.h>
 #include "gf_spi.h"
 
 #include "../common/fingerprint_common.h"
@@ -251,6 +251,8 @@ static int gfspi_ioctl_clk_uninit(struct gf_dev *data)
 }
 #endif
 
+#if defined(SUPPORT_NAV_EVENT)
+
 static void nav_event_input(struct gf_dev *gf_dev, gf_nav_event_t nav_event)
 {
 	uint32_t nav_input = 0;
@@ -317,6 +319,7 @@ static void nav_event_input(struct gf_dev *gf_dev, gf_nav_event_t nav_event)
 	}
 }
 
+#endif
 
 static void gf_kernel_key_input(struct gf_dev *gf_dev, struct gf_key *gf_key)
 {
@@ -500,55 +503,58 @@ static irqreturn_t gf_irq(int irq, void *handle)
 	if (gf_dev->async)
 		kill_fasync(&gf_dev->async, SIGIO, POLL_IN);
 #endif
-
 	return IRQ_HANDLED;
 }
 
 static int gf_open(struct inode *inode, struct file *filp)
 {
-	struct gf_dev *gf_dev;
+	struct gf_dev *gf_dev = &gf;
 	int status = -ENXIO;
 
 	mutex_lock(&device_list_lock);
 
 	list_for_each_entry(gf_dev, &device_list, device_entry) {
 		if (gf_dev->devt == inode->i_rdev) {
-			pr_info("Found\n");
+			pr_info("Goodix fingerprint found\n");
 			status = 0;
 			break;
 		}
 	}
 
-	gf_power_on(gf_dev);
 
 	if (status == 0) {
 		if (status == 0) {
+
 			gf_dev->users++;
+	  		pr_info("users=%d\n", gf_dev->users);
+
 			filp->private_data = gf_dev;
 			nonseekable_open(inode, filp);
-			pr_info("Succeed to open device. irq = %d\n",
-					gf_dev->irq);
+
 
 			status = commonfp_request_irq(NULL,gf_irq,
-			IRQF_TRIGGER_RISING | IRQF_ONESHOT,
-			"gf", gf_dev);
+			IRQF_TRIGGER_RISING | IRQF_ONESHOT, "gf", gf_dev);
 
 			if (status) {
-				pr_err("failed to request IRQ:%d\n", status);
+				pr_err("gf_spi: failed to request IRQ, status:%d\n", status);
 				return status;
+
 			}
-			//	commonfp_irq_enable();
+
 			gf_dev->irq_enabled = 1;
-			commonfp_irq_disable();
-		      /*
-			if (gf_dev->users == 1)
-				commonfp_irq_enable();	
-		      */
-			gf_hw_reset(gf_dev, 3);
-			gf_dev->device_available = 1;
-		}
+			enable_irq_wake(gf_dev->irq);
+			commonfp_irq_disable_no_wake();
+
+			if (gf_dev->users == 1) {
+				commonfp_irq_enable();
+				enable_irq_wake(gf_dev->irq);
+				}
+
+		gf_hw_reset(gf_dev, 3);
+	 }	
+
 	} else {
-		pr_info("No device for minor %d\n", iminor(inode));
+		pr_info("No Goodix device for minor %d\n", iminor(inode));
 	}
 	mutex_unlock(&device_list_lock);
 	return status;
@@ -578,12 +584,10 @@ static int gf_release(struct inode *inode, struct file *filp)
 	/*last close?? */
 	gf_dev->users--;
 	if (!gf_dev->users) {
-
-		pr_info("disble_irq. irq = %d\n", gf_dev->irq);
-		commonfp_irq_disable();
+		commonfp_irq_disable_no_wake();
+		gf_dev->device_available = 0;
 		commonfp_free_irq(gf_dev);
 		/*power off the sensor*/
-		gf_dev->device_available = 0;
 		gf_power_off(gf_dev);
 	}
 	mutex_unlock(&device_list_lock);
@@ -626,6 +630,10 @@ static int goodix_fb_state_chg_callback(struct notifier_block *nb,
 		case FB_BLANK_POWERDOWN:
 			if (gf_dev->device_available == 1) {
 				gf_dev->fb_black = 1;
+				/* Disable IRQ when screen turns off,
+				 * only if proximity sensor is covered */
+				if (gf_dev->proximity_state)
+					commonfp_irq_disable_no_wake();
 #if defined(GF_NETLINK_ENABLE)
 				temp = GF_NET_EVENT_FB_BLACK;
 				sendnlmsg(&temp);
@@ -637,8 +645,11 @@ static int goodix_fb_state_chg_callback(struct notifier_block *nb,
 			}
 			break;
 		case FB_BLANK_UNBLANK:
+		case FB_BLANK_NORMAL:
 			if (gf_dev->device_available == 1) {
 				gf_dev->fb_black = 0;
+				/* Unconditionally enable IRQ when screen turns on */
+				commonfp_irq_enable();
 #if defined(GF_NETLINK_ENABLE)
 				temp = GF_NET_EVENT_FB_UNBLACK;
 				sendnlmsg(&temp);
@@ -659,6 +670,41 @@ static int goodix_fb_state_chg_callback(struct notifier_block *nb,
 
 static struct notifier_block goodix_noti_block = {
 	.notifier_call = goodix_fb_state_chg_callback,
+};
+
+static ssize_t proximity_state_set(struct device *dev,
+	struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct gf_dev *gf_dev = dev_get_drvdata(dev);
+	int rc, val;
+
+	rc = kstrtoint(buf, 10, &val);
+	if (rc)
+		return -EINVAL;
+
+	gf_dev->proximity_state = !!val;
+
+	if (gf_dev->fb_black) {
+		if (gf_dev->proximity_state) {
+			/* Disable IRQ when screen is off and proximity sensor is covered */
+			commonfp_irq_disable_no_wake();
+		} else {
+			/* Enable IRQ when screen is off and proximity sensor is uncovered */
+			commonfp_irq_enable();
+		}
+	}
+
+	return count;
+}
+static DEVICE_ATTR(proximity_state, S_IWUSR, NULL, proximity_state_set);
+
+static struct attribute *attrs[] = {
+	&dev_attr_proximity_state.attr,
+	NULL
+};
+
+static const struct attribute_group attr_group = {
+	.attrs = attrs,
 };
 
 static struct class *gf_class;
@@ -750,9 +796,24 @@ static int gf_probe(struct platform_device *pdev)
 
 	gf_dev->notifier = goodix_noti_block;
 	fb_register_client(&gf_dev->notifier);
+
 #ifndef USE_COMMON_FP
 	gf_dev->irq = gf_irq_num(gf_dev);
 #endif
+
+
+	dev_set_drvdata(&gf_dev->spi->dev, gf_dev);
+
+	status = sysfs_create_group(&gf_dev->spi->dev.kobj, &attr_group);
+	if (status) {
+		pr_err("%s: Failed to create sysfs\n", __func__);
+#ifdef AP_CONTROL_CLK
+		goto gfspi_probe_clk_enable_failed;
+#else
+		goto error_sysfs;
+#endif
+	}
+
 	wakeup_source_init(&fp_wakelock, "fp_wakelock");
 
 
@@ -765,6 +826,9 @@ gfspi_probe_clk_enable_failed:
 	gfspi_ioctl_clk_uninit(gf_dev);
 gfspi_probe_clk_init_failed:
 #endif
+
+error_sysfs:
+	input_unregister_device(gf_dev->input);
 
 error_input:
 	if (gf_dev->input != NULL)
@@ -810,6 +874,7 @@ static int gf_remove(struct platform_device *pdev)
 	if (gf_dev->users == 0)
 		//gf_cleanup(gf_dev);
 
+	sysfs_remove_group(&gf_dev->spi->dev.kobj, &attr_group);
 
 	fb_unregister_client(&gf_dev->notifier);
 	mutex_unlock(&device_list_lock);

@@ -139,6 +139,8 @@ struct gf_dev {
 	struct notifier_block notifier;
 	char device_available;
 	char fb_black;
+	bool proximity_state; /* 0:far 1:near */
+
 };
 
 int gf_parse_dts(struct gf_dev* gf_dev);

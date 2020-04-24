@@ -40,9 +40,6 @@
 #include <linux/regulator/consumer.h>
 #include <linux/fb.h>
 #include <linux/notifier.h>
-/* Huaqin modify for cpu_boost by leiyu at 2018/04/25 start */
-#include <linux/sched.h>
-/* Huaqin modify for cpu_boost by leiyu at 2018/04/25 end */
 #include "../common/fingerprint_common.h"
 
 typedef struct key_report {
@@ -477,7 +474,9 @@ static void cdfinger_enable_irq(struct cdfingerfp_data *pdata)
 {
 	if (pdata->irq_enable_status == 0)
 	{
-		commonfp_irq_enable();
+//		commonfp_irq_enable();
+		enable_irq(gpio_to_irq(pdata->irq_num));
+		enable_irq_wake(gpio_to_irq(pdata->irq_num));
 		pdata->irq_enable_status = 1;
 	}
 }
@@ -486,7 +485,9 @@ static void cdfinger_disable_irq(struct cdfingerfp_data *pdata)
 {
 	if (pdata->irq_enable_status == 1)
 	{
-		commonfp_irq_disable();
+//		commonfp_irq_disable();
+		disable_irq(gpio_to_irq(pdata->irq_num));
+		disable_irq_wake(gpio_to_irq(pdata->irq_num));
 		pdata->irq_enable_status = 0;
 	}
 }

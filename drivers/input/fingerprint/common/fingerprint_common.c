@@ -19,6 +19,7 @@
 #include <linux/of_irq.h>
 #include <linux/platform_device.h>
 #include <linux/string.h>
+#include <linux/wakelock.h>
 
 #include "fingerprint_common.h"
 
@@ -89,7 +90,7 @@ exit:
 	pr_err("power on failed, ret: %d\n", ret);*/
 
 	gpio_direction_output(fp_g.pwr_gpio, 1);
-	pr_info("power on OK!!!\n");
+	pr_info("commonfp: power on OK!!!\n");
 	return ret;
 }
 
@@ -109,7 +110,7 @@ exit:
 	return ret;*/
 
 	//gpio_direction_output(fp_g.pwr_gpio, 0);
-	pr_info("power off OK !!!\n");
+	pr_info("commonfp: power off OK !!!\n");
 	return 0;
 }
 
@@ -150,31 +151,30 @@ exit:
 	return ret;
 }
 
-/* Huaqin modify for ZQL1650-143 by wangxiang at 2018/02/09 start */
 int commonfp_request_irq(irq_handler_t handler, irq_handler_t thread_fn, unsigned long flags,
 	    const char *name, void *dev)
-/* Huaqin modify for ZQL1650-143 by wangxiang at 2018/02/09 end */
 {
 	int ret = -EINVAL;
-/* Huaqin modify for ZQL1650-143 by wangxiang at 2018/02/09 start */
 	if(handler == NULL && thread_fn == NULL)
-/* Huaqin modify for ZQL1650-143 by wangxiang at 2018/02/09 end */
 		return ret;
 	if(irq_flag == 1)
 	{
 		ret = 0;
-		pr_info("irq has been requested\n");
+		pr_info("commonfp: irq has been requested\n");
 		return ret;
 	}
-/* Huaqin modify for ZQL1650-143 by wangxiang at 2018/02/09 start */
+
 	ret = request_threaded_irq(fp_g.irq_num,handler,thread_fn,flags,name,dev);
-/* Huaqin modify for ZQL1650-143 by wangxiang at 2018/02/09 end */
+
 	if(ret){
-		pr_err("commonfp request irq failed, error number is %d, irq = %d\n",
+		pr_err("commonfp: request irq failed, error number is %d, irq = %d\n",
 			ret, fp_g.irq_num);
 	}
 
 	irq_flag = 1;
+
+	pr_info("commonfp: succeed to open device. IRQ = %d\n", fp_g.irq_num);
+
 	return ret;
 }
 
@@ -182,12 +182,12 @@ void commonfp_free_irq(void *dev_id)
 {
 	if(irq_flag == 0)
 	{
-		pr_info("irq has been freed\n");
+		pr_info("commonfp: irq has been freed\n");
 		return;
 	}
 	free_irq(fp_g.irq_num,dev_id);
 	irq_flag = 0;
-	pr_info("commonfp free_irq SUCCESS\n");
+	pr_info("commonfp: free_irq SUCCESS. irq = %d\n", fp_g.irq_num);
 
 }
 
@@ -199,14 +199,23 @@ void commonfp_irq_enable(void)
 		enable_irq_wake(fp_g.irq_num);
 	}
 }
+
 void commonfp_irq_disable(void)
 {
 	if(atomic_cmpxchg(&irq_sync,1,0))
 	{
 		disable_irq_wake(fp_g.irq_num);
 		disable_irq(fp_g.irq_num);
+
 	}
 }
+
+void commonfp_irq_disable_no_wake(void)
+{
+		disable_irq(fp_g.irq_num);
+		pr_info("commonfp: no_wake_disable_irq. irq = %d\n", fp_g.irq_num);
+}
+
 
 
 /*it has been checked in the probe follow
@@ -258,10 +267,10 @@ static int fp_common_probe(struct platform_device *pdev)
 		fp_g.states[i] = state;
 		ret = pinctrl_select_state(fp_g.fp_pinctrl,fp_g.states[i]);
 		if(ret){
-			pr_err("can not select state %s\n",
+			pr_err("commonfp: can not select state %s\n",
 				pinctrl_names[i]);
 		}else{
-			pr_err("select state %s OK !!!\n",
+			pr_info("commonfp: select state %s OK !!!\n",
 				pinctrl_names[i]);
 		}
 	}
@@ -272,7 +281,7 @@ static int fp_common_probe(struct platform_device *pdev)
 	if(ret){
 		pr_err("can not select commonfp_irq_active state\n");
 	}else{
-		pr_err("select commonfp_irq_active state OK !!!\n");
+		pr_info("select commonfp_irq_active state OK !!!\n");
 	}
 
 	//add for 1650 power
@@ -281,7 +290,9 @@ static int fp_common_probe(struct platform_device *pdev)
 	if(ret) {
 		pr_err("Failed to request pm660l  GPIO(5). err = %d\n", ret);
 		return -1;
-	}
+	} else {
+		pr_info("commonfp_power: request pm660l GPIO(5) state OK !!!\n");	
+	       }
 
 #else
 	fp_g.irq_gpio = of_get_named_gpio(np,"common,gpio_irq",0);
@@ -301,13 +312,13 @@ static int fp_common_probe(struct platform_device *pdev)
 
 	ret = devm_gpio_request(dev, fp_g.irq_gpio, "commonfp,gpio_irq");
 	if (ret) {
-		pr_err("failed to request irq gpio %d\n", fp_g.irq_gpio);
+		pr_err("commonfp: failed to request irq gpio %d\n", fp_g.irq_gpio);
 		return -1;
 	}
 
 	ret = devm_gpio_request(dev, fp_g.rst_gpio, "commonfp,gpio_rst");
 	if (ret) {
-		pr_err("failed to request rst gpio %d\n", fp_g.rst_gpio);
+		pr_err("commonfp: failed to request rst gpio %d\n", fp_g.rst_gpio);
 		goto error;
 	}
 
@@ -317,7 +328,7 @@ static int fp_common_probe(struct platform_device *pdev)
 
 	irq_flag = 0;
 
-	pr_err("fp_common_probe probe OK\n");
+	pr_info("fp_common_probe probe OK\n");
 
 	return 0;
 
@@ -377,7 +388,7 @@ static int __init fingerprint_resource_init(void)
 		pr_err("commonfp: register common fingerprint platform driver failed: %d\n",ret);
 		return ret;
 	}
-	pr_info("commonfp fingerpint init OK!!!, ret = %d\n", ret);
+	pr_info("commonfp: fingerpint init OK!!!, status = %d\n", ret);
 
 	return ret;
 }

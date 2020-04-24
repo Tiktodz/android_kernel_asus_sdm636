@@ -47,7 +47,8 @@ int commonfp_request_irq(irq_handler_t handler, irq_handler_t thread_fn, unsigne
 	    const char *name, void *dev);
 /* Huaqin modify for ZQL1650-143 by wangxiang at 2018/02/09 end */
 void commonfp_free_irq(void *dev_id);
-void commonfp_irq_enable(void);
-void commonfp_irq_disable(void);
 
+void commonfp_irq_disable(void);
+void commonfp_irq_disable_no_wake(void);
+void commonfp_irq_enable(void);
 

@@ -1815,12 +1815,10 @@ static int smb2_init_hw(struct smb2 *chip)
 		}
 	}
 
-	if (chg->sw_jeita_enabled) {
-		rc = smblib_disable_hw_jeita(chg, true);
-		if (rc < 0) {
-			dev_err(chg->dev, "Couldn't set hw jeita rc=%d\n", rc);
-			return rc;
-		}
+	rc = smblib_disable_hw_jeita(chg, true);
+	if (rc < 0) {
+		dev_err(chg->dev, "Couldn't set hw jeita rc=%d\n", rc);
+		return rc;
 	}
 
 	return rc;

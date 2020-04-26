@@ -44,6 +44,10 @@
 #include <linux/fastchg.h>
 #endif
 
+static bool const_icl_enable = true;
+module_param(const_icl_enable, bool, 0644);
+#define CONST_ICL_UA 2500000
+
 #define smblib_err(chg, fmt, ...)		\
 	pr_err("%s: %s: " fmt, chg->name,	\
 		__func__, ##__VA_ARGS__)	\
@@ -2173,16 +2177,22 @@ int smblib_rerun_aicl(struct smb_charger *chg)
 		return rc;
 
 	smblib_dbg(chg, PR_MISC, "re-running AICL\n");
-	rc = smblib_get_charge_param(chg, &chg->param.icl_stat,
-			&settled_icl_ua);
-	if (rc < 0) {
-		smblib_err(chg, "Couldn't get settled ICL rc=%d\n", rc);
-		return rc;
+
+	if (const_icl_enable) {
+		vote(chg->usb_icl_votable, AICL_RERUN_VOTER, true, CONST_ICL_UA);
+	} else {
+		rc = smblib_get_charge_param(chg, &chg->param.icl_stat,
+				&settled_icl_ua);
+		if (rc < 0) {
+			smblib_err(chg, "Couldn't get settled ICL rc=%d\n", rc);
+			return rc;
+		}
+
+		vote(chg->usb_icl_votable, AICL_RERUN_VOTER, true,
+				max(settled_icl_ua - chg->param.usb_icl.step_u,
+				chg->param.usb_icl.step_u));
 	}
 
-	vote(chg->usb_icl_votable, AICL_RERUN_VOTER, true,
-			max(settled_icl_ua - chg->param.usb_icl.step_u,
-				chg->param.usb_icl.step_u));
 	vote(chg->usb_icl_votable, AICL_RERUN_VOTER, false, 0);
 
 	return 0;
@@ -2642,6 +2652,9 @@ int smblib_get_prop_pd_allowed(struct smb_charger *chg,
 int smblib_get_prop_input_current_settled(struct smb_charger *chg,
 					  union power_supply_propval *val)
 {
+	if (const_icl_enable) {
+		return CONST_ICL_UA;
+	}
 	return smblib_get_charge_param(chg, &chg->param.icl_stat, &val->intval);
 }
 
@@ -4551,17 +4564,18 @@ irqreturn_t smblib_handle_icl_change(int irq, void *data)
 			return IRQ_HANDLED;
 		}
 
-		rc = smblib_get_charge_param(chg, &chg->param.icl_stat,
-				&settled_ua);
-		if (rc < 0) {
-			smblib_err(chg, "Couldn't get ICL status rc=%d\n", rc);
-			return IRQ_HANDLED;
-		}
-
-		/* If AICL settled then schedule work now */
-		if ((settled_ua == get_effective_result(chg->usb_icl_votable))
-				|| (stat & AICL_DONE_BIT))
-			delay = 0;
+		if (!const_icl_enable) {
+			rc = smblib_get_charge_param(chg, &chg->param.icl_stat,
+					&settled_ua);
+			if (rc < 0) {
+				smblib_err(chg, "Couldn't get ICL status rc=%d\n", rc);
+				return IRQ_HANDLED;
+			}
+			/* If AICL settled then schedule work now */
+			if ((settled_ua == get_effective_result(chg->usb_icl_votable))
+					|| (stat & AICL_DONE_BIT))
+				delay = 0;
+		}	
 
 		cancel_delayed_work_sync(&chg->icl_change_work);
 		schedule_delayed_work(&chg->icl_change_work,
@@ -5912,10 +5926,14 @@ static void smblib_icl_change_work(struct work_struct *work)
 							icl_change_work.work);
 	int rc, settled_ua;
 
-	rc = smblib_get_charge_param(chg, &chg->param.icl_stat, &settled_ua);
-	if (rc < 0) {
-		smblib_err(chg, "Couldn't get ICL status rc=%d\n", rc);
-		return;
+	if (const_icl_enable) {
+		settled_ua = CONST_ICL_UA;
+	} else {
+		rc = smblib_get_charge_param(chg, &chg->param.icl_stat, &settled_ua);
+		if (rc < 0) {
+			smblib_err(chg, "Couldn't get ICL status rc=%d\n", rc);
+			return;
+		}
 	}
 
 	power_supply_changed(chg->usb_main_psy);

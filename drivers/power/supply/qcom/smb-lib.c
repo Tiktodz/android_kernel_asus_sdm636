@@ -326,7 +326,7 @@ static const struct apsd_result *smblib_get_apsd_result(struct smb_charger *chg)
 {
 	int rc, i;
 	u8 apsd_stat, stat;
-	const struct apsd_result *result = &smblib_apsd_results[UNKNOWN];
+	const struct apsd_result *result = &smblib_apsd_results[DCP];
 
 	rc = smblib_read(chg, APSD_STATUS_REG, &apsd_stat);
 	if (rc < 0) {
@@ -356,6 +356,23 @@ static const struct apsd_result *smblib_get_apsd_result(struct smb_charger *chg)
 		if (result != &smblib_apsd_results[HVDCP3])
 			result = &smblib_apsd_results[HVDCP2];
 	}
+
+	if (apsd_stat & DCP_CHARGER_BIT) {
+		rc = gpio_direction_output(global_gpio->ADC_SW_EN, 1);
+		if (rc) {
+			pr_info("failed to pull-high ADC_SW_EN-gpios59\n", rc);
+		} else {
+			pr_info("Pull high USBSW_S\n", rc);
+		}
+		
+		rc = gpio_direction_output(global_gpio->ADCPWREN_PMI_GP1, 1);
+		if (rc) {
+			pr_info("failed to pull-high ADCPWREN_PMI_GP1-gpios34\n", rc);
+		} else {
+			pr_info("Pull high ADC_VH_EN\n", rc);
+		}
+	}	
+			
 
 	return result;
 }

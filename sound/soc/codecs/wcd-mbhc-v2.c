@@ -67,9 +67,20 @@ enum wcd_mbhc_cs_mb_en_flag {
 	WCD_MBHC_EN_NONE,
 };
 
+#ifdef CONFIG_MACH_ASUS_SDM660
+static int hph_state;
+#endif
+
 static void wcd_mbhc_jack_report(struct wcd_mbhc *mbhc,
 				struct snd_soc_jack *jack, int status, int mask)
 {
+#ifdef CONFIG_MACH_ASUS_SDM660
+	if ((status == 0x9 && mask == 0x3cf) ||
+		(status == 0xb && mask == 0x3cf))
+		hph_state = 1;
+	else
+		hph_state = 0;
+#endif
 	snd_soc_jack_report(jack, status, mask);
 }
 
@@ -887,7 +898,11 @@ static void wcd_mbhc_find_plug_and_report(struct wcd_mbhc *mbhc,
 						SND_JACK_HEADPHONE);
 			if (mbhc->current_plug == MBHC_PLUG_TYPE_HEADSET)
 				wcd_mbhc_report_plug(mbhc, 0, SND_JACK_HEADSET);
+#ifdef CONFIG_MACH_ASUS_SDM660
+		wcd_mbhc_report_plug(mbhc, 1, SND_JACK_HEADSET);
+#else
 		wcd_mbhc_report_plug(mbhc, 1, SND_JACK_UNSUPPORTED);
+#endif
 	} else if (plug_type == MBHC_PLUG_TYPE_HEADSET) {
 		if (mbhc->mbhc_cfg->enable_anc_mic_detect)
 			anc_mic_found = wcd_mbhc_detect_anc_plug_type(mbhc);
@@ -1136,7 +1151,11 @@ static void wcd_enable_mbhc_supply(struct wcd_mbhc *mbhc,
 		} else if (plug_type == MBHC_PLUG_TYPE_HEADPHONE) {
 			wcd_enable_curr_micbias(mbhc, WCD_MBHC_EN_CS);
 		} else {
+#ifdef CONFIG_MACH_ASUS_SDM660
+			wcd_enable_curr_micbias(mbhc, WCD_MBHC_EN_MB);
+#else
 			wcd_enable_curr_micbias(mbhc, WCD_MBHC_EN_NONE);
+#endif
 		}
 	}
 }
@@ -1961,8 +1980,13 @@ static void wcd_btn_lpress_fn(struct work_struct *work)
 
 	WCD_MBHC_REG_READ(WCD_MBHC_BTN_RESULT, btn_result);
 	if (mbhc->current_plug == MBHC_PLUG_TYPE_HEADSET) {
+#ifdef CONFIG_MACH_ASUS_SDM660
+		pr_debug("%s: Reporting long button press event, btn_result: %d %x\n",
+			 __func__, btn_result, mbhc->buttons_pressed);
+#else
 		pr_debug("%s: Reporting long button press event, btn_result: %d\n",
 			 __func__, btn_result);
+#endif
 		wcd_mbhc_jack_report(mbhc, &mbhc->button_jack,
 				mbhc->buttons_pressed, mbhc->buttons_pressed);
 	}
@@ -2768,6 +2792,20 @@ void wcd_mbhc_stop(struct wcd_mbhc *mbhc)
 }
 EXPORT_SYMBOL(wcd_mbhc_stop);
 
+#ifdef CONFIG_MACH_ASUS_SDM660
+static ssize_t show_hp_state(struct device *dev, struct device_attribute *attr,
+				char *buf)
+{
+	int ret = 0;
+
+	ret = snprintf(buf, sizeof(int), "%d\n", hph_state);
+
+	return ret;
+}
+
+static DEVICE_ATTR(hp_state, S_IRUGO, show_hp_state, NULL);
+#endif
+
 /*
  * wcd_mbhc_init : initialize MBHC internal structures.
  *
@@ -2780,6 +2818,9 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_codec *codec,
 		      bool impedance_det_en)
 {
 	int ret = 0;
+#ifdef CONFIG_MACH_ASUS_SDM660
+	int ret_hp = 0;
+#endif
 	int hph_swh = 0;
 	int gnd_swh = 0;
 	u32 hph_moist_config[3];
@@ -2980,6 +3021,10 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_codec *codec,
 		       mbhc->intr_ids->hph_right_ocp);
 		goto err_hphr_ocp_irq;
 	}
+
+#ifdef CONFIG_MACH_ASUS_SDM660
+	ret_hp = sysfs_create_file(&card->dev->kobj,&dev_attr_hp_state.attr);
+#endif
 
 	pr_debug("%s: leave ret %d\n", __func__, ret);
 	return ret;

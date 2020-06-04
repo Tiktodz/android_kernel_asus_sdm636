@@ -1,0 +1,21 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
+&hph_en1_wcd_active {
+	mux {
+		pins = "gpio998";
+	};
+
+	config {
+		pins = "gpio998";
+	};
+};
+
+&hph_en1_wcd_sleep {
+	mux {
+		pins = "gpio998";
+	};
+
+	config {
+		pins = "gpio998";
+	};
+};

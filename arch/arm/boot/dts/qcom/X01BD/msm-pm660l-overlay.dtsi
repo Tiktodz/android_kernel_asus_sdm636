@@ -1,0 +1,73 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
+&pm660l_gpios {
+	gpio@c400 {
+		status = "ok";
+	};
+};
+
+&pm660l_pwm_3 {
+	/delete-node/ qcom,lpg;
+};
+
+&red_led {
+	qcom,idx-len = <2>;
+	qcom,lut-flags = <19>;
+	qcom,pause-lo = <3400>;
+	qcom,ramp-step-ms = <300>;
+	qcom,duty-pcts = [00 22];
+};
+
+&green_led {
+	qcom,start-idx = <0>;
+	qcom,idx-len = <2>;
+	qcom,lut-flags = <19>;
+	qcom,pause-lo = <1400>;
+	qcom,ramp-step-ms = <300>;
+	qcom,duty-pcts = [00 40];
+	qcom,use-blink;
+};
+
+&pm660l_wled {
+	qcom,fs-curr-ua = <20000>;
+};
+
+&pm660l_flash0 {
+	qcom,max-current = <1000>;
+};
+
+&pm660l_flash1 {
+	qcom,max-current = <280>;
+	qcom,current-ma = <80>;
+};
+
+&pm660l_torch0 {
+	qcom,current-ma = <100>;
+};
+
+&pm660l_torch1 {
+	qcom,max-current = <80>;
+	qcom,current-ma = <80>;
+};
+
+&pm660l_switch0 {
+	qcom,led-mask = <1>;
+};
+
+&pm660l_switch1 {
+	qcom,led-mask = <2>;
+};
+
+&pm660a_labibb {
+	status = "okay";
+};
+
+&ibb_regulator {
+	qcom,qpnp-ibb-limit-maximum-current = <200>;
+	qcom,qpnp-ibb-limit-max-current-enable;
+};
+
+&lab_regulator {
+	qcom,qpnp-lab-limit-maximum-current = <200>;
+	qcom,qpnp-lab-limit-max-current-enable;
+};

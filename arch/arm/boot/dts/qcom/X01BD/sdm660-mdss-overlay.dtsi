@@ -1,0 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
+&mdss_dsi0 {
+	wqhd-vddio-supply = <&pm660_l13>;
+};

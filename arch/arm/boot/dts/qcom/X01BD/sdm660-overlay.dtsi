@@ -1,0 +1,63 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
+/ {
+	reserved-memory {
+		pstore_reserve_mem: pstore_reserve_mem_region@0 {
+			linux,reserve-contiguous-region;
+			linux,reserve-region;
+			linux,remove-completely;
+			reg = <0x0 0x9ff00000 0x0 0x00100000>;
+			label = "pstore_reserve_mem";
+		};
+	};
+};
+
+&firmware {
+	android {
+		fstab {
+			vendor {
+				fsmgr_flags = "wait";
+				status = "ok";
+			};
+
+			system {
+				compatible = "android,system";
+				dev = "/dev/block/platform/soc/c0c4000.sdhci/by-name/system";
+				type = "ext4";
+				mnt_flags = "ro,barrier=1,discard";
+				fsmgr_flags = "wait";
+				status = "ok";
+			};
+		};
+	};
+};
+
+&wdog {
+	qcom,bark-time = <20000>;
+};
+
+&mem_client_3_size {
+	/delete-property/ qcom,allocate-on-request;
+
+	qcom,allocate-boot-time;
+};
+
+&soc {
+	gpio_keys {
+		/delete-node/ camera_focus;
+		/delete-node/ camera_snapshot;
+
+		vol_up {
+			gpios = <&tlmm 44 0x1>;
+		};
+
+		vol_down {
+			label = "volume_down";
+			gpios = <&tlmm 43 0x1>;
+			linux,input-type = <1>;
+			linux,code = <114>;
+			gpio-key,wakeup;
+			debounce-interval = <15>;
+		};
+	};
+};

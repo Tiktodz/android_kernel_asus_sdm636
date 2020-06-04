@@ -1,0 +1,43 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
+#include "sdm660-wcd-overlay.dtsi"
+
+&soc {
+	tert_mi2s_gpios: tert_mi2s_pinctrl {
+		compatible = "qcom,msm-cdc-pinctrl";
+		pinctrl-names = "aud_active", "aud_sleep";
+		pinctrl-0 = <&ter_mi2s_clk_active &ter_mi2s_ws_active
+			&ter_mi2s_sd0_active &ter_mi2s_sd1_active>;
+		pinctrl-1 = <&ter_mi2s_clk_sleep &ter_mi2s_ws_sleep
+			&ter_mi2s_sd0_sleep &ter_mi2s_sd1_sleep>;
+		qcom,lpi-gpios;
+	};
+};
+
+&pm660_gpios {
+	gpio@c200 {
+		/delete-property/ qcom,out-strength;
+	};
+};
+
+/* Override sdm660-external-codec.dtsi */
+
+&cdc_pdm_gpios {
+	/delete-property/ status;
+};
+
+&cdc_comp_gpios {
+	/delete-property/ status;
+};
+
+&cdc_dmic_gpios {
+	/delete-property/ status;
+};
+
+&wsa_spkr_en1 {
+	/delete-property/ status;
+};
+
+&wsa_spkr_en2 {
+	/delete-property/ status;
+};

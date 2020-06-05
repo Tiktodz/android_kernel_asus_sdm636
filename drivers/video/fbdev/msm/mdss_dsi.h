@@ -451,6 +451,9 @@ struct mdss_dsi_ctrl_pdata {
 	int irq_cnt;
 	int disp_te_gpio;
 	int rst_gpio;
+#ifdef CONFIG_MACH_ASUS_SDM660
+	int tp_rst_gpio;
+#endif
 	int disp_en_gpio;
 	int bklt_en_gpio;
 	bool bklt_en_gpio_invert;
@@ -499,6 +502,9 @@ struct mdss_dsi_ctrl_pdata {
 	struct dsi_panel_cmds off_cmds;
 	struct dsi_panel_cmds lp_on_cmds;
 	struct dsi_panel_cmds lp_off_cmds;
+#ifdef CONFIG_MACH_ASUS_SDM660
+	struct dsi_panel_cmds esd_recover_cmds;
+#endif
 	struct dsi_panel_cmds status_cmds;
 	u32 *status_valid_params;
 	u32 *status_cmds_rlen;
@@ -597,6 +603,9 @@ struct dsi_status_data {
 	struct notifier_block fb_notifier;
 	struct delayed_work check_status;
 	struct msm_fb_data_type *mfd;
+#ifdef CONFIG_MACH_ASUS_SDM660
+	bool is_first_check;
+#endif
 };
 
 void mdss_dsi_read_hw_revision(struct mdss_dsi_ctrl_pdata *ctrl);

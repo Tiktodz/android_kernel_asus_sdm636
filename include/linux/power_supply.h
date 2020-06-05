@@ -276,6 +276,9 @@ enum power_supply_property {
 	POWER_SUPPLY_PROP_PARALLEL_FCC_MAX,
 	POWER_SUPPLY_PROP_MIN_ICL,
 	POWER_SUPPLY_PROP_FG_RESET_CLOCK,
+#ifdef CONFIG_MACH_ASUS_SDM660
+	POWER_SUPPLY_PROP_ADAPTER_ID,
+#endif
 	/* Local extensions of type int64_t */
 	POWER_SUPPLY_PROP_CHARGE_COUNTER_EXT,
 	/* Properties of type `const char *' */

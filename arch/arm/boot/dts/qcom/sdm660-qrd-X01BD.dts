@@ -108,21 +108,6 @@
 		pinctrl-0 = <&focalfp_reset_active &focalfp_irq_active>;
 		pinctrl-1 = <&focalfp_reset_sleep &focalfp_irq_sleep>;
 	};
-
-	confing_dist {
-		compatible = "config,dist";
-		dist,mem_gpio = <&tlmm 63 0>;
-		dist,mem1_gpio = <&tlmm 64 0>;
-		dist,nfc_gpio = <&pm660_gpios 11 0>;
-		dist,cam_gpio = <&tlmm 21 0>;
-
-		pinctrl-names = "dist_mem_active",
-				"dist_cam_active",
-				"dist_mem1_active";
-		pinctrl-0 = <&dist_mem_active>;
-		pinctrl-1 = <&dist_cam_active>;
-		pinctrl-2 = <&dist_mem1_active>;
-	};
 };
 
 &slim_aud {

@@ -23,6 +23,10 @@
 
 #include <linux/msm-bus.h>
 
+#ifdef CONFIG_MACH_ASUS_SDM660
+#include <linux/errno.h>
+#endif
+
 #include "mdss.h"
 #include "mdss_dsi.h"
 #include "mdss_panel.h"
@@ -1136,7 +1140,11 @@ static int mdss_dsi_read_status(struct mdss_dsi_ctrl_pdata *ctrl)
 	int i, rc, *lenp;
 	int start = 0;
 	struct dcs_cmd_req cmdreq;
+#ifdef CONFIG_MACH_ASUS_SDM660
+	int times = 0;
 
+	*ctrl->status_buf.data = 0;
+#endif
 	rc = 1;
 	lenp = ctrl->status_valid_params ?: ctrl->status_cmds_rlen;
 
@@ -1146,6 +1154,11 @@ static int mdss_dsi_read_status(struct mdss_dsi_ctrl_pdata *ctrl)
 	}
 
 	for (i = 0; i < ctrl->status_cmds.cmd_cnt; ++i) {
+#ifdef CONFIG_MACH_ASUS_SDM660
+		while (times < 2 && ((*ctrl->status_buf.data) != 0x0c) &&
+			((*ctrl->status_buf.data) != 0x9c) &&
+			((*ctrl->status_buf.data) != 0x98)) {
+#endif
 		memset(&cmdreq, 0, sizeof(cmdreq));
 		cmdreq.cmds = ctrl->status_cmds.cmds + i;
 		cmdreq.cmds_cnt = 1;
@@ -1160,6 +1173,10 @@ static int mdss_dsi_read_status(struct mdss_dsi_ctrl_pdata *ctrl)
 			cmdreq.flags |= CMD_REQ_HS_MODE;
 
 		rc = mdss_dsi_cmdlist_put(ctrl, &cmdreq);
+#ifdef CONFIG_MACH_ASUS_SDM660
+		times++;
+		}
+#endif
 		if (rc <= 0) {
 			if (!mdss_dsi_sync_wait_enable(ctrl) ||
 				mdss_dsi_sync_wait_trigger(ctrl))
@@ -1236,6 +1253,9 @@ int mdss_dsi_reg_status_check(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
 		else if (sctrl_pdata)
 			ret = ctrl_pdata->check_read_status(sctrl_pdata);
 	} else {
+#ifdef CONFIG_MACH_ASUS_SDM660
+		ret = -ENOTSUPP;
+#endif
 		pr_err("%s: Read status register returned error\n", __func__);
 	}
 

@@ -1,0 +1,57 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
+&firmware {
+	android {
+		fstab {
+			vendor {
+				fsmgr_flags = "wait";
+				status = "ok";
+			};
+
+			system {
+				compatible = "android,system";
+				dev = "/dev/block/platform/soc/c0c4000.sdhci/by-name/system";
+				type = "ext4";
+				mnt_flags = "ro,barrier=1,discard";
+				fsmgr_flags = "wait";
+				status = "ok";
+			};
+		};
+	};
+};
+
+&wdog {
+	qcom,bark-time = <20000>;
+};
+
+&mem_client_3_size {
+		/delete-property/ qcom,allocate-on-request;
+
+		qcom,allocate-boot-time;
+};
+
+&ufs1 {
+	/delete-property/ pinctrl-names;
+	/delete-property/ pinctrl-0;
+	/delete-property/ pinctrl-1;
+};
+
+&soc {
+	gpio_keys {
+		/delete-node/ camera_focus;
+		/delete-node/ camera_snapshot;
+
+		vol_up {
+			gpios = <&tlmm 44 0x1>;
+		};
+
+		vol_down {
+			label = "volume_down";
+			gpios = <&tlmm 43 0x1>;
+			linux,input-type = <1>;
+			linux,code = <114>;
+			gpio-key,wakeup;
+			debounce-interval = <15>;
+		};
+	};
+};

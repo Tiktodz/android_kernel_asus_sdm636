@@ -1,0 +1,13 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
+&msm_sdw_codec {
+	status = "disabled";
+};
+
+&cdc_sdw_gpios {
+	status = "disabled";
+};
+
+&cdc_dmic_gpios {
+	status = "disabled";
+};

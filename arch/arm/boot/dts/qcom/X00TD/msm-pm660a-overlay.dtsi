@@ -1,0 +1,13 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
+&pm660l_wled {
+	status = "okay";
+};
+
+&pm660l_lcdb {
+	status = "okay";
+};
+
+&pm660a_oledb {
+	status = "disabled";
+};

@@ -1,0 +1,16 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
+#include "sdm660-regulator-overlay.dtsi"
+#include "sdm660-overlay.dtsi"
+#include "sdm660-lpi-overlay.dtsi"
+#include "sdm660-common-overlay.dtsi"
+#include "sdm660-camera-overlay.dtsi"
+#include "sdm660-audio-overlay.dtsi"
+#include "sdm630-camera-overlay.dtsi"
+#include "msm-pm660l-rpm-regulator-overlay.dtsi"
+#include "msm-pm660l-overlay.dtsi"
+#include "msm-pm660-overlay.dtsi"
+#include "msm-audio-overlay.dtsi"
+#include "dsi-panel-td4310-1080p-video-txd.dtsi"
+#include "dsi-panel-nt36672-1080p-video.dtsi"
+#include "dsi-panel-nt36672-1080p-video-txd.dtsi"

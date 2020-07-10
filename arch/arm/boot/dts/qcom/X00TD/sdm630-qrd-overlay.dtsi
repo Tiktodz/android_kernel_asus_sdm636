@@ -1,0 +1,22 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
+&qrd_batterydata {
+	/delete-node/ qcom,qrd_msm8998_skuk_3000mah;
+
+	#include "fg-gen3-batterydata-3292665_Huaqin_QL1650cos_5000mAh.dtsi"	
+};
+
+&pm660_fg {
+	qcom,fg-jeita-thresholds = <0 1 59 60>;
+};
+
+&sdhc_1 {
+	qcom,vdd-always-on;
+};
+
+&soc {
+	gpio_keys {
+		/delete-node/ home;
+	};
+	/delete-node/ hbtp;
+};

@@ -1,0 +1,99 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
+&lpi_tlmm {
+	ter_mi2s_clk_active: ter_mi2s_clk_active {
+		mux {
+			pins = "gpio4";
+			function = "func4";
+		};
+
+		config {
+			pins = "gpio4";
+			drive-strength = <8>;
+		};
+	};
+
+	ter_mi2s_clk_sleep: ter_mi2s_clk_sleep {
+		mux {
+			pins = "gpio4";
+			function = "func4";
+		};
+
+		config {
+			pins = "gpio4";
+			drive-strength = <2>;
+		};
+	};
+
+	ter_mi2s_ws_active: ter_mi2s_ws_active {
+		mux {
+			pins = "gpio5";
+			function = "func4";
+		};
+
+		config {
+			pins = "gpio5";
+			drive-strength = <8>;
+		};
+	};
+
+	ter_mi2s_ws_sleep: ter_mi2s_ws_sleep {
+		mux {
+			pins = "gpio5";
+			function = "func4";
+		};
+
+		config {
+			pins = "gpio5";
+			drive-strength = <2>;
+		};
+	};
+
+	ter_mi2s_sd0_active: ter_mi2s_sd0_active {
+		mux {
+			pins = "gpio6";
+			function = "func4";
+		};
+
+		config {
+			pins = "gpio6";
+			drive-strength = <8>;
+		};
+	};
+
+	ter_mi2s_sd0_sleep: ter_mi2s_sd0_sleep {
+		mux {
+			pins = "gpio6";
+			function = "func4";
+		};
+
+		config {
+			pins = "gpio6";
+			drive-strength = <2>;
+		};
+	};
+
+	ter_mi2s_sd1_active: ter_mi2s_sd1_active {
+		mux {
+			pins = "gpio7";
+			function = "func4";
+		};
+
+		config {
+			pins = "gpio7";
+			drive-strength = <8>;
+		};
+	};
+
+	ter_mi2s_sd1_sleep: ter_mi2s_sd1_sleep {
+		mux {
+			pins = "gpio7";
+			function = "func4";
+		};
+
+		config {
+			pins = "gpio7";
+			drive-strength = <2>;
+		};
+	};
+};

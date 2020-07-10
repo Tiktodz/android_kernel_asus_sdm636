@@ -1,0 +1,13 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
+&i2c_freq_100Khz {
+	qcom,hw-scl-stretch-en = <1>;
+};
+
+&i2c_freq_400Khz {
+	qcom,hw-scl-stretch-en = <1>;
+};
+
+&i2c_freq_1Mhz {
+	qcom,hw-scl-stretch-en = <1>;
+};

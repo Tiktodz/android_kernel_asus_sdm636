@@ -1,0 +1,13 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
+&pm660l_l7 {
+	/delete-property/ parent-supply;
+
+	qcom,init-voltage = <3125000>;
+	regulator-always-on;
+};
+
+&pm660l_l8 {
+	regulator-min-microvolt = <2800000>;
+	regulator-max-microvolt = <2800000>;
+};

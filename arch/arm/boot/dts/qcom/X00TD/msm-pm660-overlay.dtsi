@@ -1,0 +1,111 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
+&spmi_bus {
+	qcom,pm660@0 {
+		qcom,power-on@800 {
+			qcom,pon_1 {
+				qcom,support-reset = <1>;
+				qcom,s1-timer = <10256>;
+				qcom,s2-timer = <10>;
+				qcom,s2-type = <4>;
+			};
+		};
+	};
+};
+
+&pm660_gpios {
+	gpio@c200 {
+		status = "okay";
+		qcom,mode = <3>; /* Analog Pass Through */
+		qcom,pull = <5>; /* Input No pull */
+		qcom,vin-sel = <0>; /* VIN0 */
+		qcom,src-sel = <0>; /* Constant */
+		qcom,master-en = <0>; /* Eanble GPIO */
+	};
+};
+
+&pm660_gpios {
+	gpio@cb00 {
+		status = "ok";
+		qcom,master-en = <0>;
+	};
+};
+
+&pm660_vadc {
+	chan@19 {
+		label = "chg-alert";
+		reg = <0x19>;
+		qcom,decimation = <0>;
+		qcom,pre-div-channel-scaling = <0>;
+		qcom,calibration-type = "absolute";
+		qcom,scale-function = <0>;
+		qcom,hw-settle-time = <2>;
+		qcom,fast-avg-setup = <0>;
+	};
+
+	chan@4f {
+		label = "pa_therm0";
+		reg = <0x4f>;
+		qcom,decimation = <2>;
+		qcom,pre-div-channel-scaling = <0>;
+		qcom,calibration-type = "ratiometric";
+		qcom,scale-function = <2>;
+		qcom,hw-settle-time = <0xf>;
+		qcom,fast-avg-setup = <0>;
+		qcom,vadc-thermal-node;
+	};
+
+	chan@13 {
+		label = "gpio3_adc";
+		reg = <0x13>;
+		qcom,decimation = <2>;
+		qcom,pre-div-channel-scaling = <0>;
+		qcom,calibration-type = "absolute";
+		qcom,scale-function = <0>;
+		qcom,hw-settle-time = <2>;
+		qcom,fast-avg-setup = <0>;
+	};
+};
+
+&pm660_charger {
+	qcom,chg-alert-vadc = <&pm660_vadc>;
+
+	qcom,micro-usb;
+	qcom,fcc-max-ua = <1000000>;
+	qcom,fv-max-uv = <4350000>;
+	qcom,usb-icl-ua = <1000000>;
+	qcom,float-option = <1>;
+	qcom,auto-recharge-soc;
+	qcom,pm-gpio3-vadc = <&pm660_vadc>;	
+};
+
+&pm660_pdphy {
+	status = "disabled";
+};
+
+&pm660_fg {
+	qcom,fg-esr-timer-asleep = <160 256>;
+	qcom,fg-cutoff-voltage = <3400>;
+	qcom,fg-empty-voltage = <2800>;
+	qcom,fg-esr-tight-filter-micro-pct = <20000>;
+	qcom,fg-esr-broad-filter-micro-pct = <25000>;
+	qcom,fg-esr-tight-lt-filter-micro-pct = <2000>;
+	qcom,fg-esr-broad-lt-filter-micro-pct = <2200>;
+	qcom,slope-limit-temp-threshold = <150>;
+	qcom,slope-limit-coeffs = <1 1 1 1>;
+	qcom,fg-chg-term-current = <150>;
+	qcom,fg-sys-term-current = <(-200)>;
+	qcom,hold-soc-while-full;
+	qcom,linearize-soc;
+	qcom,fg-force-load-profile;
+	qcom,fg-jeita-thresholds = <0 1 59 60>;
+	qcom,fg-jeita-hyst-temp = <3>;
+	qcom,fg-recharge-voltage = <4150>;
+	qcom,fg-recharge-soc-thr = <98>;
+	qcom,fg-auto-recharge-soc;
+	qcom,fg-rsense-sel=<1>;
+};
+
+&pm660_haptics {
+	qcom,actuator-type = "erm";
+};

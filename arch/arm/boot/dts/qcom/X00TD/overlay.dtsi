@@ -14,3 +14,8 @@
 #include "dsi-panel-td4310-1080p-video-txd.dtsi"
 #include "dsi-panel-nt36672-1080p-video.dtsi"
 #include "dsi-panel-nt36672-1080p-video-txd.dtsi"
+
+&msm_gpu {
+	/* sdm636.dtsi defaults to A509, but X00T has A512 tweaks */
+	qcom,chipid = <0x05010200>;
+};

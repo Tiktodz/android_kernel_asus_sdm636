@@ -1404,7 +1404,7 @@ static int32_t stk3x1x_enable_ps(struct stk3x1x_data *ps_data, uint8_t enable, u
 			near_far_state = ret & STK_FLG_NF_MASK;
 #endif
 			stk_ps_report(ps_data, near_far_state);
-			pr_info("%s: ps input event=%d, ps=%d\n",__func__, near_far_state, reading);
+			pr_debug("%s: ps input event=%d, ps=%d\n",__func__, near_far_state, reading);
 		}
 #ifdef STK_POLL_PS
 		hrtimer_start(&ps_data->ps_timer, ps_data->ps_poll_delay, HRTIMER_MODE_REL);
@@ -4123,7 +4123,7 @@ static int stk3x1x_suspend(struct device *dev)
 	struct i2c_client *client = to_i2c_client(dev);
 #endif
 
-	pr_info("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 #ifndef SPREADTRUM_PLATFORM
 	mutex_lock(&ps_data->io_lock);
 #endif
@@ -4192,7 +4192,7 @@ static int stk3x1x_resume(struct device *dev)
 	struct i2c_client *client = to_i2c_client(dev);
 #endif
 
-	pr_info("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 #ifndef SPREADTRUM_PLATFORM
 	mutex_lock(&ps_data->io_lock);
 #endif

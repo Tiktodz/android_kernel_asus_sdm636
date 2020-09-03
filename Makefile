@@ -655,8 +655,9 @@ KBUILD_CFLAGS   += -O2
 endif
 endif
 
-ifdef CONFIG_CC_WERROR
-KBUILD_CFLAGS	+= -Werror
+# disable warning: tokens terminating statement expression are separated by whitespace on latest clang 12
+ifeq ($(cc-name),clang)
+KBUILD_CFLAGS	+= $(call cc-disable-warning,compound-token-split-by-space)
 endif
 
 # Tell gcc to never replace conditional load with a non-conditional one

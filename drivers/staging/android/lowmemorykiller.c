@@ -68,12 +68,7 @@ static int lowmem_minfree_size = 4;
 
 static unsigned long lowmem_deathpending_timeout;
 
-#define lowmem_print(level, x...)			\
-	do {						\
-		if (lowmem_debug_level >= (level))	\
-			pr_info(x);			\
-	} while (0)
-
+#define lowmem_print(level, x...)
 
 static DECLARE_WAIT_QUEUE_HEAD(event_wait);
 static DEFINE_SPINLOCK(lmk_event_lock);
@@ -307,13 +302,8 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 		task_lock(selected);
 		get_task_struct(selected);
 		send_sig(SIGKILL, selected, 0);
-		/*
-		 * FIXME: lowmemorykiller shouldn't abuse global OOM killer
-		 * infrastructure. There is no real reason why the selected
-		 * task should have access to the memory reserves.
-		 */
 		if (selected->mm)
-			mark_oom_victim(selected);
+			task_set_lmk_waiting(selected);
 		task_unlock(selected);
 		trace_lowmemory_kill(selected, cache_size, cache_limit, free);
 		lowmem_print(1, "Killing '%s' (%d) (tgid %d), adj %hd,\n" \

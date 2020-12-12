@@ -287,7 +287,7 @@ struct msm_fb_data_type {
 	struct msm_fb_fps_info fps_info;
 	struct delayed_work idle_notify_work;
 
-#ifdef CONFIG_MACH_ASUS_X01BD
+#ifdef CONFIG_MACH_ASUS_SDM660
 	struct delayed_work early_unblank_work;
 	bool early_unblank_work_queued;
 #endif

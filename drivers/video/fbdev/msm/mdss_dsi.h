@@ -24,6 +24,10 @@
 #include "mdss_dsi_cmd.h"
 #include "mdss_dsi_clk.h"
 
+#ifdef CONFIG_MACH_ASUS_X00TD
+extern int nvt_tp_check;
+#endif
+
 #define MMSS_SERDES_BASE_PHY 0x04f01000 /* mmss (De)Serializer CFG */
 
 #define MIPI_OUTP(addr, data) writel_relaxed((data), (addr))
@@ -451,7 +455,7 @@ struct mdss_dsi_ctrl_pdata {
 	int irq_cnt;
 	int disp_te_gpio;
 	int rst_gpio;
-#ifdef CONFIG_MACH_ASUS_SDM660
+#ifdef CONFIG_MACH_ASUS_X01BD
 	int tp_rst_gpio;
 #endif
 	int disp_en_gpio;

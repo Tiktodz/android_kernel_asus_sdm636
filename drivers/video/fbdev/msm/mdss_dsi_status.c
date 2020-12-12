@@ -31,7 +31,7 @@
 #include "mdss_mdp.h"
 
 #ifdef CONFIG_MACH_ASUS_X00TD
-#define STATUS_CHECK_INTERVAL_MS 2000
+#define STATUS_CHECK_INTERVAL_MS 500
 #else
 #define STATUS_CHECK_INTERVAL_MS 5000
 #endif

@@ -2397,6 +2397,7 @@ end_update:
 	return rc;
 }
 
+#ifndef CONFIG_MACH_ASUS_X00TD
 static int mdss_dsi_dynamic_bitclk_config(struct mdss_panel_data *pdata)
 {
 	int rc = 0;
@@ -2439,6 +2440,7 @@ static int mdss_dsi_dynamic_bitclk_config(struct mdss_panel_data *pdata)
 	}
 	return rc;
 }
+#endif
 
 static int mdss_dsi_dfps_config(struct mdss_panel_data *pdata, int new_fps)
 {
@@ -2891,13 +2893,28 @@ static ssize_t dynamic_bitclk_sysfs_wta(struct device *dev,
 		return -EINVAL;
 	}
 
+#ifdef CONFIG_MACH_ASUS_X00TD
+	rc = __mdss_dsi_dynamic_clock_switch(&ctrl_pdata->panel_data,
+		clk_rate);
+	if (!rc && mdss_dsi_is_hw_config_split(ctrl_pdata->shared_data)) {
+#else
 	pinfo->new_clk_rate = clk_rate;
 	if (mdss_dsi_is_hw_config_split(ctrl_pdata->shared_data)) {
+#endif
 		struct mdss_dsi_ctrl_pdata *octrl =
 			mdss_dsi_get_other_ctrl(ctrl_pdata);
+#ifdef CONFIG_MACH_ASUS_X00TD
+		rc = __mdss_dsi_dynamic_clock_switch(&octrl->panel_data,
+			clk_rate);
+		if (rc)
+			pr_err("failed to switch DSI bitclk for sctrl\n");
+	} else if (rc) {
+		pr_err("failed to switch DSI bitclk\n");
+#else
 		struct mdss_panel_info *opinfo = &octrl->panel_data.panel_info;
 
 		opinfo->new_clk_rate = clk_rate;
+#endif
 	}
 	return count;
 } /* dynamic_bitclk_sysfs_wta */
@@ -3126,6 +3143,7 @@ static int mdss_dsi_event_handler(struct mdss_panel_data *pdata,
 	case MDSS_EVENT_AVR_MODE:
 		mdss_dsi_avr_config(ctrl_pdata, (int)(unsigned long) arg);
 		break;
+#ifndef CONFIG_MACH_ASUS_X00TD
 	case MDSS_EVENT_DSI_DYNAMIC_BITCLK:
 		if (ctrl_pdata->panel_data.panel_info.dynamic_bitclk) {
 			rc = mdss_dsi_dynamic_bitclk_config(pdata);
@@ -3137,6 +3155,7 @@ static int mdss_dsi_event_handler(struct mdss_panel_data *pdata,
 	case MDSS_EVENT_UPDATE_LIVEDISPLAY:
 		rc = mdss_livedisplay_update(ctrl_pdata, (int)(unsigned long) arg);
 		break;
+#endif
 	default:
 		pr_debug("%s: unhandled event=%d\n", __func__, event);
 		break;
@@ -3201,6 +3220,9 @@ static struct device_node *mdss_dsi_pref_prim_panel(
  *
  * returns pointer to panel node on success, NULL on error.
  */
+#ifdef CONFIG_MACH_ASUS_X00TD
+int nvt_tp_check;
+#endif
 static struct device_node *mdss_dsi_find_panel_of_node(
 		struct platform_device *pdev, char *panel_cfg)
 {
@@ -3267,6 +3289,13 @@ static struct device_node *mdss_dsi_find_panel_of_node(
 		}
 		pr_info("%s: cmdline:%s panel_name:%s\n",
 			__func__, panel_cfg, panel_name);
+#ifdef CONFIG_MACH_ASUS_X00TD
+		if (!strcmp(panel_name, "qcom,mdss_dsi_nt36672_1080p_video"))
+			nvt_tp_check = 0;
+		else if (!strcmp(panel_name,
+				"qcom,mdss_dsi_nt36672_1080p_video_txd"))
+			nvt_tp_check = 1;
+#endif
 		if (!strcmp(panel_name, NONE_PANEL))
 			goto exit;
 
@@ -4590,7 +4619,7 @@ static int mdss_dsi_parse_gpio_params(struct platform_device *ctrl_pdev,
 		pr_err("%s:%d, reset gpio not specified\n",
 						__func__, __LINE__);
 
-#ifdef CONFIG_MACH_ASUS_SDM660
+#ifdef CONFIG_MACH_ASUS_X01BD
 	ctrl_pdata->tp_rst_gpio = of_get_named_gpio(ctrl_pdev->dev.of_node,
 			"qcom,platform-tp-reset-gpio", 0);
 	if (!gpio_is_valid(ctrl_pdata->tp_rst_gpio))

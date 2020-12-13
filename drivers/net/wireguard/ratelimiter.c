@@ -186,7 +186,6 @@ int wg_ratelimiter_init(void)
 	totalrampages = totalram_pages();
 	table_size = (totalrampages > (1U << 30) / PAGE_SIZE) ? 8192 :
 		max_t(unsigned long, 16, roundup_pow_of_two(
-			(totalrampages << PAGE_SHIFT) /
 			(1U << 14) / sizeof(struct hlist_head)));
 	max_entries = table_size * 8;
 

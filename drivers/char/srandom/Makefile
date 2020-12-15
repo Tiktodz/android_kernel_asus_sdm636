@@ -1,5 +1,5 @@
 TARGET_MODULE:=srandom
-obj-m += $(TARGET_MODULE).o
+obj-$(CONFIG_SRANDOM) += $(TARGET_MODULE).o
 
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(shell pwd) modules

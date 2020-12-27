@@ -17,7 +17,7 @@ obj-vdso   := $(obj-vdso-c) $(obj-vdso-s)
 ldflags-y := -shared -nostdlib -soname=linux-vdso.so.1 \
 		$(call ld-option, --hash-style=sysv) -n -T
 ccflags-y += -DDISABLE_BRANCH_PROFILING -ffixed-x18 -fno-stack-protector
-ccflags-y += $(DISABLE_LTO)
+ccflags-y += $(DISABLE_LTO) $(call cc-option, -fno-whole-program)
 
 # Force -O2 to avoid libgcc dependencies
 CFLAGS_REMOVE_vgettimeofday.o = -pg -Os

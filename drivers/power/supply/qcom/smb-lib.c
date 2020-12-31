@@ -100,7 +100,7 @@ static void asus_smblib_rerun_aicl(struct smb_charger *chg)
 
 	/* reg=1380, bit2=0, USBIN_AICL_EN=enable */
 	smblib_masked_write(chg, USBIN_AICL_OPTIONS_CFG_REG,
-				USBIN_AICL_EN_BIT, 1);
+				USBIN_AICL_EN_BIT, USBIN_AICL_EN_BIT);
 }
 
 extern struct wake_lock asus_chg_lock;

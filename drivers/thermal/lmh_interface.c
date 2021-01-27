@@ -107,7 +107,7 @@ static LIST_HEAD(lmh_device_list);
 				_data, _ops); \
 		if (IS_ERR(_node)) { \
 			_ret = PTR_ERR(_node); \
-			pr_err("Error creating debugfs file:%s. err:%d\n", \
+			pr_debug("Error creating debugfs file:%s. err:%d\n", \
 					_name, _ret); \
 		} \
 	} while (0)
@@ -117,7 +117,7 @@ static LIST_HEAD(lmh_device_list);
 		_node = debugfs_create_dir(_name, _parent); \
 		if (IS_ERR(_node)) { \
 			_ret = PTR_ERR(_node); \
-			pr_err("Error creating debugfs dir:%s. err:%d\n", \
+			pr_debug("Error creating debugfs dir:%s. err:%d\n", \
 					_name, _ret); \
 		} \
 	} while (0)

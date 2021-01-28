@@ -161,7 +161,7 @@
 #define GESTURE_EVENT_W 		KEY_TP_GESTURE_W
 #define GESTURE_EVENT_Z 		KEY_TP_GESTURE_Z
 #define GESTURE_EVENT_SWIPE_UP 		0x2f6
-#define GESTURE_EVENT_DOUBLE_CLICK 	0x2f7
+#define GESTURE_EVENT_DOUBLE_CLICK 	KEY_WAKEUP
 
 #define SYNA_GESTURE_MODE 		"tpd_gesture"
 /* Huaqin modify for ZQL1650-1523 by diganyun at 2018/06/07 end */

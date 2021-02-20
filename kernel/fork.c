@@ -227,7 +227,7 @@ static void account_kernel_stack(unsigned long *stack, int account)
 	mod_zone_page_state(zone, NR_KERNEL_STACK, account);
 }
 
-static void release_task_stack(struct task_struct *tsk)
+void release_task_stack(struct task_struct *tsk)
 {
 #ifdef CONFIG_CPU_FREQ_STAT
 	cpufreq_task_stats_free(tsk);

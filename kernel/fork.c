@@ -229,7 +229,7 @@ static void account_kernel_stack(unsigned long *stack, int account)
 	mod_zone_page_state(zone, NR_KERNEL_STACK, account);
 }
 
-static void release_task_stack(struct task_struct *tsk)
+void release_task_stack(struct task_struct *tsk)
 {
 	cpufreq_task_times_exit(tsk);
 	account_kernel_stack(tsk->stack, -1);

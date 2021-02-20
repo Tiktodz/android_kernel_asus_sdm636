@@ -2074,6 +2074,13 @@ struct task_struct {
 	/* A live task holds one reference. */
 	atomic_t stack_refcount;
 #endif
+
+	struct {
+		struct work_struct work;
+		atomic_t running;
+		bool free_stack;
+	} async_free;
+
 /* CPU-specific state of this task */
 	struct thread_struct thread;
 /*

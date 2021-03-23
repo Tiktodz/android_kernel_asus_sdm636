@@ -2034,46 +2034,46 @@ tSirRetStatus lim_populate_matching_rate_set(tpAniSirGlobal mac_ctx,
  *
  * Return: vht capabilities derived based on input parameters.
  */
-static uint32_t lim_populate_vht_caps(tDot11fIEVHTCaps input_caps)
+static uint32_t lim_populate_vht_caps(tDot11fIEVHTCaps *input_caps)
 {
 	uint32_t vht_caps;
 
-	vht_caps = ((input_caps.maxMPDULen << SIR_MAC_VHT_CAP_MAX_MPDU_LEN) |
-			(input_caps.supportedChannelWidthSet <<
+	vht_caps = ((input_caps->maxMPDULen << SIR_MAC_VHT_CAP_MAX_MPDU_LEN) |
+			(input_caps->supportedChannelWidthSet <<
 				 SIR_MAC_VHT_CAP_SUPP_CH_WIDTH_SET) |
-			(input_caps.ldpcCodingCap <<
+			(input_caps->ldpcCodingCap <<
 				SIR_MAC_VHT_CAP_LDPC_CODING_CAP) |
-			(input_caps.shortGI80MHz <<
+			(input_caps->shortGI80MHz <<
 				 SIR_MAC_VHT_CAP_SHORTGI_80MHZ) |
-			(input_caps.shortGI160and80plus80MHz <<
+			(input_caps->shortGI160and80plus80MHz <<
 				SIR_MAC_VHT_CAP_SHORTGI_160_80_80MHZ) |
-			(input_caps.txSTBC << SIR_MAC_VHT_CAP_TXSTBC) |
-			(input_caps.rxSTBC << SIR_MAC_VHT_CAP_RXSTBC) |
-			(input_caps.suBeamFormerCap <<
+			(input_caps->txSTBC << SIR_MAC_VHT_CAP_TXSTBC) |
+			(input_caps->rxSTBC << SIR_MAC_VHT_CAP_RXSTBC) |
+			(input_caps->suBeamFormerCap <<
 				SIR_MAC_VHT_CAP_SU_BEAMFORMER_CAP) |
-			(input_caps.suBeamformeeCap <<
+			(input_caps->suBeamformeeCap <<
 				SIR_MAC_VHT_CAP_SU_BEAMFORMEE_CAP) |
-			(input_caps.csnofBeamformerAntSup <<
+			(input_caps->csnofBeamformerAntSup <<
 				SIR_MAC_VHT_CAP_CSN_BEAMORMER_ANT_SUP) |
-			(input_caps.numSoundingDim <<
+			(input_caps->numSoundingDim <<
 				SIR_MAC_VHT_CAP_NUM_SOUNDING_DIM) |
-			(input_caps.muBeamformerCap <<
+			(input_caps->muBeamformerCap <<
 				SIR_MAC_VHT_CAP_NUM_BEAM_FORMER_CAP) |
-			(input_caps.muBeamformeeCap <<
+			(input_caps->muBeamformeeCap <<
 				SIR_MAC_VHT_CAP_NUM_BEAM_FORMEE_CAP) |
-			(input_caps.vhtTXOPPS <<
+			(input_caps->vhtTXOPPS <<
 				SIR_MAC_VHT_CAP_TXOPPS) |
-			(input_caps.htcVHTCap <<
+			(input_caps->htcVHTCap <<
 				 SIR_MAC_VHT_CAP_HTC_CAP) |
-			(input_caps.maxAMPDULenExp <<
+			(input_caps->maxAMPDULenExp <<
 				SIR_MAC_VHT_CAP_MAX_AMDU_LEN_EXPO) |
-			(input_caps.vhtLinkAdaptCap <<
+			(input_caps->vhtLinkAdaptCap <<
 				SIR_MAC_VHT_CAP_LINK_ADAPT_CAP) |
-			(input_caps.rxAntPattern <<
+			(input_caps->rxAntPattern <<
 				SIR_MAC_VHT_CAP_RX_ANTENNA_PATTERN) |
-			(input_caps.txAntPattern <<
+			(input_caps->txAntPattern <<
 				SIR_MAC_VHT_CAP_TX_ANTENNA_PATTERN) |
-			(input_caps.reserved1 <<
+			(input_caps->reserved1 <<
 				SIR_MAC_VHT_CAP_RESERVED2));
 
 	return vht_caps;
@@ -2345,7 +2345,7 @@ lim_add_sta(tpAniSirGlobal mac_ctx,
 
 		if (assoc_req && add_sta_params->vhtCapable)
 			add_sta_params->vht_caps =
-				 lim_populate_vht_caps(assoc_req->VHTCaps);
+				 lim_populate_vht_caps(&assoc_req->VHTCaps);
 	} else if (LIM_IS_IBSS_ROLE(session_entry)) {
 
 		/*
@@ -2384,7 +2384,7 @@ lim_add_sta(tpAniSirGlobal mac_ctx,
 			 SIR_MAC_HT_CAP_DSSSCCK40_S);
 
 		add_sta_params->vht_caps =
-			 lim_populate_vht_caps(peer_node->VHTCaps);
+			 lim_populate_vht_caps(&peer_node->VHTCaps);
 	}
 #ifdef FEATURE_WLAN_TDLS
 	if (STA_ENTRY_TDLS_PEER == sta_ds->staType) {

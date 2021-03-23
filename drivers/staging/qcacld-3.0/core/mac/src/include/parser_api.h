@@ -1213,7 +1213,7 @@ sir_validate_and_rectify_ies(tpAniSirGlobal mac_ctx,
  *
  * Return: None
  */
-void sir_copy_caps_info(tpAniSirGlobal mac_ctx, tDot11fFfCapabilities caps,
+void sir_copy_caps_info(tpAniSirGlobal mac_ctx, tDot11fFfCapabilities *caps,
 			tpSirProbeRespBeacon pProbeResp);
 
 #endif /* __PARSE_H__ */

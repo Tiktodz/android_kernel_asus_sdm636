@@ -1814,7 +1814,7 @@ static void sir_parse_bcn_fixed_fields(tpAniSirGlobal mac_ctx,
 
 	dot11f_unpack_ff_capabilities(mac_ctx, buf, &dst);
 
-	sir_copy_caps_info(mac_ctx, dst, beacon_struct);
+	sir_copy_caps_info(mac_ctx, &dst, beacon_struct);
 }
 
 static QDF_STATUS

@@ -937,7 +937,11 @@ static bool zram_meta_alloc(struct zram *zram, u64 disksize)
 	if (!zram->table)
 		return false;
 
+#ifdef CONFIG_Z3FOLD
+	backend = strlen(backend_par_buf) ? backend_par_buf : "z3fold";
+#else
 	backend = strlen(backend_par_buf) ? backend_par_buf : "zsmalloc";
+#endif
 	zram->mem_pool = zpool_create_pool(backend, zram->disk->disk_name,
 					GFP_NOIO, NULL);
 	if (!zram->mem_pool) {

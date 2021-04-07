@@ -1120,7 +1120,7 @@ static int nqx_probe(struct i2c_client *client,
 	/* Show if hardware supports nfc. */
 	has_nfc_proc = proc_create("NFC_CHECK", 0444, NULL, &proc_has_nfc_fops);
 	if (has_nfc_proc == NULL)
-		dev_err(&client->dev, "%s: Couldn't create proc entry, %d\n",
+		dev_err(&client->dev, "%s: Couldn't create proc entry\n",
 			__func__);
 
 	/* Register reboot notifier here */

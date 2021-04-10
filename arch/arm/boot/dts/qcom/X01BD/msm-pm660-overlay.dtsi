@@ -96,6 +96,8 @@
 };
 
 &pm660_haptics {
-	qcom,actuator-type = <1>;
+	qcom,actuator-type = "erm";
+	qcom,wave-play-rate-us = <5000>;
+	qcom,play-mode = "buffer";
 	qcom,vmax-mv = <2800>;
 };

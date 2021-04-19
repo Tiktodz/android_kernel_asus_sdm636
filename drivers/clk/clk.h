@@ -22,8 +22,15 @@ struct clk *__clk_create_clk(struct clk_hw *hw, const char *dev_id,
 void __clk_free_clk(struct clk *clk);
 
 /* Debugfs API to print the enabled clocks */
-void clock_debug_print_enabled(void);
+#ifdef CONFIG_DEBUG_FS
 void clk_debug_print_hw(struct clk_core *clk, struct seq_file *f);
+#else
+static inline
+void clk_debug_print_hw(struct clk_core *clk, struct seq_file *f)
+{
+}
+#endif
+void clock_debug_print_enabled(void);
 
 #else
 /* All these casts to avoid ifdefs in clkdev... */

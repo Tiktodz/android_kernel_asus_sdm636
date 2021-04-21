@@ -176,7 +176,7 @@ struct edge_info {
 	uint32_t num_pw_states;
 	unsigned long *ramp_time_us;
 
-	uint32_t activity_flag;
+	atomic_t activity_flag;
 	spinlock_t activity_lock;
 
 	struct glink_cmpnt cmpnt;
@@ -248,11 +248,7 @@ static int wdsp_resume(struct glink_cmpnt *cmpnt)
  */
 static void glink_spi_xprt_set_poll_mode(struct edge_info *einfo)
 {
-	unsigned long flags;
-
-	spin_lock_irqsave(&einfo->activity_lock, flags);
-	einfo->activity_flag |= ACTIVE_RX;
-	spin_unlock_irqrestore(&einfo->activity_lock, flags);
+	atomic_or(ACTIVE_RX, &einfo->activity_flag);
 	if (!strcmp(einfo->xprt_cfg.edge, "wdsp"))
 		wdsp_resume(&einfo->cmpnt);
 }
@@ -266,11 +262,7 @@ static void glink_spi_xprt_set_poll_mode(struct edge_info *einfo)
  */
 static void glink_spi_xprt_set_irq_mode(struct edge_info *einfo)
 {
-	unsigned long flags;
-
-	spin_lock_irqsave(&einfo->activity_lock, flags);
-	einfo->activity_flag &= ~ACTIVE_RX;
-	spin_unlock_irqrestore(&einfo->activity_lock, flags);
+	atomic_andnot(ACTIVE_RX, &einfo->activity_flag);
 }
 
 /**
@@ -1788,13 +1780,10 @@ static unsigned long get_power_vote_ramp_time(
  */
 static int power_vote(struct glink_transport_if *if_ptr, uint32_t state)
 {
-	unsigned long flags;
 	struct edge_info *einfo;
 
 	einfo = container_of(if_ptr, struct edge_info, xprt_if);
-	spin_lock_irqsave(&einfo->activity_lock, flags);
-	einfo->activity_flag |= ACTIVE_TX;
-	spin_unlock_irqrestore(&einfo->activity_lock, flags);
+	atomic_or(ACTIVE_TX, &einfo->activity_flag);
 	return 0;
 }
 
@@ -1806,13 +1795,10 @@ static int power_vote(struct glink_transport_if *if_ptr, uint32_t state)
  */
 static int power_unvote(struct glink_transport_if *if_ptr)
 {
-	unsigned long flags;
 	struct edge_info *einfo;
 
 	einfo = container_of(if_ptr, struct edge_info, xprt_if);
-	spin_lock_irqsave(&einfo->activity_lock, flags);
-	einfo->activity_flag &= ~ACTIVE_TX;
-	spin_unlock_irqrestore(&einfo->activity_lock, flags);
+	atomic_andnot(ACTIVE_TX, &einfo->activity_flag);
 	return 0;
 }
 
@@ -2176,23 +2162,20 @@ static int glink_spi_resume(struct platform_device *pdev)
 static int glink_spi_suspend(struct platform_device *pdev,
 				   pm_message_t state)
 {
-	unsigned long flags;
 	struct edge_info *einfo;
-	bool suspend;
 	int rc = -EBUSY;
+	int activity_flag;
 
 	einfo = (struct edge_info *)dev_get_drvdata(&pdev->dev);
 	if (strcmp(einfo->xprt_cfg.edge, "wdsp"))
 		return 0;
 
-	spin_lock_irqsave(&einfo->activity_lock, flags);
-	suspend = !(einfo->activity_flag);
-	spin_unlock_irqrestore(&einfo->activity_lock, flags);
-	if (suspend)
+	activity_flag = atomic_read(&einfo->activity_flag);
+	if (!activity_flag)
 		rc = wdsp_suspend(&einfo->cmpnt);
 	if (rc < 0)
 		pr_err("%s: Could not suspend activity_flag %d, rc %d\n",
-			__func__, einfo->activity_flag, rc);
+			__func__, activity_flag, rc);
 	return rc;
 }
 

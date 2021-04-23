@@ -923,12 +923,12 @@ static void __rx_worker(struct edge_info *einfo)
 			einfo->xprt_if.glink_core_if_ptr->tx_resume(
 							&einfo->xprt_if);
 		}
-		mutex_lock(&einfo->write_lock);
+		spin_lock(&einfo->activity_lock);
 		if (einfo->tx_blocked_signal_sent) {
 			wake_up_all(&einfo->tx_blocked_queue);
 			einfo->tx_blocked_signal_sent = false;
 		}
-		mutex_unlock(&einfo->write_lock);
+		spin_unlock(&einfo->activity_lock);
 
 		rx_avail = glink_spi_xprt_read_avail(einfo);
 		if (!rx_avail) {

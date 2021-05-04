@@ -1067,9 +1067,8 @@ static int nqx_probe(struct i2c_client *client,
 			goto err_clkreq_gpio;
 		}
 	} else {
-		dev_err(&client->dev,
+		dev_warn(&client->dev,
 			"%s: clkreq gpio not provided\n", __func__);
-		goto err_ese_gpio;
 	}
 
 	nqx_dev->en_gpio = platform_data->en_gpio;

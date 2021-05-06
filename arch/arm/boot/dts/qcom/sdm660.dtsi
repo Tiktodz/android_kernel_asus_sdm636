@@ -2601,6 +2601,7 @@
 	};
 };
 
+#include "sdm660-thermal.dtsi"
 #include "sdm660-ion.dtsi"
 #include "sdm660-bus.dtsi"
 #include "msm-pm660.dtsi"

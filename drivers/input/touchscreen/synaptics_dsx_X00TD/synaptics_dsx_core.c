@@ -1128,15 +1128,9 @@ static ssize_t syna_gesture_mode_get_proc(struct file *file,
 static ssize_t syna_gesture_mode_set_proc(struct file *filp,
                         const char __user *buffer, size_t count, loff_t *off)
 {
-	char msg[20];
 	int ret = 0;
 
-	ret = copy_from_user(msg, buffer, count);
-	if (ret) {
-		return -EFAULT;
-	}
-
-	ret = kstrtol(msg, 0, &syna_gesture_mode);
+	ret = kstrtol_from_user(buffer, count, 0, &syna_gesture_mode);
 	if (!ret) {
 		if (syna_gesture_mode == 0) {
 			syna_gesture_mode = 0;

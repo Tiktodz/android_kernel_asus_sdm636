@@ -235,20 +235,14 @@ static ssize_t nvt_gesture_mode_get_proc(struct file *file,
 static ssize_t nvt_gesture_mode_set_proc(struct file *filp,
                         const char __user *buffer, size_t count, loff_t *off)
 {
-	char msg[20] = {0};
 	int ret = 0;
 	struct himax_ts_data *ts = private_ts;
 	if (private_ts->suspended) {
 		I("Touch is already sleep cant modify gesture node\n");
 		return count;
 	}
-	ret = copy_from_user(msg, buffer, count);
-	I("msg = %s\n", msg);
-	if (ret) {
-		return -EFAULT;
-	}
 
-	ret = kstrtol(msg, 0, &gesture_mode);
+	ret = kstrtol_from_user(buffer, count, 0, &gesture_mode);
 	if (!ret) {
 		if (gesture_mode == 0) {
 			gesture_mode = 0;

@@ -294,6 +294,8 @@
 		//qcom,mdss-dsi-reset-sequence = <1 20>, <0 15>, <1 20>;
 		qcom,mdss-dsi-reset-sequence = <1 10>, <0 10>, <1 10>, <0 10>, <1 20>;
 		qcom,mdss-dsi-lp11-init;
+		qcom,ulps-enabled;
+		qcom,panel-allow-phy-poweroff;
 		//qcom,mdss-dsi-init-delay-us = <10000>;
 	};
 };

@@ -3015,27 +3015,13 @@ int mmc_set_signal_voltage(struct mmc_host *host, int signal_voltage, u32 ocr)
 	cmd.arg = 0;
 	cmd.flags = MMC_RSP_R1 | MMC_CMD_AC;
 
-	/*
-	 * Hold the clock reference so clock doesn't get auto gated during this
-	 * voltage switch sequence.
-	 */
-	mmc_host_clk_hold(host);
 	err = mmc_wait_for_cmd(host, &cmd, 0);
-	if (err) {
-		if (err == -ETIMEDOUT) {
-			pr_debug("%s: voltage switching failed with err %d\n",
-				mmc_hostname(host), err);
-			err = -EAGAIN;
-			goto power_cycle;
-		} else {
-			goto err_command;
-		}
-	}
+	if (err)
+		goto power_cycle;
 
-	if (!mmc_host_is_spi(host) && (cmd.resp[0] & R1_ERROR)) {
-		err = -EIO;
-		goto err_command;
-	}
+	if (!mmc_host_is_spi(host) && (cmd.resp[0] & R1_ERROR))
+		return -EIO;
+
 	/*
 	 * The card should drive cmd and dat[0:3] low immediately
 	 * after the response of cmd11, but wait 1 ms to be sure

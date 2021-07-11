@@ -355,6 +355,7 @@ struct smb_charger {
 	bool			use_extcon;
 	bool			otg_present;
 	bool			fcc_stepper_mode;
+	bool			in_chg_lock;
 
 	/* workaround flag */
 	u32			wa_flags;

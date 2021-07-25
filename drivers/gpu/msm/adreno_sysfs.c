@@ -29,6 +29,23 @@ struct adreno_sysfs_attribute adreno_attr_##_name = { \
 	.store = _ ## _name ## _store, \
 }
 
+<<<<<<< HEAD
+=======
+#define _ADRENO_SYSFS_FPERM_ATTR(_name, _fperm, __show, __store) \
+struct adreno_sysfs_attribute adreno_attr_##_name = { \
+	.attr = __ATTR(_name, _fperm, __show, __store), \
+	.show = _ ## _name ## _show, \
+	.store = _ ## _name ## _store, \
+}
+
+#define _ADRENO_SYSFS_ATTR_RO(_name, __show) \
+struct adreno_sysfs_attribute adreno_attr_##_name = { \
+	.attr = __ATTR(_name, 0444, __show, NULL), \
+	.show = _ ## _name ## _show, \
+	.store = NULL, \
+}
+
+>>>>>>> 5a673dd1fe2e (gpu/msm: adreno_sysfs: Declare a macro to store value alongwith permission)
 #define ADRENO_SYSFS_ATTR(_a) \
 	container_of((_a), struct adreno_sysfs_attribute, attr)
 

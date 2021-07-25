@@ -29,8 +29,6 @@ struct adreno_sysfs_attribute adreno_attr_##_name = { \
 	.store = _ ## _name ## _store, \
 }
 
-<<<<<<< HEAD
-=======
 #define _ADRENO_SYSFS_FPERM_ATTR(_name, _fperm, __show, __store) \
 struct adreno_sysfs_attribute adreno_attr_##_name = { \
 	.attr = __ATTR(_name, _fperm, __show, __store), \
@@ -38,14 +36,6 @@ struct adreno_sysfs_attribute adreno_attr_##_name = { \
 	.store = _ ## _name ## _store, \
 }
 
-#define _ADRENO_SYSFS_ATTR_RO(_name, __show) \
-struct adreno_sysfs_attribute adreno_attr_##_name = { \
-	.attr = __ATTR(_name, 0444, __show, NULL), \
-	.show = _ ## _name ## _show, \
-	.store = NULL, \
-}
-
->>>>>>> 5a673dd1fe2e (gpu/msm: adreno_sysfs: Declare a macro to store value alongwith permission)
 #define ADRENO_SYSFS_ATTR(_a) \
 	container_of((_a), struct adreno_sysfs_attribute, attr)
 
@@ -221,7 +211,7 @@ static unsigned int _hwcg_show(struct adreno_device *adreno_dev)
 static int _throttling_store(struct adreno_device *adreno_dev,
 	unsigned int val)
 {
-	 return _pwrctrl_store(adreno_dev, val, ADRENO_THROTTLING_CTRL);
+	return 0;
 }
 
 static unsigned int _throttling_show(struct adreno_device *adreno_dev)
@@ -346,7 +336,7 @@ static ADRENO_SYSFS_BOOL(sptp_pc);
 static ADRENO_SYSFS_BOOL(lm);
 static ADRENO_SYSFS_BOOL(preemption);
 static ADRENO_SYSFS_BOOL(hwcg);
-static ADRENO_SYSFS_BOOL(throttling);
+static ADRENO_SYSFS_RO_BOOL(throttling);
 
 
 

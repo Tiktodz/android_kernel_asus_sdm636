@@ -16,8 +16,8 @@
 
 #ifdef CONFIG_SCHED_WALT
 
-/* Default window size (in ns) = 20ms */
-#define DEFAULT_SCHED_RAVG_WINDOW ((20000000 / TICK_NSEC) * TICK_NSEC)
+/* Default window size (in ns) = 10ms */
+#define DEFAULT_SCHED_RAVG_WINDOW ((10000000 / TICK_NSEC) * TICK_NSEC)
 /* Min window size (in ns) = 10ms */
 #define MIN_SCHED_RAVG_WINDOW ((10000000 / TICK_NSEC) * TICK_NSEC)
 /* Min window size (in ns) = 1s */

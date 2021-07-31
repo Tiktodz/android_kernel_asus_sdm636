@@ -48,10 +48,7 @@ bool __read_mostly walt_disabled = false;
  * Window size (in ns). Adjust for the tick size so that the window
  * rollover occurs just before the tick boundary.
  */
-__read_mostly unsigned int walt_ravg_window =
-					    (20000000 / TICK_NSEC) * TICK_NSEC;
-#define MIN_SCHED_RAVG_WINDOW ((10000000 / TICK_NSEC) * TICK_NSEC)
-#define MAX_SCHED_RAVG_WINDOW ((1000000000 / TICK_NSEC) * TICK_NSEC)
+__read_mostly unsigned int walt_ravg_window = DEFAULT_SCHED_RAVG_WINDOW;
 
 static unsigned int sync_cpu;
 static ktime_t ktime_last;

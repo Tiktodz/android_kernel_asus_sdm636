@@ -16,6 +16,13 @@
 
 #ifdef CONFIG_SCHED_WALT
 
+/* Default window size (in ns) = 20ms */
+#define DEFAULT_SCHED_RAVG_WINDOW ((20000000 / TICK_NSEC) * TICK_NSEC)
+/* Min window size (in ns) = 10ms */
+#define MIN_SCHED_RAVG_WINDOW ((10000000 / TICK_NSEC) * TICK_NSEC)
+/* Min window size (in ns) = 1s */
+#define MAX_SCHED_RAVG_WINDOW ((1000000000 / TICK_NSEC) * TICK_NSEC)
+
 void walt_update_task_ravg(struct task_struct *p, struct rq *rq, int event,
 		u64 wallclock, u64 irqtime);
 void walt_inc_cumulative_runnable_avg(struct rq *rq, struct task_struct *p);

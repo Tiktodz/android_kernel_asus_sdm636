@@ -274,9 +274,10 @@ static ssize_t msm_rpmstats_file_read(struct file *file, char __user *bufu,
 		(prvdata->read_idx < prvdata->num_records)) {
 		if (prvdata->platform_data->version == 1)
 			prvdata->len = msm_rpmstats_copy_stats(prvdata);
-		else if (prvdata->platform_data->version == 2)
+		else if (prvdata->platform_data->version == 2) {
 			prvdata->len = msm_rpmstats_copy_stats_v2(prvdata);
 			*ppos = 0;
+		}
 	}
 	ret = simple_read_from_buffer(bufu, count, ppos,
 			prvdata->buf, prvdata->len);

@@ -860,8 +860,12 @@ static ssize_t available_governors_show(struct device *d,
 					struct device_attribute *attr,
 					char *buf)
 {
+	struct devfreq *df = to_devfreq(d);
 	struct devfreq_governor *tmp_governor;
 	ssize_t count = 0;
+
+	if (strstr(dev_name(df->dev.parent), "kgsl"))
+		return sprintf(buf, "%s\n", "msm-adreno-tz powersave performance");
 
 	mutex_lock(&devfreq_list_lock);
 	list_for_each_entry(tmp_governor, &devfreq_governor_list, node)

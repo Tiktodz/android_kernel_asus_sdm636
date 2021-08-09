@@ -2786,8 +2786,8 @@ static void do_read_data(struct work_struct *work)
 
 		port_ptr = ipc_router_get_port_ref(hdr->dst_port_id);
 		if (!port_ptr) {
-			IPC_RTR_ERR("%s: No local port id %08x\n", __func__,
-				hdr->dst_port_id);
+//			IPC_RTR_ERR("%s: No local port id %08x\n", __func__,
+//				hdr->dst_port_id);
 			goto read_next_pkt1;
 		}
 

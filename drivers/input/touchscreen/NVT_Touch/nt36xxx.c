@@ -41,7 +41,6 @@
 #include <linux/proc_fs.h>
 #include <asm/uaccess.h>
 #include <linux/input/mt.h>
-#include <linux/wakelock.h>
 #include <linux/of_gpio.h>
 #include <linux/of_irq.h>
 //Huaqin add for Reduce the bright screen time by qimaokang at 2018/4/20 start
@@ -1042,7 +1041,7 @@ int nvt_test_node_init(struct platform_device *tpinfo_device)
 #define ID_GESTURE_SLIDE_LEFT		23
 #define ID_GESTURE_SLIDE_RIGHT		24
 
-static struct wake_lock gestrue_wakelock;
+static struct wakeup_source gestrue_wakelock;
 
 #define MASK_GESTURE_DOUBLE_CLICK 0x101
 #define MASK_GESTURE_SLIDE_UP 0x102
@@ -1436,7 +1435,7 @@ static irqreturn_t nvt_ts_irq_handler(int32_t irq, void *dev_id)
 
 #if WAKEUP_GESTURE
 	if (bTouchIsAwake == 0) {
-		wake_lock_timeout(&gestrue_wakelock, msecs_to_jiffies(700));
+		__pm_wakeup_event(&gestrue_wakelock, msecs_to_jiffies(700));
 	}
 #endif
 
@@ -1671,7 +1670,7 @@ static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_i
 	__set_bit(GESTURE_EVENT_V, ts->input_dev->keybit);
 	__set_bit(GESTURE_EVENT_Z, ts->input_dev->keybit);
 	__set_bit(GESTURE_EVENT_C, ts->input_dev->keybit);
-	wake_lock_init(&gestrue_wakelock, WAKE_LOCK_SUSPEND, "poll-wake-lock");
+	wakeup_source_init(&gestrue_wakelock, "gestrue_wakelock");
 #endif
 
 	sprintf(ts->phys, "input/ts");

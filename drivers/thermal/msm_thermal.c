@@ -997,12 +997,8 @@ static int  msm_thermal_cpufreq_callback(struct notifier_block *nfb,
 
 	switch (event) {
 	case CPUFREQ_ADJUST:
-#ifdef CONFIG_MACH_ASUS_X00TD
-		max_freq_req = cpus[policy->cpu].parent_ptr->limited_max_freq;
-#else
 		max_freq_req = (lmh_dcvs_is_supported) ? UINT_MAX :
 			cpus[policy->cpu].parent_ptr->limited_max_freq;
-#endif
 		min_freq_req = cpus[policy->cpu].parent_ptr->limited_min_freq;
 		pr_debug("mitigating CPU%d to freq max: %u min: %u\n",
 			policy->cpu, max_freq_req, min_freq_req);
@@ -1142,11 +1138,7 @@ static void update_cpu_freq(int cpu, enum freq_limits changed)
 		 */
 		if (lmh_dcvs_available) {
 			msm_lmh_dcvs_update(cpu);
-#ifdef CONFIG_MACH_ASUS_X00TD
-			if (changed)
-#else
 			if (changed & FREQ_LIMIT_MIN)
-#endif
 				cpufreq_update_policy(cpu);
 		} else {
 			cpufreq_update_policy(cpu);

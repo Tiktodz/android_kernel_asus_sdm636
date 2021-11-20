@@ -378,7 +378,7 @@
 #define USB3_MAX_CURRENT_MA			900
 #define SMB1351_IRQ_REG_COUNT			8
 #define SMB1351_CHG_PRE_MIN_MA			100
-#define SMB1351_CHG_FAST_MIN_MA			1000
+#define SMB1351_CHG_FAST_MIN_MA			2000
 #define SMB1351_CHG_FAST_MAX_MA			4500
 #define SMB1351_CHG_PRE_SHIFT			5
 #define SMB1351_CHG_FAST_SHIFT			4
@@ -708,7 +708,7 @@ static int smb1351_fastchg_current_set(struct smb1351_charger *chip,
 	}
 
 	/*
-	 * fast chg current could not support less than 1000mA
+	 * fast chg current could not support less than 2000mA
 	 * use pre chg to instead for the parallel charging
 	 */
 	if (fastchg_current < SMB1351_CHG_FAST_MIN_MA) {
@@ -741,8 +741,8 @@ static int smb1351_fastchg_current_set(struct smb1351_charger *chip,
 		if (chip->version == SMB_UNKNOWN)
 			return -EINVAL;
 
-		/* SMB1350 supports FCC upto 2600 mA */
-		if (chip->version == SMB1350 && fastchg_current > 2600)
+		/* SMB1351 supports FCC upto 2600 mA */
+		if (chip->version == SMB1351 && fastchg_current > 2600)
 			fastchg_current = 2600;
 
 		/* set fastchg current */
@@ -1233,7 +1233,7 @@ static int smb1351_set_usb_chg_current(struct smb1351_charger *chip,
 		return 0;
 	}
 
-	/* set suspend bit when urrent_ma <= 2 */
+	/* set suspend bit when current_ma <= 2 */
 	if (current_ma <= SUSPEND_CURRENT_MA) {
 		smb1351_usb_suspend(chip, CURRENT, true);
 		pr_debug("USB suspend\n");
@@ -2547,7 +2547,7 @@ static void smb1351_external_power_changed(struct power_supply *psy)
 	if (rc)
 		pr_err("Couldn't read USB current_max property, rc=%d\n", rc);
 	else
-		current_limit = prop.intval / 1000;
+		current_limit = prop.intval / 2000;
 
 	pr_debug("online = %d, current_limit = %d\n", online, current_limit);
 

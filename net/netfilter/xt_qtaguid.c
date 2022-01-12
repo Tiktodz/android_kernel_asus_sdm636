@@ -14,6 +14,7 @@
  */
 #define DEBUG
 
+#include <linux/android_version.h>
 #include <linux/file.h>
 #include <linux/inetdevice.h>
 #include <linux/module.h>
@@ -2987,12 +2988,16 @@ static struct xt_match qtaguid_mt_reg __read_mostly = {
 
 static int __init qtaguid_mt_init(void)
 {
-	if (qtaguid_proc_register(&xt_qtaguid_procdir)
+	/* Android 11 and older uses the custom "qtaguid" module instead */
+	if (get_android_version() > 11)
+		return 0;
+	else if (qtaguid_proc_register(&xt_qtaguid_procdir)
 	    || iface_stat_init(xt_qtaguid_procdir)
 	    || xt_register_match(&qtaguid_mt_reg)
 	    || misc_register(&qtu_device))
 		return -1;
-	return 0;
+	else
+		return 0;
 }
 
 /*

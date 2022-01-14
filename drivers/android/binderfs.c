@@ -763,31 +763,35 @@ static struct file_system_type binder_fs_type = {
 
 int __init init_binderfs(void)
 {
-	int ret;
-	const char *name;
-	size_t len;
+	if (get_android_version() < 11)
+		return 0;
+	else {
+		int ret;
+		const char *name;
+		size_t len;
 
-	/* Verify that the default binderfs device names are valid. */
-	name = binder_devices_param;
-	for (len = strcspn(name, ","); len > 0; len = strcspn(name, ",")) {
-		if (len > BINDERFS_MAX_NAME)
-			return -E2BIG;
-		name += len;
-		if (*name == ',')
-			name++;
-	}
+		/* Verify that the default binderfs device names are valid. */
+		name = binder_devices_param;
+		for (len = strcspn(name, ","); len > 0; len = strcspn(name, ",")) {
+			if (len > BINDERFS_MAX_NAME)
+				return -E2BIG;
+			name += len;
+			if (*name == ',')
+				name++;
+		}
 
-	/* Allocate new major number for binderfs. */
-	ret = alloc_chrdev_region(&binderfs_dev, 0, BINDERFS_MAX_MINOR,
-				  "binder");
-	if (ret)
+		/* Allocate new major number for binderfs. */
+		ret = alloc_chrdev_region(&binderfs_dev, 0, BINDERFS_MAX_MINOR,
+					  "binder");
+		if (ret)
+			return ret;
+
+		ret = register_filesystem(&binder_fs_type);
+		if (ret) {
+			unregister_chrdev_region(binderfs_dev, BINDERFS_MAX_MINOR);
+			return ret;
+		}
+
 		return ret;
-
-	ret = register_filesystem(&binder_fs_type);
-	if (ret) {
-		unregister_chrdev_region(binderfs_dev, BINDERFS_MAX_MINOR);
-		return ret;
 	}
-
-	return ret;
 }

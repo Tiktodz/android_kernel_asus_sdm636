@@ -6680,7 +6680,7 @@ static int __init binder_init(void)
 				    &binder_transaction_log_fops);
 	}
 
-	if (!IS_ENABLED(CONFIG_ANDROID_BINDERFS) &&
+	if ((get_android_version() < 11) &&
 	    strcmp(binder_devices_param, "") != 0) {
 		/*
 		* Copy the module_parameter string, because we don't want to

@@ -1444,7 +1444,7 @@ static irqreturn_t nvt_ts_irq_handler(int32_t irq, void *dev_id)
 
 #if WAKEUP_GESTURE
 	if (bTouchIsAwake == 0) {
-		wake_lock_timeout(&gestrue_wakelock, msecs_to_jiffies(5000));
+		wake_lock_timeout(&gestrue_wakelock, msecs_to_jiffies(700));
 	}
 #endif
 

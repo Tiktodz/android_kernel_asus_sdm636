@@ -111,7 +111,7 @@
 				qcom,pull = <5>; /* Input No pull */
 				qcom,vin-sel = <0>; /* VIN0 */
 				qcom,src-sel = <0>; /* Constant */
-				qcom,master-en = <0>; /* Eanble GPIO */
+				qcom,master-en = <0>; /* Enable GPIO */
 				/delete-property/ qcom,out-strength;
 			};
 			gpio@cb00 {
@@ -187,7 +187,12 @@
 	};
 
 	qcom,pm660@1 {
-		pm660_haptics: qcom,haptic@c000 {
+		qcom,haptics@c000 {
+			qcom,actuator-type = <1>;
+			qcom,vmax-mv = <2800>;
+		};
+
+		qcom,haptic@c000 {
 			qcom,actuator-type = "erm";
 		};
 	};

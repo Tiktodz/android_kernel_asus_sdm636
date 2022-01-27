@@ -29,6 +29,7 @@
 #include <linux/slab.h>
 #include <linux/qpnp-misc.h>
 #include <linux/qpnp/qpnp-revid.h>
+#include <linux/led_vibration.h>
 
 /* Register definitions */
 #define HAP_STATUS_1_REG(chip)		(chip->base + 0x0A)
@@ -2545,7 +2546,16 @@ static struct platform_driver qpnp_haptics_driver = {
 	.remove		= qpnp_haptics_remove,
 	.shutdown	= qpnp_haptics_shutdown,
 };
-module_platform_driver(qpnp_haptics_driver);
 
+static int __init led_qpnp_haptics_init(void)
+{
+	/* Vibration Type Check */
+	if (get_led_vibration() < 1)
+		return 0;
+	
+	return platform_driver_register(&qpnp_haptics_driver);
+}
+
+module_init(led_qpnp_haptics_init);
 MODULE_DESCRIPTION("QPNP haptics driver");
 MODULE_LICENSE("GPL v2");

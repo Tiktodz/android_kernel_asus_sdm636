@@ -30,6 +30,7 @@
 #include <linux/qpnp-misc.h>
 #include <linux/qpnp/qpnp-revid.h>
 #include <linux/led_vibration.h>
+#include <linux/android_version.h>
 
 /* Register definitions */
 #define HAP_STATUS_1_REG(chip)		(chip->base + 0x0A)
@@ -2549,8 +2550,8 @@ static struct platform_driver qpnp_haptics_driver = {
 
 static int __init led_qpnp_haptics_init(void)
 {
-	/* Vibration Type Check */
-	if (get_led_vibration() < 1)
+	/* Vibration Type and Android Version Check */
+	if ((get_android_version() < 11) || (get_led_vibration() < 1))
 		return 0;
 	
 	return platform_driver_register(&qpnp_haptics_driver);

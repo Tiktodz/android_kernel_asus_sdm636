@@ -31,6 +31,7 @@
 #include <linux/qpnp-misc.h>
 #include <linux/qpnp/qpnp-haptic.h>
 #include <linux/qpnp/qpnp-revid.h>
+#include <linux/led_vibration.h>
 #include "../../staging/android/timed_output.h"
 
 #define QPNP_HAP_STATUS(b)		(b + 0x0A)
@@ -3214,6 +3215,10 @@ static struct platform_driver qpnp_haptic_driver = {
 
 static int __init qpnp_haptic_init(void)
 {
+	/* Vibration Type Check */
+	if (get_led_vibration() > 0)
+		return 0;
+	
 	return platform_driver_register(&qpnp_haptic_driver);
 }
 module_init(qpnp_haptic_init);

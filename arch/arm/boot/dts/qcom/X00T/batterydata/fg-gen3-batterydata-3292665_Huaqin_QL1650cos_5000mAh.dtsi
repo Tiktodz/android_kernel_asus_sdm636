@@ -5,19 +5,9 @@ qcom,3292665_huaqin_ql1626cos_5000mah_averaged_masterslave_jan8th2018 {
 	qcom,nom-batt-capacity-mah = <5000>;
 	qcom,batt-id-kohm = <51>;
 	qcom,battery-beta = <3435>;
-	qcom,fcc-max-ua = <3000000>;
-	qcom,fastchg-current-ma = <3000>;
+        qcom,fcc-max-ua = <3000000>;
+        qcom,fastchg-current-ma = <3000>;
 	qcom,fg-cc-cv-threshold-mv = <4340>;
-	qcom,step-chg-ranges = <3600000 4000000 3000000
-				4001000 4200000 2800000
-				4201000 4400000 2000000>;
-	qcom,jeita-fcc-ranges = <0      100     600000
-				 101    200     2000000
-				 201    450     3000000
-				 451    550     600000>;
-	qcom,jeita-fv-ranges = <0      100     4200000
-				101    450     4350000
-				451    550     4200000>;
 	qcom,battery-type = "3292665_huaqin_ql1626cos_5000mah_averaged_masterslave_jan8th2018";
 	qcom,checksum = <0x9FF6>;
 	qcom,gui-version = "PM660GUI - 0.0.0.45";

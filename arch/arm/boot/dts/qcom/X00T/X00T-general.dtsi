@@ -150,12 +150,13 @@
 		pm660_charger: qcom,qpnp-smb2 {
 			qcom,chg-alert-vadc = <&pm660_vadc>;
 			qcom,micro-usb;
-			qcom,fcc-max-ua = <3000000>;
+			qcom,fcc-max-ua = <3300000>;
 			qcom,fv-max-uv = <4350000>;
-			qcom,usb-icl-ua = <3000000>;
+			qcom,usb-icl-ua = <3300000>;
 			qcom,float-option = <1>;
 			qcom,auto-recharge-soc;
 			qcom,pm-gpio3-vadc = <&pm660_vadc>;
+			qcom,thermal-mitigation = <3300000 3300000 3300000 3300000 2500000 2500000 2100000>;
 		};
 
 		pm660_pdphy: qcom,usb-pdphy@1700 {

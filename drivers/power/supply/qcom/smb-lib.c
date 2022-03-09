@@ -3783,8 +3783,17 @@ void jeita_rule(void)
 
 	case JEITA_STATE_RANGE_0_to_100:
 		charging_enable = EN_BAT_CHG_EN_COMMAND_TRUE;
-		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P485;
-		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA;
+#ifdef CONFIG_FORCE_FAST_CHARGE
+		if (force_fast_charge > 0) {
+			FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P485;
+			FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA;
+		} else {
+#endif
+		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P350;
+		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_925MA;
+#ifdef CONFIG_FORCE_FAST_CHARGE
+		}
+#endif
 
 		rc = SW_recharge(smbchg_dev);
 		if (rc < 0)
@@ -3798,8 +3807,17 @@ void jeita_rule(void)
 	case JEITA_STATE_RANGE_100_to_500:
 #endif
 		charging_enable = EN_BAT_CHG_EN_COMMAND_TRUE;
-		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P485;
-		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA;
+#ifdef CONFIG_FORCE_FAST_CHARGE
+		if (force_fast_charge > 0) {
+			FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P485;
+			FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA;
+		} else {
+#endif
+		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P350;
+		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_2050MA;
+#ifdef CONFIG_FORCE_FAST_CHARGE
+		}
+#endif
 
 		rc = SW_recharge(smbchg_dev);
 		if (rc < 0)
@@ -3813,8 +3831,17 @@ void jeita_rule(void)
 	case JEITA_STATE_RANGE_500_to_600:
 #endif
 		charging_enable = EN_BAT_CHG_EN_COMMAND_TRUE;
-		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P485;
-		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA;
+#ifdef CONFIG_FORCE_FAST_CHARGE
+		if (force_fast_charge > 0) {
+			FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P485;
+			FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA;
+		} else {
+#endif
+		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P350;
+		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_2050MA;
+#ifdef CONFIG_FORCE_FAST_CHARGE
+		}
+#endif
 		break;
 
 #ifdef ASUS_CUSTOM_JEITA_SET_MODIFY
@@ -3832,6 +3859,12 @@ void jeita_rule(void)
 		pr_debug("%s: Stop charging, smart = %d\n", __func__,
 				smartchg_stop_flag);
 		charging_enable = EN_BAT_CHG_EN_COMMAND_FALSE;
+#ifdef CONFIG_FORCE_FAST_CHARGE
+	} else if (force_fast_charge > 0) {
+			charging_enable = EN_BAT_CHG_EN_COMMAND_TRUE;
+			FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P485;
+			FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA;
+#endif
 	} else {
 		charging_enable = EN_BAT_CHG_EN_COMMAND_TRUE;
 		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P485;
@@ -3925,7 +3958,12 @@ void asus_chg_flow_work(struct work_struct *work)
 			pr_err("%s: Couldn't read fast_CURRENT_LIMIT_CFG_REG\n",
 				__func__);
 
-		set_icl = ICL_4000mA;
+#ifdef CONFIG_FORCE_FAST_CHARGE
+		if (force_fast_charge > 0) {
+			set_icl = ICL_4000mA;
+		} else
+#endif
+		set_icl = ICL_500mA;
 
 		rc = smblib_masked_write(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,
 						USBIN_CURRENT_LIMIT_MASK,
@@ -3939,7 +3977,12 @@ void asus_chg_flow_work(struct work_struct *work)
 		break;
 
 	case CDP_CHARGER_BIT:
-		set_icl = ICL_4000mA;
+#ifdef CONFIG_FORCE_FAST_CHARGE
+		if (force_fast_charge > 0) {
+			set_icl = ICL_4000mA;
+		} else
+#endif
+		set_icl = ICL_1500mA;
 
 		rc = smblib_masked_write(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,
 						USBIN_CURRENT_LIMIT_MASK,
@@ -3959,7 +4002,13 @@ void asus_chg_flow_work(struct work_struct *work)
 		break;
 
 	case OCP_CHARGER_BIT:
-		set_icl = ICL_4000mA;
+#ifdef CONFIG_FORCE_FAST_CHARGE
+		if (force_fast_charge > 0) {
+			set_icl = ICL_4000mA;
+		} else
+#endif
+		set_icl = ICL_1000mA;
+		
 		rc = smblib_masked_write(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,
 						USBIN_CURRENT_LIMIT_MASK,
 						set_icl);
@@ -3981,6 +4030,11 @@ void asus_chg_flow_work(struct work_struct *work)
 			pr_err("%s: Couldn't read fast_CURRENT_LIMIT_CFG_REG\n",
 				__func__);
 
+#ifdef CONFIG_FORCE_FAST_CHARGE
+		if (force_fast_charge > 0) {
+			set_icl = ICL_4000mA;
+		} else
+#endif
 		set_icl = ICL_4000mA;
 
 		rc = smblib_masked_write(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,
@@ -4093,23 +4147,24 @@ void asus_adapter_adc_work(struct work_struct *work)
 	/* determine current-setting value for DCP type AC: */
 	switch (ASUS_ADAPTER_ID) {
 	case ASUS_750K:
-		usb_max_current = ICL_4000mA;
-		break;
-
 	case ASUS_200K:
-		usb_max_current = ICL_4000mA;
-		break;
-
 	case PB:
-		usb_max_current = ICL_4000mA;
-		break;
-
 	case OTHERS:
-		usb_max_current = ICL_4000mA;
+#ifdef CONFIG_FORCE_FAST_CHARGE
+		if (force_fast_charge > 0) {
+			usb_max_current = ICL_4000mA;
+		} else
+#endif
+		usb_max_current = ICL_2000mA;
 		break;
 
 	case ADC_NOT_READY:
-		usb_max_current = ICL_4000mA;
+#ifdef CONFIG_FORCE_FAST_CHARGE
+		if (force_fast_charge > 0) {
+			usb_max_current = ICL_4000mA;
+		} else
+#endif
+		usb_max_current = ICL_1000mA;
 		break;
 	}
 

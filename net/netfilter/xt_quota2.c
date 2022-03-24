@@ -102,28 +102,14 @@ static void quota2_log(const struct net_device *in,
 
 	strlcpy(q->last_prefix, prefix, QUOTA2_SYSFS_WORK_MAX_SIZE);
 
-	nlh = nlmsg_put(log_skb, /*pid*/0, /*seq*/0, qlog_nl_event,
-			sizeof(*pm), 0);
-	if (!nlh) {
-		pr_err("xt_quota2: nlmsg_put failed\n");
-		kfree_skb(log_skb);
-		return;
-	}
-	pm = nlmsg_data(nlh);
-	memset(pm, 0, sizeof(*pm));
-	if (skb->tstamp.tv64 == 0)
-		__net_timestamp((struct sk_buff *)skb);
-	pm->hook = hooknum;
-	if (prefix != NULL)
-		strlcpy(pm->prefix, prefix, sizeof(pm->prefix));
 	if (in)
-		strlcpy(pm->indev_name, in->name, sizeof(pm->indev_name));
-	if (out)
-		strlcpy(pm->outdev_name, out->name, sizeof(pm->outdev_name));
+		strlcpy(q->last_iface, in->name, QUOTA2_SYSFS_WORK_MAX_SIZE);
+	else if (out)
+		strlcpy(q->last_iface, out->name, QUOTA2_SYSFS_WORK_MAX_SIZE);
+	else
+		strlcpy(q->last_iface, "UNKNOWN", QUOTA2_SYSFS_WORK_MAX_SIZE);
 
-	NETLINK_CB(log_skb).dst_group = 1;
-	pr_debug("throwing 1 packets to netlink group 1\n");
-	netlink_broadcast(nflognl, log_skb, 0, 1, GFP_ATOMIC);
+	schedule_work(&q->work);
 }
 
 static ssize_t quota_proc_read(struct file *file, char __user *buf,

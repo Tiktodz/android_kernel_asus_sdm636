@@ -443,7 +443,7 @@ config QCOM_THERMAL_LIMITS_DCVS
 
 config MSM_THERMAL_SIMPLE
 	bool "Simple solution to monitor temperature and limit CPU frequency"
-	default n
+	default y
 	help
 	  When properly configured, this driver monitors temperatures from a
 	  specified sensor and reduces the CPU's max frequency in response to

@@ -138,7 +138,6 @@ static int one_hundred = 100;
 #ifdef CONFIG_PRINTK
 static int ten_thousand = 10000;
 #endif
-static int max_freq_reporting_policy = FREQ_REPORT_INVALID_POLICY - 1;
 #ifdef CONFIG_PERF_EVENTS
 static int six_hundred_forty_kb = 640 * 1024;
 #endif

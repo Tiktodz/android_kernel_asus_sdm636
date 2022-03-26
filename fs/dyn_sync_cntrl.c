@@ -92,7 +92,7 @@ static void dyn_fsync_force_flush(void)
 }
 
 
-#ifdef CONFIG_DYNAMIC_FSYNC_SYSCHANGES_SYNC
+#ifndef CONFIG_REBOOT_AUTO_FSYNC
 static int dyn_fsync_panic_event(struct notifier_block *this,
 		unsigned long event, void *ptr)
 {
@@ -147,7 +147,7 @@ static int fb_notifier_cb(struct notifier_block *nb, unsigned long action,
 
 // Module structures
 
-#ifdef CONFIG_DYNAMIC_FSYNC_SYSCHANGES_SYNC
+#ifndef CONFIG_REBOOT_AUTO_FSYNC
 static struct notifier_block dyn_fsync_notifier = 
 {
 	.notifier_call = dyn_fsync_notify_sys,
@@ -178,7 +178,7 @@ static struct attribute_group dyn_fsync_active_attr_group =
 	.attrs = dyn_fsync_active_attrs,
 };
 
-#ifdef CONFIG_DYNAMIC_FSYNC_SYSCHANGES_SYNC
+#ifndef CONFIG_REBOOT_AUTO_FSYNC
 static struct notifier_block dyn_fsync_panic_block = 
 {
 	.notifier_call  = dyn_fsync_panic_event,
@@ -196,7 +196,7 @@ static int dyn_fsync_init(void)
 	int sysfs_result;
 	int ret;
 
-#ifdef CONFIG_DYNAMIC_FSYNC_SYSCHANGES_SYNC
+#ifndef CONFIG_REBOOT_AUTO_FSYNC
 	register_reboot_notifier(&dyn_fsync_notifier);
 	
 	atomic_notifier_chain_register(&panic_notifier_list,
@@ -226,7 +226,7 @@ static int dyn_fsync_init(void)
 	{
 		pr_err("%s: Failed to register msm_drm_notifier callback\n", __func__);
 
-#ifdef CONFIG_DYNAMIC_FSYNC_SYSCHANGES_SYNC
+#ifndef CONFIG_REBOOT_AUTO_FSYNC
 		unregister_reboot_notifier(&dyn_fsync_notifier);
 
 		atomic_notifier_chain_unregister(&panic_notifier_list,
@@ -247,7 +247,7 @@ static int dyn_fsync_init(void)
 
 static void dyn_fsync_exit(void)
 {
-#ifdef CONFIG_DYNAMIC_FSYNC_SYSCHANGES_SYNC
+#ifndef CONFIG_REBOOT_AUTO_FSYNC
 	unregister_reboot_notifier(&dyn_fsync_notifier);
 
 	atomic_notifier_chain_unregister(&panic_notifier_list,

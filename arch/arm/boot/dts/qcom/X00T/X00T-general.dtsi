@@ -187,8 +187,8 @@
 	};
 
 	qcom,pm660@1 {
-		pm660_haptics: qcom,haptic@c000 {
-			qcom,actuator-type = "erm";
+		pm660_haptics: qcom,haptics@c000 {
+			qcom,actuator-type = <1>;
 		};
 	};
 

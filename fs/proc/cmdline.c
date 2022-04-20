@@ -46,6 +46,14 @@ static void patch_safetynet_flags(char *cmd)
 	patch_flag(cmd, "androidboot.verifiedbootstate=", "green");
 	patch_flag(cmd, "androidboot.veritymode=", "enforcing");
 	patch_flag(cmd, "androidboot.vbmeta.device_state=", "locked");
+        patch_flag(cmd, "ro.debuggable", "0");
+        patch_flag(cmd, "ro.build.type", "user");
+        patch_flag(cmd, "ro.build.tags", "release-keys");
+        patch_flag(cmd, "ro.build.selinux", "1");
+        patch_flag(cmd, "ro.boot.warranty_bit", "0");
+        patch_flag(cmd, "ro.warranty_bit", "0");
+        patch_flag(cmd, "ro.secure", "1");
+        patch_flag(cmd, "ro.boot.selinux", "enforcing");
 }
 
 static int __init proc_cmdline_init(void)

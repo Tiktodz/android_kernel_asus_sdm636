@@ -643,7 +643,7 @@ config TCP_CONG_SOCIOPATH
 
 config TCP_CONG_BBR
 	tristate "BBR TCP"
-	default m
+	default y
 	---help---
 
 	BBR (Bottleneck Bandwidth and RTT) TCP congestion control aims to

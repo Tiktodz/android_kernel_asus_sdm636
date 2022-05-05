@@ -2001,6 +2001,7 @@ static int x86_pmu_event_init(struct perf_event *event)
 	if (err) {
 		if (event->destroy)
 			event->destroy(event);
+		event->destroy = NULL;
 	}
 
 	if (ACCESS_ONCE(x86_pmu.attr_rdpmc))
@@ -2196,11 +2197,11 @@ static int backtrace_stack(void *data, char *name)
 	return 0;
 }
 
-static void backtrace_address(void *data, unsigned long addr, int reliable)
+static int backtrace_address(void *data, unsigned long addr, int reliable)
 {
 	struct perf_callchain_entry *entry = data;
 
-	perf_callchain_store(entry, addr);
+	return perf_callchain_store(entry, addr);
 }
 
 static const struct stacktrace_ops backtrace_ops = {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2019 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013-2019, 2021 The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -918,45 +918,6 @@ static inline uint8_t wma_parse_mpdudensity(uint8_t mpdudensity)
 		return 0;
 }
 
-#if defined(CONFIG_HL_SUPPORT) && defined(FEATURE_WLAN_TDLS)
-
-/**
- * wma_unified_peer_state_update() - update peer state
- * @pdev: pdev handle
- * @sta_mac: pointer to sta mac addr
- * @bss_addr: bss address
- * @sta_type: sta entry type
- *
- *
- * Return: None
- */
-static void
-wma_unified_peer_state_update(
-	struct ol_txrx_pdev_t *pdev,
-	uint8_t *sta_mac,
-	uint8_t *bss_addr,
-	uint8_t sta_type)
-{
-	if (STA_ENTRY_TDLS_PEER == sta_type)
-		ol_txrx_peer_state_update(pdev, sta_mac,
-					  OL_TXRX_PEER_STATE_AUTH);
-	else
-		ol_txrx_peer_state_update(pdev, bss_addr,
-					  OL_TXRX_PEER_STATE_AUTH);
-}
-#else
-
-static inline void
-wma_unified_peer_state_update(
-	struct ol_txrx_pdev_t *pdev,
-	uint8_t *sta_mac,
-	uint8_t *bss_addr,
-	uint8_t sta_type)
-{
-	ol_txrx_peer_state_update(pdev, bss_addr, OL_TXRX_PEER_STATE_AUTH);
-}
-#endif
-
 #define CFG_CTRL_MASK              0xFF00
 #define CFG_DATA_MASK              0x00FF
 
@@ -1246,9 +1207,6 @@ QDF_STATUS wma_send_peer_assoc(tp_wma_handle wma,
 	}
 	if (params->wpa_rsn >> 1)
 		cmd->peer_flags |= WMI_PEER_NEED_GTK_2_WAY;
-
-	wma_unified_peer_state_update(pdev, params->staMac,
-				      params->bssId, params->staType);
 
 #ifdef FEATURE_WLAN_WAPI
 	if (params->encryptType == eSIR_ED_WPI) {
@@ -2371,8 +2329,22 @@ static QDF_STATUS wma_unified_bcn_tmpl_send(tp_wma_handle wma,
 		tmpl_len = *(uint32_t *) &bcn_info->beacon[0];
 	else
 		tmpl_len = bcn_info->beaconLength;
-	if (p2p_ie_len)
+
+	if (tmpl_len > WMI_BEACON_TX_BUFFER_SIZE) {
+		WMA_LOGE("tmpl_len: %d > %d. Invalid tmpl len", tmpl_len,
+			 WMI_BEACON_TX_BUFFER_SIZE);
+		return -EINVAL;
+	}
+
+	if (p2p_ie_len) {
+		if (tmpl_len <= p2p_ie_len) {
+			WMA_LOGE("tmpl_len %d <= p2p_ie_len %d, Invalid",
+				 tmpl_len, p2p_ie_len);
+			return -EINVAL;
+		}
 		tmpl_len -= (uint32_t) p2p_ie_len;
+	}
+
 	frm = bcn_info->beacon + bytes_to_strip;
 	tmpl_len_aligned = roundup(tmpl_len, sizeof(A_UINT32));
 	/*

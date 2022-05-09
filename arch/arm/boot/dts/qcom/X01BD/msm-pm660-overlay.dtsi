@@ -74,7 +74,7 @@
 	ADCPWREN_PMI_GP1-gpios34 = <&tlmm 3 0x0>;
 
 	qcom,micro-usb;
-	qcom,fcc-max-ua = <1000000>;
+	qcom,fcc-max-ua = <2300000>;
 	qcom,fv-max-uv = <4350000>;
 	qcom,usb-icl-ua = <1000000>;
 	qcom,float-option = <1>;

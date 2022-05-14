@@ -1,7 +1,7 @@
 config ZRAM
 	tristate "Compressed RAM block device support"
 	depends on BLOCK && SYSFS && CRYPTO
-	select CRYPTO_ZSTD
+	select CRYPTO_LZ4
 	select ZPOOL
 	default n
 	help
@@ -39,4 +39,4 @@ config ZRAM_MEMORY_TRACKING
 
 config ZRAM_DEFAULT_COMP_ALGORITHM
 	string "Default ZRAM algorithm"
-	default "zstd"
+	default "lz4"

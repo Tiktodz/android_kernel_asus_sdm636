@@ -25,8 +25,17 @@
 #define ISP_STATS_STREAM_BIT  0x80000000
 
 #define VFE_HW_LIMIT 1
+#define ISP_KERNEL_STATE 1
 
 struct msm_vfe_cfg_cmd_list;
+
+struct isp_kstate {
+	uint32_t kernel_sofid;
+	uint32_t drop_reconfig;
+	uint32_t vfeid;
+	uint32_t dual_cam_drop_detected;
+	uint32_t dual_cam_drop;
+};
 
 enum ISP_START_PIXEL_PATTERN {
 	ISP_BAYER_RGRGRG,
@@ -870,6 +879,10 @@ struct msm_vfe_dual_lpm_mode {
 #define V4L2_PIX_FMT_P16GBRG10 v4l2_fourcc('P', 'G', 'B', '0')
 #define V4L2_PIX_FMT_P16GRBG10 v4l2_fourcc('P', 'G', 'R', '0')
 #define V4L2_PIX_FMT_P16RGGB10 v4l2_fourcc('P', 'R', 'G', '0')
+#define V4L2_PIX_FMT_P16BGGR12 v4l2_fourcc('P', 'B', 'G', '2')
+#define V4L2_PIX_FMT_P16GBRG12 v4l2_fourcc('P', 'G', 'B', '2')
+#define V4L2_PIX_FMT_P16GRBG12 v4l2_fourcc('P', 'G', 'R', '2')
+#define V4L2_PIX_FMT_P16RGGB12 v4l2_fourcc('P', 'R', 'G', '2')
 #define V4L2_PIX_FMT_NV14 v4l2_fourcc('N', 'V', '1', '4')
 #define V4L2_PIX_FMT_NV41 v4l2_fourcc('N', 'V', '4', '1')
 #define V4L2_PIX_FMT_META v4l2_fourcc('Q', 'M', 'E', 'T')

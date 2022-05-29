@@ -44,10 +44,6 @@
 	#include "fg-gen3-batterydata-3292665_Huaqin_QL1650cos_5000mAh.dtsi"
 };
 
-&smb1351_charger {
-	status = "disabled";
-};
-
 &i2c_4{
 	status = "ok";
 

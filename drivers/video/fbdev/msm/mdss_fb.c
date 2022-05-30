@@ -1451,7 +1451,7 @@ static int mdss_fb_probe(struct platform_device *pdev)
 			pr_err("failed to register input handler\n");
 
 	INIT_DELAYED_WORK(&mfd->idle_notify_work, __mdss_fb_idle_notify_work);
-#ifdef CONFIG_MACH_ASUS_X01BD
+#ifdef CONFIG_MACH_ASUS_SDM660
 	INIT_DELAYED_WORK(&mfd->early_unblank_work, asus_lcd_early_unblank_func);
 	mfd->early_unblank_work_queued = false;
 #endif

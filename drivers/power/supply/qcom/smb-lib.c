@@ -929,7 +929,7 @@ static int smblib_get_pulse_cnt(struct smb_charger *chg, int *count)
 #define USBIN_100MA	100000
 #define USBIN_150MA	150000
 #define USBIN_500MA	500000
-#define USBIN_900MA	900000
+#define USBIN_900MA	1500000
 
 static int set_sdp_current(struct smb_charger *chg, int icl_ua)
 {
@@ -1028,7 +1028,7 @@ int smblib_set_icl_current(struct smb_charger *chg, int icl_ua)
 			goto enable_icl_changed_interrupt;
 		}
 	} else {
-		set_sdp_current(chg, 100000);
+		set_sdp_current(chg, 1500000);
 		rc = smblib_set_charge_param(chg, &chg->param.usb_icl, icl_ua);
 		if (rc < 0) {
 			smblib_err(chg, "Couldn't set HC ICL rc=%d\n", rc);
@@ -1041,11 +1041,11 @@ override_suspend_config:
 	override = true;
 	if (icl_ua == INT_MAX) {
 		/* remove override if no voters - hw defaults is desired */
-		override = false;
+		override = true;
 	} else if (chg->typec_mode == POWER_SUPPLY_TYPEC_SOURCE_DEFAULT) {
 		if (chg->real_charger_type == POWER_SUPPLY_TYPE_USB)
 			/* For std cable with type = SDP never override */
-			override = false;
+			override = true;
 		else if (chg->real_charger_type == POWER_SUPPLY_TYPE_USB_CDP
 			&& icl_ua == 1500000)
 			/*

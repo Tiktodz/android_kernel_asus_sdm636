@@ -3695,7 +3695,7 @@ void jeita_rule(void)
 		charging_enable = EN_BAT_CHG_EN_COMMAND_TRUE;
 
 		/* reg=1070 */
-		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P385;
+		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P392;
 
 		/* reg=1061 */
 		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_3000MA;
@@ -3710,7 +3710,7 @@ void jeita_rule(void)
 		charging_enable = EN_BAT_CHG_EN_COMMAND_TRUE;
 
 		/* reg=1070 */
-		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P385;
+		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P392;
 
 		/* reg=1061 */
        		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_3000MA;

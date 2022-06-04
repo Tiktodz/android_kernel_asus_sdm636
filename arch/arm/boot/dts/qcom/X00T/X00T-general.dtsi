@@ -111,7 +111,7 @@
 				qcom,pull = <5>; /* Input No pull */
 				qcom,vin-sel = <0>; /* VIN0 */
 				qcom,src-sel = <0>; /* Constant */
-				qcom,master-en = <0>; /* Eanble GPIO */
+				qcom,master-en = <0>; /* Enable GPIO */
 				/delete-property/ qcom,out-strength;
 			};
 			gpio@cb00 {
@@ -150,12 +150,13 @@
 		pm660_charger: qcom,qpnp-smb2 {
 			qcom,chg-alert-vadc = <&pm660_vadc>;
 			qcom,micro-usb;
-			qcom,fcc-max-ua = <1000000>;
+			qcom,fcc-max-ua = <3000000>;
 			qcom,fv-max-uv = <4350000>;
-			qcom,usb-icl-ua = <1000000>;
+			qcom,usb-icl-ua = <3000000>;
 			qcom,float-option = <1>;
 			qcom,auto-recharge-soc;
 			qcom,pm-gpio3-vadc = <&pm660_vadc>;
+			qcom,thermal-mitigation = <3000000 3000000 3000000 3000000 3000000 3000000>;
 		};
 
 		pm660_pdphy: qcom,usb-pdphy@1700 {

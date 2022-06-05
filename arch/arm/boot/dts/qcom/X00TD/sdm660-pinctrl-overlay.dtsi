@@ -162,6 +162,62 @@
 &soc {
 	tlmm: pinctrl@03000000 {
 		ts_mux {
+			cdfinger_reset {
+				cdfinger_reset_active: cdfinger_reset_active {
+					mux {
+						pins = "gpio20";
+						function = "gpio";
+					};
+
+					config {
+						pins = "gpio20";
+						drive-strength = <2>;
+						bias-pull-up;
+					};
+				};
+
+				cdfinger_reset_sleep: cdfinger_reset_sleep {
+					mux {
+						pins = "gpio20";
+						function = "gpio";
+					};
+
+					config {
+						pins = "gpio20";
+						drive-strength = <2>;
+						bias-pull-up;
+					};
+				};
+			};
+
+			cdfinger_irq {
+				cdfinger_irq_active: cdfinger_irq_active {
+					mux {
+						pins = "gpio72";
+						function = "gpio";
+					};
+
+					config {
+						pins = "gpio72";
+						drive-strength = <2>;
+						bias-disable;
+					};
+				};
+
+				cdfinger_irq_sleep: cdfinger_irq_sleep {
+					mux {
+						pins = "gpio72";
+						function = "gpio";
+					};
+
+					config {
+						pins = "gpio72";
+						drive-strength = <2>;
+						bias-disable;
+					};
+				};
+			};
+
 			commonfp_reset_reset: commonfp_reset_reset {
 				mux {
 					pins = "gpio20";

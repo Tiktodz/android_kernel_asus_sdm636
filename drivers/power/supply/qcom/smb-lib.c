@@ -1038,7 +1038,17 @@ int smblib_set_icl_current(struct smb_charger *chg, int icl_ua)
 			goto enable_icl_changed_interrupt;
 		}
 	} else {
-		set_sdp_current(chg, 1500000);
+		/*
+		 * Try USB 2.0/3,0 option first on USB path when maximum input
+		 * current limit is 900mA or below for better accuracy; in case
+		 * of error, proceed to use USB high-current mode.
+		 */
+		if (icl_ua <= USBIN_900MA) {
+			rc = set_sdp_current(chg, icl_ua);
+			if (rc >= 0)
+				goto enable_icl_changed_interrupt;
+		}
+
 		rc = smblib_set_charge_param(chg, &chg->param.usb_icl, icl_ua);
 		if (rc < 0) {
 			smblib_err(chg, "Couldn't set HC ICL rc=%d\n", rc);
@@ -2653,7 +2663,7 @@ int smblib_get_prop_die_health(struct smb_charger *chg,
 #define SDP_CURRENT_UA			500000
 #define CDP_CURRENT_UA			1500000
 #ifdef CONFIG_MACH_ASUS_X00T
-#define DCP_CURRENT_UA			500000
+#define DCP_CURRENT_UA			1500000
 #else
 #define DCP_CURRENT_UA			2100000
 #endif

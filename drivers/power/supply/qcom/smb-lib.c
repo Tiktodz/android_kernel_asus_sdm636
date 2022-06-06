@@ -65,6 +65,7 @@ extern struct timespec last_jeita_time;
 static struct alarm bat_alarm;
 /* global gpio_control */
 extern struct gpio_control *global_gpio;
+static int ASUS_ADAPTER_ID;
 void smblib_asus_monitor_start(struct smb_charger *chg, int time);
 
 bool smartchg_stop_flag;
@@ -78,6 +79,15 @@ int asus_get_prop_charging_current(struct smb_charger *chg);
 int asus_get_prop_batt_health(struct smb_charger *chg);
 int asus_get_prop_usb_present(struct smb_charger *chg);
 int flag_repeat = 0;
+
+enum ADAPTER_ID {
+	NONE = 0,
+	ASUS_750K,
+	ASUS_200K,
+	PB,
+        OTHERS,
+	ADC_NOT_READY,
+};
 
 char *health_type[] = {
 	"GOOD",
@@ -2643,7 +2653,7 @@ int smblib_get_prop_die_health(struct smb_charger *chg,
 #define SDP_CURRENT_UA			500000
 #define CDP_CURRENT_UA			1500000
 #ifdef CONFIG_MACH_ASUS_X00T
-#define DCP_CURRENT_UA			2050000
+#define DCP_CURRENT_UA			500000
 #else
 #define DCP_CURRENT_UA			2100000
 #endif
@@ -3407,6 +3417,13 @@ void asus_batt_RTC_work(struct work_struct *dat)
 #define ICL_2850mA	0x72
 #define ICL_3000mA	0x78
 #define ASUS_MONITOR_CYCLE	60000
+#define TITAN_750K_MIN	675
+#define TITAN_750K_MAX	851
+#define TITAN_200K_MIN	306
+#define TITAN_200K_MAX	406
+#define VADC_THD_300MV	300
+#define VADC_THD_900MV	900
+#define VADC_THD_1000MV	1000
 
 /* ASUS BSP Add per min monitor jeita & thermal & typeC_DFP */
 void smblib_asus_monitor_start(struct smb_charger *chg, int time)
@@ -3895,8 +3912,15 @@ void asus_chg_flow_work(struct work_struct *work)
 	case DCP_CHARGER_BIT | QC_3P0_BIT:
 	case DCP_CHARGER_BIT | QC_2P0_BIT:
 	case DCP_CHARGER_BIT:
+		/* reg=1370 */
+		rc = smblib_read(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,
+					&USBIN_1_cc);
+		if (rc < 0)
+			pr_err("%s: Couldn't read fast_CURRENT_LIMIT_CFG_REG\n",
+				__func__);
+
 		/* reg=1370 bit7-bit0 */
-		set_icl = ICL_2050mA;
+		set_icl = ICL_1500mA;
 
 		rc = smblib_masked_write(smbchg_dev,
 						USBIN_CURRENT_LIMIT_CFG_REG,
@@ -3904,6 +3928,13 @@ void asus_chg_flow_work(struct work_struct *work)
 						set_icl);
 		if (rc < 0)
 			pr_err("%s: Failed to set USBIN_CURRENT_LIMIT\n",
+				__func__);
+
+		/* reg=1370 */
+		rc = smblib_read(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,
+					&USBIN_1_cc);
+		if (rc < 0)
+			pr_err("%s: Couldn't read fast_CURRENT_LIMIT_CFG_REG\n",
 				__func__);
 
 		/* USB DPDM Switch to ADC (2D) */
@@ -3917,7 +3948,7 @@ void asus_chg_flow_work(struct work_struct *work)
 		}
 
 		schedule_delayed_work(&smbchg_dev->asus_adapter_adc_work,
-					msecs_to_jiffies(5000));
+					msecs_to_jiffies(15000));
 		break;
 
 	default:
@@ -3926,10 +3957,81 @@ void asus_chg_flow_work(struct work_struct *work)
 	}
 }
 
+
+// Getting charger ID Here
+extern int32_t get_ID_vadc_voltage(void);
+static void CHG_TYPE_judge(struct smb_charger *chg)
+{
+	int adc_result;
+	int ret;
+	int MIN_750K, MAX_750K, MIN_200K, MAX_200K;
+
+	MIN_750K = TITAN_750K_MIN;
+	MAX_750K = TITAN_750K_MAX;
+	MIN_200K = TITAN_200K_MIN;
+	MAX_200K = TITAN_200K_MAX;
+
+	/* read charger ID via pm660 gpio3 */
+	adc_result = get_ID_vadc_voltage();
+
+        if(flag_repeat == 0)
+   {
+	/* vdm1 < 0.3v */
+	if (adc_result <= VADC_THD_300MV) {
+		ret = gpio_direction_output(global_gpio->ADCPWREN_PMI_GP1, 1);
+		if (ret)
+			pr_err("%s: failed to pull-high ADCPWREN_PMI_GP1-gpios34\n",
+				__func__);
+		else
+			pr_debug("%s: Pull high ADC_VH_EN\n", __func__);
+
+		msleep(500);
+                
+        if(flag_repeat == 0)
+		/* vdm2 > 1v */
+		adc_result = get_ID_vadc_voltage();
+		if (adc_result >= VADC_THD_1000MV) { //For Others only
+		   { 	ASUS_ADAPTER_ID = OTHERS;
+                        flag_repeat = 1;
+                   }
+		} else {
+			/* 0.675 < adc_result < 0.851 */         //For asus only             
+			if (adc_result >= MIN_750K && adc_result <= MAX_750K) {
+				ASUS_ADAPTER_ID = ASUS_750K;
+                                flag_repeat = 1;
+			/* 0.306 < adc_result <  0.406 */
+			} else if (adc_result >= MIN_200K &&
+					adc_result <= MAX_200K){
+				ASUS_ADAPTER_ID = ASUS_200K;
+                                flag_repeat = 1;
+			} 
+                                
+                }
+	/* vdm1 */
+	} else {
+		if (adc_result >= VADC_THD_900MV)
+		    ASUS_ADAPTER_ID = PB;
+                   else
+			ASUS_ADAPTER_ID = OTHERS;
+                } 
+
+    }
+
+    if(ASUS_ADAPTER_ID == 4||ASUS_ADAPTER_ID == 3) //Non-Asus-Charger
+        printk("OTHER_CHARGER\n");
+   
+       else if(ASUS_ADAPTER_ID == 1||ASUS_ADAPTER_ID == 2)//Asus-Charger
+                printk("ASUS_CHARGER\n");
+    
+               else if(ASUS_ADAPTER_ID == 3)
+                        printk("POWER_BANK");
+        
+}
+
 void asus_adapter_adc_work(struct work_struct *work)
 {
 	int rc;
-	u8 usb_max_current = ICL_2050mA;
+	u8 usb_max_current;
 	u8 USBIN_CURRENT_LIMIT_reg;
 
 	if (!asus_get_prop_usb_present(smbchg_dev)) {
@@ -3948,6 +4050,9 @@ void asus_adapter_adc_work(struct work_struct *work)
 
 
 	msleep(5);
+       	CHG_TYPE_judge(smbchg_dev);
+
+    	usb_max_current = ICL_3000mA;
 
 	rc = smblib_set_usb_suspend(smbchg_dev, 0);
 	if (rc < 0)
@@ -3967,6 +4072,9 @@ void asus_adapter_adc_work(struct work_struct *work)
 		pr_err("%s: failed to pull-low ADC_SW_EN-gpios59\n", __func__);
 	else
 		pr_debug("%s: Pull low USBSW_S\n", __func__);
+
+	printk("%s:setting mA = 0x%x\n", __func__,
+			usb_max_current);
 
 	/* Set current:
 	 * reg=1370, bit7-bit0=

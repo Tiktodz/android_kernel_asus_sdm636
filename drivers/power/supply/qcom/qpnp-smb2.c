@@ -2498,6 +2498,30 @@ static void remove_proc_charger_limit(void)
 	proc_remove(limit_entry);
 }
 
+int32_t get_ID_vadc_voltage(void)
+{
+	struct qpnp_vadc_chip *vadc_dev;
+	struct qpnp_vadc_result adc_result;
+	int32_t adc;
+
+	vadc_dev = qpnp_get_vadc(smbchg_dev->dev, "pm-gpio3");
+	if (IS_ERR(vadc_dev)) {
+		pr_err("%s: qpnp_get_vadc failed\n", __func__);
+		return PTR_ERR(vadc_dev);
+	}
+
+	/* Read the GPIO2 VADC channel with 1:1 scaling */
+	qpnp_vadc_read(vadc_dev, VADC_AMUX2_GPIO, &adc_result);
+	adc = (int) adc_result.physical;
+
+	/* uV to mV */
+	adc = adc / 1000;
+
+	pr_debug("%s: adc=%d adc_result.physical=%lld adc_result.chan=0x%x\n",
+			__func__, adc, adc_result.physical, adc_result.chan);
+
+	return adc;
+}
 #endif
 
 static int smb2_probe(struct platform_device *pdev)

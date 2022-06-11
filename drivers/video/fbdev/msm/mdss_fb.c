@@ -96,9 +96,7 @@
 extern int focal_detect_flag;
 #endif
 
-#ifdef CONFIG_MACH_ASUS_X00TD
 static struct wake_lock early_unblank_wakelock;
-#endif
 extern bool lcd_suspend_flag;
 static void asus_lcd_early_unblank_func(struct work_struct *);
 static struct workqueue_struct *asus_lcd_early_unblank_wq;
@@ -125,10 +123,6 @@ static u32 mdss_fb_pseudo_palette[16] = {
 };
 
 static struct msm_mdp_interface *mdp_instance;
-
-#ifdef CONFIG_MACH_ASUS_X01BD
-static struct wake_lock early_unblank_wakelock;
-#endif
 
 static int mdss_fb_register(struct msm_fb_data_type *mfd);
 static int mdss_fb_open(struct fb_info *info, int user);

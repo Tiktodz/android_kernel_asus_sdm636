@@ -390,6 +390,8 @@ const uint16_t touch_key_array[TOUCH_KEY_NUM] = {
 /* Huaqin modify  for TT1176710 by liunianliang at 2018/03/30 start */
 #define GESTURE_EVENT_C 		KEY_TP_GESTURE_C
 #define GESTURE_EVENT_E 		KEY_TP_GESTURE_E
+#define GESTURE_EVENT_M			KEY_TP_GESTURE_M
+#define GESTURE_EVENT_O			KEY_TP_GESTURE_O
 #define GESTURE_EVENT_S 		KEY_TP_GESTURE_S
 #define GESTURE_EVENT_V 		KEY_TP_GESTURE_V
 #define GESTURE_EVENT_W 		KEY_TP_GESTURE_W
@@ -409,8 +411,8 @@ const uint16_t gesture_key_array[] = {
 	GESTURE_EVENT_V,
 	GESTURE_EVENT_DOUBLE_CLICK,
 	GESTURE_EVENT_Z,
-	KEY_M,
-	KEY_O,
+	GESTURE_EVENT_M,
+	GESTURE_EVENT_O,
 	GESTURE_EVENT_E,
 	GESTURE_EVENT_S,
 	GESTURE_EVENT_SWIPE_UP,
@@ -428,6 +430,8 @@ const uint16_t gesture_key_array[] = {
 	GESTURE_EVENT_SWIPE_DOWN,
 	GESTURE_EVENT_SWIPE_LEFT,
 	GESTURE_EVENT_SWIPE_RIGHT,
+	KEY_M,
+	KEY_O,
 };
 /* Huaqin add by yuexinghan for gesture mode 20171030 end */
 #endif
@@ -1134,11 +1138,17 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id)
 			break;
 		case GESTURE_WORD_M:
 			NVT_LOG("Gesture : Word-M.\n");
-			keycode = gesture_key_array[5];
+			if (get_android_version() < 11) {
+				keycode = gesture_key_array[24];
+			} else
+				keycode = gesture_key_array[5];
 			break;
 		case GESTURE_WORD_O:
 			NVT_LOG("Gesture : Word-O.\n");
-			keycode = gesture_key_array[6];
+			if (get_android_version() < 11) {
+				keycode = gesture_key_array[25];
+			} else
+				keycode = gesture_key_array[6];
 			break;
 		case ID_GESTURE_WORD_e:
 			if (get_android_version() < 11) {

@@ -428,3 +428,4 @@ obj-$(CONFIG_SND_SOC_TPA6130A2)	+= snd-soc-tpa6130a2.o
 obj-$(CONFIG_SND_SOC_TFA9874)	+= tfa9874/
 obj-y += sdm660_cdc/
 obj-y += msm_sdw/
+subdir-ccflags-y := $(call cc-disable-warning, enum-conversion)

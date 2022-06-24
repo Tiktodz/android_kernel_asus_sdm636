@@ -13,5 +13,13 @@
 };
 
 &pm660_gpios {
-	/delete-node/ gpio@c200;
+	gpio@c200 {
+		qcom,mode = <3>; /* Analog Pass Through */
+		qcom,pull = <5>; /* Input No pull */
+		qcom,vin-sel = <0>; /* VIN0 */
+		qcom,src-sel = <0>; /* Constant */
+		qcom,master-en = <0>; /* Eanble GPIO */
+
+		/delete-property/ qcom,out-strength;
+	};
 };

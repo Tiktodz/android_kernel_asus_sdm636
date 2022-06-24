@@ -14,17 +14,6 @@
 };
 
 &pm660_gpios {
-	gpio@c200 {
-		status = "okay";
-		qcom,mode = <3>; /* Analog Pass Through */
-		qcom,pull = <5>; /* Input No pull */
-		qcom,vin-sel = <0>; /* VIN0 */
-		qcom,src-sel = <0>; /* Constant */
-		qcom,master-en = <0>; /* Eanble GPIO */
-	};
-};
-
-&pm660_gpios {
 	gpio@cb00 {
 		status = "ok";
 		qcom,master-en = <0>;

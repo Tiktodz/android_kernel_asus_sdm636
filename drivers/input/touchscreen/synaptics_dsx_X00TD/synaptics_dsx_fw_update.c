@@ -43,30 +43,31 @@
 #include "synaptics_dsx_core.h"
 
 #define FW_IHEX_NAME "synaptics/startup_fw_update.bin"
-/* Huaqin modify for ZQL1650-1521 by diganyun at 2018/06/06  start */
+#ifdef CONFIG_MACH_ASUS_X00TD
 #define FW_IMAGE_NAME "startup_fw_update.img"
-
 #define DO_STARTUP_FW_UPDATE
+#else
+#define FW_IMAGE_NAME "synaptics/startup_fw_update.img"
+#endif
 
-
-#ifdef DO_STARTUP_FW_UPDATE
-/* Huaqin modify for ZQL1650-1570 by diganyun at 2018/06/14  start */
 /*
+#ifdef DO_STARTUP_FW_UPDATE
 #ifdef CONFIG_FB
 #define WAIT_FOR_FB_READY
 #define FB_READY_WAIT_MS 100
 #define FB_READY_TIMEOUT_S 30
 #endif
-*/
-/* Huaqin modify for ZQL1650-1570 by diganyun at 2018/06/14  end */
 #endif
-#define ENABLE_SYS_REFLASH true
-/* Huaqin modify for ZQL1650-1521 by diganyun at 2018/06/06  end */
+*/
 /*
 #define MAX_WRITE_SIZE 4096
 */
 
-
+#ifdef CONFIG_MACH_ASUS_X00TD
+#define ENABLE_SYS_REFLASH true
+#else
+#define ENABLE_SYS_REFLASH false
+#endif
 #define FORCE_UPDATE false
 #define DO_LOCKDOWN false
 
@@ -3958,6 +3959,10 @@ int set_tddi_lockdown_data(unsigned char *lockdown_data, unsigned short leng)
 	retval = fwu_erase_lockdown_data();
 	if (retval < 0)
 		goto exit;
+
+#ifndef CONFIG_MACH_ASUS_X00TD
+	blk_cnt = fwu->blkcount.tddi_lockdown_data;
+#endif
 
 	fwu->config_size = fwu->blkcount.tddi_lockdown_data * fwu->block_size;
 	retval = fwu_allocate_read_config_buf(fwu->config_size);

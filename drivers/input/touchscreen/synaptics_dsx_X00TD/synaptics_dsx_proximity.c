@@ -41,7 +41,7 @@
 #include <linux/input/synaptics_dsx_X00TD.h>
 #include "synaptics_dsx_core.h"
 
-#define PROX_PHYS_NAME "synaptics_dsx/proximity"
+#define PROX_PHYS_NAME "synaptics_dsx_X00TD/proximity"
 
 #define HOVER_Z_MAX (255)
 

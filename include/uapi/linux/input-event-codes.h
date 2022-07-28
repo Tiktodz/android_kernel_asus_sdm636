@@ -683,12 +683,13 @@
 #define KEY_SARSENSOR_FAR		0x2eb
 
 #if defined(CONFIG_TOUCHSCREEN_NT36xxx_X00TD) || defined(CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_X00TD)
-#define KEY_TP_GESTURE_W 	0x2ec
-#define KEY_TP_GESTURE_E 	0x2ed
-#define KEY_TP_GESTURE_S 	0x2ee
-#define KEY_TP_GESTURE_Z 	0x2ef
-#define KEY_TP_GESTURE_C 	0x2f0
-#define KEY_TP_GESTURE_V 	0x2f1
+#define KEY_TP_GESTURE_W		253
+#define KEY_TP_GESTURE_E		250
+#define KEY_TP_GESTURE_S		251
+#define KEY_TP_GESTURE_Z		254
+#define KEY_TP_GESTURE_C		249
+#define KEY_TP_GESTURE_V		252
+#define KEY_TP_GESTURE_SWIPE_UP		255
 #endif
 #endif
 

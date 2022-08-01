@@ -81,8 +81,8 @@ int commonfp_power_on(void)
 	ret = pinctrl_select_pin(fp_g.fp_pinctrl,"commonfp_power_on");
 	if(ret)
 		goto exit;
-	
-	printk(KERN_INFO"power on OK!!!,ret:%d\n",ret);
+
+	pr_info("power on OK!!!, ret: %d\n", ret);
 	return ret;
 #endif
 exit:

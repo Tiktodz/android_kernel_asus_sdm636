@@ -424,14 +424,14 @@ static uint8_t bTouchIsAwake = 0;
 #if WAKEUP_GESTURE
 #define PAGESIZE 512
 
-static int double_tap_state = 0;
-static int letter_c_state = 0;
-static int letter_e_state = 0;
-static int letter_s_state = 0;
-static int letter_v_state = 0;
-static int letter_w_state = 0;
-static int letter_z_state = 0;
-static int up_swipe_state = 0;
+static int double_tap_state = 1;
+static int letter_c_state = 1;
+static int letter_e_state = 1;
+static int letter_s_state = 1;
+static int letter_v_state = 1;
+static int letter_w_state = 1;
+static int letter_z_state = 1;
+static int up_swipe_state = 1;
 
 #define GESTURE_ATTR(name)\
     static ssize_t name##_enable_read_func(struct file *file, char __user *user_buf, size_t count, loff_t *ppos)\

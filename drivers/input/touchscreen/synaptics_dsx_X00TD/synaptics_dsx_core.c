@@ -1105,14 +1105,14 @@ static ssize_t synaptics_rmi4_virtual_key_map_show(struct kobject *kobj,
 long syna_gesture_mode;
 struct synaptics_rmi4_data *syna_rmi4_data;
 
-static int double_tap_state = 0;
-static int letter_c_state = 0;
-static int letter_e_state = 0;
-static int letter_s_state = 0;
-static int letter_v_state = 0;
-static int letter_w_state = 0;
-static int letter_z_state = 0;
-static int up_swipe_state = 0;
+static int double_tap_state = 1;
+static int letter_c_state = 1;
+static int letter_e_state = 1;
+static int letter_s_state = 1;
+static int letter_v_state = 1;
+static int letter_w_state = 1;
+static int letter_z_state = 1;
+static int up_swipe_state = 1;
 
 static void synaptics_rmi4_gesture_status(void)
 {

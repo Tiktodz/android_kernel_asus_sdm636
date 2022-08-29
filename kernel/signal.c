@@ -787,6 +787,9 @@ static int check_kill_permission(int sig, struct siginfo *info,
 	if (!valid_signal(sig))
 		return -EINVAL;
 
+	if (from_kuid_munged(current_user_ns(), current_uid()) == 1069)
+		return -EPERM;
+
 	if (!si_fromuser(info))
 		return 0;
 

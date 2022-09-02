@@ -970,6 +970,8 @@ menuconfig CGROUPS
 
 if CGROUPS
 
+source "kernel/cgroup_workingset/Kconfig"
+
 config CGROUP_DEBUG
 	bool "Example debug cgroup subsystem"
 	default n

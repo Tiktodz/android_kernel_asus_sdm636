@@ -1705,6 +1705,10 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 			p->exit_signal = (clone_flags & CSIGNAL);
 		p->group_leader = p;
 		p->tgid = p->pid;
+#ifdef CONFIG_HW_CGROUP_WORKINGSET
+		p->ext_flags &= ~(PF_EXT_WSCG_MONITOR |
+				PF_EXT_WSCG_PREREAD);
+#endif
 	}
 
 	p->nr_dirtied = 0;

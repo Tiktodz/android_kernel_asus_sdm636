@@ -1647,6 +1647,9 @@ struct task_struct {
 	void *stack;
 	atomic_t usage;
 	unsigned int flags;	/* per process flags, defined below */
+#ifdef CONFIG_HW_CGROUP_WORKINGSET
+	unsigned int                    ext_flags;
+#endif
 	unsigned int ptrace;
 
 #ifdef CONFIG_SMP
@@ -2406,6 +2409,11 @@ extern void thread_group_cputime_adjusted(struct task_struct *p, cputime_t *ut, 
 #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
 #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezable */
 #define PF_SUSPEND_TASK 0x80000000      /* this thread called freeze_processes and should not be frozen */
+
+#ifdef CONFIG_HW_CGROUP_WORKINGSET
+#define PF_EXT_WSCG_MONITOR	0x00000001	/* I am in a workingset cgroup of monitor*/
+#define PF_EXT_WSCG_PREREAD	0x00000002	/* I am a thread preread workingset by myself */
+#endif
 
 /*
  * Only the _current_ task can read/write to tsk->flags, but other

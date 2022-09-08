@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2012-2018 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -2200,19 +2201,9 @@ static void fill_mlm_assoc_ind_vht(tpSirAssocReq assocreq,
 	}
 }
 
-/**
- * lim_send_mlm_assoc_ind() - Sends assoc indication to SME
- * @mac_ctx: Global Mac context
- * @sta_ds: Station DPH hash entry
- * @session_entry: PE session entry
- *
- * This function sends either LIM_MLM_ASSOC_IND
- * or LIM_MLM_REASSOC_IND to SME.
- *
- * Return: None
- */
-void lim_send_mlm_assoc_ind(tpAniSirGlobal mac_ctx,
-	tpDphHashNode sta_ds, tpPESession session_entry)
+QDF_STATUS lim_send_mlm_assoc_ind(tpAniSirGlobal mac_ctx,
+				  tpDphHashNode sta_ds,
+				  tpPESession session_entry)
 {
 	tpLimMlmAssocInd assoc_ind = NULL;
 	tpSirAssocReq assoc_req;
@@ -2249,7 +2240,7 @@ void lim_send_mlm_assoc_ind(tpAniSirGlobal mac_ctx,
 			lim_release_peer_idx(mac_ctx, sta_ds->assocId,
 				session_entry);
 			pe_err("AllocateMemory failed for assoc_ind");
-			return;
+			return QDF_STATUS_E_NOMEM;
 		}
 		qdf_mem_copy((uint8_t *) assoc_ind->peerMacAddr,
 			(uint8_t *) sta_ds->staAddr, sizeof(tSirMacAddr));
@@ -2302,7 +2293,7 @@ void lim_send_mlm_assoc_ind(tpAniSirGlobal mac_ctx,
 				pe_err("rsnIEdata index out of bounds: %d",
 					rsn_len);
 				qdf_mem_free(assoc_ind);
-				return;
+				return QDF_STATUS_E_INVAL;
 			}
 			assoc_ind->rsnIE.rsnIEdata[rsn_len] =
 				SIR_MAC_WPA_EID;
@@ -2454,5 +2445,5 @@ void lim_send_mlm_assoc_ind(tpAniSirGlobal mac_ctx,
 			 (uint32_t *) assoc_ind);
 		qdf_mem_free(assoc_ind);
 	}
-	return;
+	return QDF_STATUS_SUCCESS;
 }

@@ -1937,6 +1937,10 @@ static int cfq_set_group_idle(struct cgroup_subsys_state *css,
 	struct blkcg_gq *blkg;
 	int ret = 0;
 
+	if (!strncmp(current->comm, "init", sizeof("init")) ||
+		!strncmp(current->comm, "init.qcom.post_", sizeof("init.qcom.post_")))
+		return ret;
+
 	spin_lock_irq(&blkcg->lock);
 	cfqgd = blkcg_to_cfqgd(blkcg);
 	if (!cfqgd) {

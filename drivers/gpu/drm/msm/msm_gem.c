@@ -988,6 +988,9 @@ static struct drm_gem_object *_msm_gem_new(struct drm_device *dev,
 	obj = msm_gem_new_impl(dev, size, flags, struct_mutex_locked);
 	if (IS_ERR(obj))
 		return obj;
+	ret = msm_gem_new_impl(dev, size, flags, &obj);
+	if (ret)
+		return ERR_PTR(ret);
 
 	if (use_pages(obj)) {
 		ret = drm_gem_object_init(dev, obj, size);
@@ -1176,6 +1179,9 @@ struct drm_gem_object *msm_gem_import(struct drm_device *dev,
 	obj = msm_gem_new_impl(dev, size, MSM_BO_WC, false);
 	if (IS_ERR(obj))
 		return obj;
+	ret = msm_gem_new_impl(dev, size, MSM_BO_WC, &obj);
+	if (ret)
+		return ERR_PTR(ret);
 
 	drm_gem_private_object_init(dev, obj, size);
 

@@ -78,3 +78,67 @@
 		/* Update GPU chip ID*/
 		qcom,chipid = <0x05000900>;
 };
+
+/* EM overrides */
+&CPU0 {
+	capacity-dmips-mhz = <615>;
+	efficiency = <615>;
+};
+
+&CPU1 {
+	capacity-dmips-mhz = <615>;
+	efficiency = <615>;
+};
+
+&CPU2 {
+	capacity-dmips-mhz = <615>;
+	efficiency = <615>;
+};
+
+&CPU3 {
+	capacity-dmips-mhz = <615>;
+	efficiency = <615>;
+};
+
+&CPU4 {
+	capacity-dmips-mhz = <1024>;
+	efficiency = <1024>;
+};
+
+&CPU5 {
+	capacity-dmips-mhz = <1024>;
+	efficiency = <1024>;
+};
+
+&CPU6 {
+	capacity-dmips-mhz = <1024>;
+	efficiency = <1024>;
+};
+
+&CPU7 {
+	capacity-dmips-mhz = <1024>;
+	efficiency = <1024>;
+};
+
+&CPU_COST_0 {
+	busy-cost-data = <
+		 633600  43
+		 902400  62
+		1113600  80
+		1401600 123
+		1536000 144
+		1612800 160
+		1843200	183
+	>;
+};
+
+&CPU_COST_1 {
+	busy-cost-data = <
+		1113600 232
+		1401600 326
+		1747200 488
+		1804800 510
+		2150400	560
+		2208000	630
+	>;
+};

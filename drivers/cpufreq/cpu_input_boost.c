@@ -48,6 +48,7 @@ struct boost_drv {
 	wait_queue_head_t boost_waitq;
 	atomic_long_t max_boost_expires;
 	unsigned long state;
+	unsigned long last_input_jiffies;
 };
 
 static void input_unboost_worker(struct work_struct *work);
@@ -96,6 +97,14 @@ static void update_online_cpu_policy(void)
 	cpu = cpumask_first_and(cpu_perf_mask, cpu_online_mask);
 	cpufreq_update_policy(cpu);
 	put_online_cpus();
+}
+
+bool cpu_input_boost_within_input(unsigned long timeout_ms)
+{
+	struct boost_drv *b = &boost_drv_g;
+
+	return time_before(jiffies, b->last_input_jiffies +
+			   msecs_to_jiffies(timeout_ms));
 }
 
 static void __cpu_input_boost_kick(struct boost_drv *b)
@@ -259,6 +268,8 @@ static void cpu_input_boost_input_event(struct input_handle *handle,
 	struct boost_drv *b = handle->handler->private;
 
 	__cpu_input_boost_kick(b);
+
+	b->last_input_jiffies = jiffies;
 }
 
 static int cpu_input_boost_input_connect(struct input_handler *handler,
@@ -354,6 +365,7 @@ static int __init cpu_input_boost_init(void)
 		goto unregister_cpu_notif;
 	}
 
+	b->last_input_jiffies = jiffies;
 	b->fb_notif.notifier_call = fb_notifier_cb;
 	b->fb_notif.priority = INT_MAX;
 	ret = fb_register_client(&b->fb_notif);

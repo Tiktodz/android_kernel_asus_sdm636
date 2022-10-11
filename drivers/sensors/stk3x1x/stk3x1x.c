@@ -4278,7 +4278,7 @@ static int stk3x1x_power_ctl(struct stk3x1x_data *data, bool on)
 			return ret;
 		}
 		data->power_enabled = on;
-		printk(KERN_INFO "%s: disable stk3x1x power", __func__);
+		pr_debug(KERN_INFO "%s: disable stk3x1x power", __func__);
 		dev_dbg(&data->client->dev, "stk3x1x_power_ctl on=%d\n",
 				on);
 	} else if (on && !data->power_enabled) {
@@ -4297,7 +4297,7 @@ static int stk3x1x_power_ctl(struct stk3x1x_data *data, bool on)
 			return ret;
 		}
 		data->power_enabled = on;
-		printk(KERN_INFO "%s: enable stk3x1x power", __func__);
+		pr_debug(KERN_INFO "%s: enable stk3x1x power", __func__);
 		dev_dbg(&data->client->dev, "stk3x1x_power_ctl on=%d\n",
 				on);
 	} else {

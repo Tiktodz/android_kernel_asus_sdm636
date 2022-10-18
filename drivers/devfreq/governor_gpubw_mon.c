@@ -1,4 +1,5 @@
 /* Copyright (c) 2014-2018,2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -90,8 +91,15 @@ static int devfreq_gpubw_get_target(struct devfreq *df,
 			(unsigned int) priv->bus.total_time;
 	norm_cycles = (unsigned int)(priv->bus.ram_time + priv->bus.ram_wait) /
 			(unsigned int) priv->bus.total_time;
-	wait_active_percent = (100 * (unsigned int)priv->bus.ram_wait) /
-			(unsigned int) priv->bus.ram_time;
+
+	if (priv->bus.ram_wait == 0)
+		wait_active_percent = 0;
+	else if (priv->bus.ram_time == 0)
+		wait_active_percent = 100;
+	else
+		wait_active_percent = (100 * (unsigned int)priv->bus.ram_wait) /
+				(unsigned int) priv->bus.ram_time;
+
 	gpu_percent = (priv->bus.gpu_time == 0) ? 0 :
 			(100 * (unsigned int)priv->bus.gpu_time) /
 			(unsigned int) priv->bus.total_time;

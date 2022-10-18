@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2016,2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014-2018,2019, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -54,6 +54,7 @@ static int devfreq_gpubw_get_target(struct devfreq *df,
 	int result;
 	int level = 0;
 	int act_level;
+	int norm_max_cycles;
 	int norm_cycles;
 	int gpu_percent;
 	/*
@@ -83,6 +84,8 @@ static int devfreq_gpubw_get_target(struct devfreq *df,
 	if (priv->bus.total_time < LONG_FLOOR)
 		return result;
 
+	norm_max_cycles = (unsigned int)(priv->bus.ram_time) /
+			(unsigned int) priv->bus.total_time;
 	norm_cycles = (unsigned int)(priv->bus.ram_time + priv->bus.ram_wait) /
 			(unsigned int) priv->bus.total_time;
 	gpu_percent = (priv->bus.gpu_time == 0) ? 0 :
@@ -94,8 +97,8 @@ static int devfreq_gpubw_get_target(struct devfreq *df,
 	 * FAST hint.  Otherwise check the current value against the current
 	 * cutoffs.
 	 */
-	if (norm_cycles > priv->bus.max) {
-		_update_cutoff(priv, norm_cycles);
+	if (norm_max_cycles > priv->bus.max) {
+		_update_cutoff(priv, norm_max_cycles);
 		bus_profile->flag = DEVFREQ_FLAG_FAST_HINT;
 	} else {
 		/* GPU votes for IB not AB so don't under vote the system */

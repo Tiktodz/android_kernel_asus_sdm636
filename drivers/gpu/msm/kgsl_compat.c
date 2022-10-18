@@ -402,8 +402,6 @@ long kgsl_compat_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 	if (ret == -ENOIOCTLCMD) {
 		if (device->ftbl->compat_ioctl != NULL)
 			return device->ftbl->compat_ioctl(dev_priv, cmd, arg);
-
-		KGSL_DRV_INFO(device, "invalid ioctl code 0x%08X\n", cmd);
 	}
 
 	return ret;

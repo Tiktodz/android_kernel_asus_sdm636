@@ -1536,7 +1536,7 @@ static int __init usb_qcrndis_init(void)
 
 	ret = usb_function_register(&rndis_bamusb_func);
 	if (ret) {
-		pr_err("%s: failed to register diag %d\n", __func__, ret);
+		pr_debug("%s: failed to register diag %d\n", __func__, ret);
 		return ret;
 	}
 	return ret;

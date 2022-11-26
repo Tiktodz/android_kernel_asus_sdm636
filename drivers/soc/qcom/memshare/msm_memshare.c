@@ -443,7 +443,7 @@ static void shared_hyp_mapping(int client_id)
 			dest_perms, 2);
 
 	if (ret != 0) {
-		pr_err("memshare: hyp_assign_phys failed size=%u err=%d\n",
+		pr_debug("memshare: hyp_assign_phys failed size=%u err=%d\n",
 				memblock[client_id].size, ret);
 		return;
 	}

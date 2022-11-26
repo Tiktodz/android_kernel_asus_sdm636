@@ -89,7 +89,7 @@ static void free_shared_ram_perms(u32 client_id, phys_addr_t addr, u32 size)
 	ret = hyp_assign_phys(addr, size, source_vmlist, 2, dest_vmids,
 				dest_perms, 1);
 	if (ret != 0) {
-		pr_err("hyp_assign_phys failed IPA=0x016%pa size=%u err=%d\n",
+		pr_debug("hyp_assign_phys failed IPA=0x016%pa size=%u err=%d\n",
 			&addr, size, ret);
 	}
 }

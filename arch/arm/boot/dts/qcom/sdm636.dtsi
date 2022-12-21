@@ -17,6 +17,40 @@
 	compatible = "qcom,sdm636";
 	qcom,msm-id = <345 0x0>;
 
+	cpus {
+		CPU0: cpu@0 {
+			clock-frequency = <1612800000>;
+		};
+
+		CPU1: cpu@1 {
+			clock-frequency = <1612800000>;
+		};
+
+		CPU2: cpu@2 {
+			clock-frequency = <1612800000>;
+		};
+
+		CPU3: cpu@3 {
+			clock-frequency = <1612800000>;
+		};
+
+		CPU4: cpu@100 {
+			clock-frequency = <1804800000>;
+		};
+
+		CPU5: cpu@101 {
+			clock-frequency = <1804800000>;
+		};
+
+		CPU6: cpu@102 {
+			clock-frequency = <1804800000>;
+		};
+
+		CPU7: cpu@103 {
+			clock-frequency = <1804800000>;
+		};
+	};
+
 	reserved-memory {
 		/delete-node/ cdsp_fw_region@94a00000;
 

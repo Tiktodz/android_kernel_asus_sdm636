@@ -32,6 +32,7 @@
 #include <linux/task_work.h>
 #include <linux/module.h>
 #include <linux/sched_energy.h>
+#include <linux/math64.h>
 
 #include "sched.h"
 #include <trace/events/sched.h>

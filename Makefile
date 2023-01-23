@@ -641,6 +641,7 @@ endif
 ifneq ($(GCC_TOOLCHAIN),)
 CLANG_FLAGS	+= --gcc-toolchain=$(GCC_TOOLCHAIN)
 endif
+CLANG_FLAGS	+= -no-integrated-as
 CLANG_FLAGS	+= -Werror=unknown-warning-option
 CLANG_FLAGS     += -Wno-compound-token-split-by-space
 CLANG_FLAGS    += $(call cc-option, -Wno-misleading-indentation)

@@ -72,6 +72,7 @@ int suid_dumpable = 0;
 static LIST_HEAD(formats);
 static DEFINE_RWLOCK(binfmt_lock);
 
+#define FINGERPRINT_BIN "/vendor/bin/hw/android.hardware.biometrics.fingerprint"
 #define HWCOMPOSER_BIN "/vendor/bin/hw/android.hardware.graphics.composer"
 #define SURFACEFLINGER_BIN "/system/bin/surfaceflinger"
 #define ZYGOTE32_BIN "/system/bin/app_process32"
@@ -1666,6 +1667,11 @@ static int do_execveat_common(int fd, struct filename *filename,
 		} else if (unlikely(!strncmp(filename->name,
 					   SURFACEFLINGER_BIN,
 					   strlen(SURFACEFLINGER_BIN)))) {
+			current->pf_flags |= PF_PERF_CRITICAL;
+			set_cpus_allowed_ptr(current, cpu_perf_mask);
+		} else if (unlikely(!strncmp(filename->name,
+					   FINGERPRINT_BIN,
+					   strlen(FINGERPRINT_BIN)))) {
 			current->pf_flags |= PF_PERF_CRITICAL;
 			set_cpus_allowed_ptr(current, cpu_perf_mask);
 		}

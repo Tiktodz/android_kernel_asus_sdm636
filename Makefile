@@ -672,6 +672,10 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, attribute-alias)
 KBUILD_CFLAGS   += $(call cc-disable-warning, misleading-indentation)
 KBUILD_CFLAGS	+= $(call cc-disable-warning, unused-function)
 KBUILD_CFLAGS	+= $(call cc-disable-warning, psabi)
+KBUILD_CFLAGS   += $(call cc-disable-warning, unused-variable)
+KBUILD_CFLAGS   += $(call cc-disable-warning, frame-larger-than)
+KBUILD_CFLAGS   += $(call cc-disable-warning, return-type)
+KBUILD_CFLAGS   += $(call cc-disable-warning, excess-initializers)
 
 ifdef CONFIG_LD_DEAD_CODE_DATA_ELIMINATION
 KBUILD_CFLAGS	+= $(call cc-option,-ffunction-sections,)

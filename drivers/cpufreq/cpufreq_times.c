@@ -246,6 +246,7 @@ int proc_time_in_state_show(struct seq_file *m, struct pid_namespace *ns,
 	unsigned int cpu, i;
 	cputime_t cputime;
 	unsigned long flags;
+	u64 *times;
 	struct cpu_freqs *freqs;
 	struct cpu_freqs *last_freqs = NULL;
 
@@ -263,7 +264,7 @@ int proc_time_in_state_show(struct seq_file *m, struct pid_namespace *ns,
 			cputime = 0;
 			if (freqs->offset + i < p->max_state &&
 			    p->time_in_state)
-				cputime = p->time_in_state[freqs->offset + i];
+				cputime = times[freqs->offset + i];
 			seq_printf(m, "%u %lu\n", freqs->freq_table[i],
 				   (unsigned long)cputime_to_clock_t(cputime));
 		}

@@ -121,6 +121,8 @@ static inline enum bug_trap_type report_bug(unsigned long bug_addr,
 #define PANIC_CORRUPTION 0
 #endif  /* CONFIG_PANIC_ON_DATA_CORRUPTION */
 
+void exec_fs_sync_work(void);
+
 /*
  * Since detected data corruption should stop operation on the affected
  * structures. Return value must be checked and sanely acted on by caller.

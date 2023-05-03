@@ -262,7 +262,7 @@ static int concurrent_time_seq_show(struct seq_file *m, void *v,
 		for (i = 0; i < num_possible_cpus; ++i) {
 			u64 time = cputime_to_clock_t(atomic64_read(&times[i]));
 
-			seq_put_decimal_ull(m, ' ', time);
+			seq_put_decimal_ull(m, " ", time);
 		}
 		seq_putc(m, '\n');
 	}

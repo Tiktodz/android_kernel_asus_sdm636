@@ -20,10 +20,10 @@
 #include <linux/msm_adreno_devfreq.h>
 #include <linux/io.h>
 
-static int default_laziness = 4;
+static int default_laziness = 2;
 module_param_named(simple_laziness, default_laziness, int, 0664);
 
-static int ramp_up_threshold = 3000;
+static int ramp_up_threshold = 6000;
 module_param_named(simple_ramp_threshold, ramp_up_threshold, int, 0664);
 
 int simple_gpu_active = 0;
@@ -40,17 +40,14 @@ int simple_gpu_algorithm(int level, int *val,
 	__iowmb();
 
 	/* it's currently busy */
-	if (priv->bin.busy_time > ramp_up_threshold) {
-		if (level == 0) {
+	if ((unsigned int)priv->bin.busy_time > ramp_up_threshold) {
+		if (level == 0)
 			ret = 0; /* already maxed, so do nothing */
-		} else if ((level > 0) &&
-			(level <= (priv->bus.num - 1))) {
+		else if ((level > 0) && (level <= (priv->bus.num + 2)))
 			ret = -1; /* bump up to next pwrlevel */
-		}
 	/* idle case */
 	} else {
-		if ((level >= 0) &&
-			(level < (priv->bus.num - 1))) {
+		if ((level >= 0) && (level < (priv->bus.num + 2))) {
 			if (laziness > 0) {
 				/* hold off for a while */
 				laziness--;
@@ -62,7 +59,7 @@ int simple_gpu_algorithm(int level, int *val,
 				/* reset laziness count */
 				laziness = default_laziness;
 			}
-		} else if (level == (priv->bus.num - 1)) {
+		} else if (level == (priv->bus.num + 2)) {
 			/* already @ min, so do nothing */
 			ret = 0;
 		}

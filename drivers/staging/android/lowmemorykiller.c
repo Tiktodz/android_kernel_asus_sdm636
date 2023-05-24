@@ -81,6 +81,7 @@ static unsigned long lowmem_count(struct shrinker *s,
 
 #define MAX_WHITELISTAPPS 50
 char whitelist_apps[][MAX_WHITELISTAPPS] = {
+	"com.android.systemui"
 };
 int WHITELIST_OF_STRING = sizeof(whitelist_apps) / sizeof(whitelist_apps[0]);
 

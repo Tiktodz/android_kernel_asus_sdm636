@@ -1996,8 +1996,8 @@ int ext4_alloc_flex_bg_array(struct super_block *sb, ext4_group_t ngroup)
 	if (size <= sbi->s_flex_groups_allocated)
 		return 0;
 
-	new_groups = kvzalloc(roundup_pow_of_two(size *
-			      sizeof(*sbi->s_flex_groups)), GFP_KERNEL);
+	size = roundup_pow_of_two(size * sizeof(struct flex_groups));
+	new_groups = kvzalloc(size, GFP_KERNEL);
 	if (!new_groups) {
 		ext4_msg(sb, KERN_ERR, "not enough memory for %d flex groups",
 			 size / (int) sizeof(struct flex_groups));
@@ -3770,8 +3770,7 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
 			goto failed_mount;
 		}
 	}
-	rcu_assign_pointer(sbi->s_group_desc,
-			   kvmalloc(db_count *
+        sbi->s_group_desc = kvmalloc(db_count *
 					  sizeof(struct buffer_head *),
 					  GFP_KERNEL);
 	if (sbi->s_group_desc == NULL) {

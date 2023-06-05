@@ -32,8 +32,8 @@
  * Default termperature threshold for charging.
  * Every temperature units are in tenth of centigrade.
  */
-#define CM_DEFAULT_RECHARGE_TEMP_DIFF	50
-#define CM_DEFAULT_CHARGE_TEMP_MAX	500
+#define CM_DEFAULT_RECHARGE_TEMP_DIFF	60
+#define CM_DEFAULT_CHARGE_TEMP_MAX	600
 
 static const char * const default_event_names[] = {
 	[CM_EVENT_UNKNOWN] = "Unknown",
@@ -675,9 +675,7 @@ static int cm_check_thermal_status(struct charger_manager *cm)
  */
 static bool _cm_monitor(struct charger_manager *cm)
 {
-	int temp_alrt;
-
-	temp_alrt = cm_check_thermal_status(cm);
+	int temp_alrt = 0;
 
 	/* It has been stopped already */
 	if (temp_alrt && cm->emergency_stop)

@@ -33,6 +33,8 @@
 
 #include <trace/events/power.h>
 
+extern unsigned int is_cpu_overclocked;
+
 struct memlat_node {
 	unsigned int ratio_ceil;
 	bool mon_started;
@@ -389,7 +391,11 @@ int register_memlat(struct device *dev, struct memlat_hwmon *hw)
 	node->ratio_ceil = 10;
 	node->hw = hw;
 
-	hw->freq_map = init_core_dev_map(dev, "qcom,core-dev-table");
+	if ((is_cpu_overclocked < 1) && of_machine_is_compatible("qcom,sdm636"))
+		hw->freq_map = init_core_dev_map(dev, "qcom,core-dev-table-sts");
+	else
+		hw->freq_map = init_core_dev_map(dev, "qcom,core-dev-table");
+	
 	if (!hw->freq_map) {
 		dev_err(dev, "Couldn't find the core-dev freq table!\n");
 		return -EINVAL;

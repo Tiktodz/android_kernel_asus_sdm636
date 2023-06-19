@@ -23,6 +23,8 @@
 #include <linux/module.h>
 #include "governor.h"
 
+extern unsigned int is_cpu_overclocked;
+
 struct cpu_state {
 	unsigned int freq;
 	unsigned int min_freq;
@@ -604,6 +606,7 @@ static struct freq_map *read_tbl(struct device_node *of_node, char *prop_name)
 
 #define PROP_TARGET "target-dev"
 #define PROP_TABLE "cpu-to-dev-map"
+#define PROP_TABLE_SDM636 "cpu-to-dev-map-sts"
 static int add_table_from_of(struct device_node *of_node)
 {
 	struct device_node *target_of_node;
@@ -621,15 +624,22 @@ static int add_table_from_of(struct device_node *of_node)
 	if (!node)
 		return -ENOMEM;
 
-	common_tbl = read_tbl(of_node, PROP_TABLE);
+	if ((is_cpu_overclocked < 1) && of_machine_is_compatible("qcom,sdm636"))
+		common_tbl = read_tbl(of_node, PROP_TABLE_SDM636);
+	else
+		common_tbl = read_tbl(of_node, PROP_TABLE);
+
 	if (!common_tbl) {
 		tbl_list = kzalloc(sizeof(*tbl_list) * NR_CPUS, GFP_KERNEL);
 		if (!tbl_list)
 			return -ENOMEM;
 
 		for_each_possible_cpu(cpu) {
-			ret = snprintf(prop_name, prop_sz, "%s-%d",
-					PROP_TABLE, cpu);
+			if ((is_cpu_overclocked < 1) && of_machine_is_compatible("qcom,sdm636"))
+				ret = snprintf(prop_name, prop_sz, "%s-%d", PROP_TABLE_SDM636, cpu);
+			else
+				ret = snprintf(prop_name, prop_sz, "%s-%d", PROP_TABLE, cpu);
+			
 			if (ret >= prop_sz) {
 				pr_warn("More CPUs than I can handle!\n");
 				pr_warn("Skipping rest of the tables!\n");

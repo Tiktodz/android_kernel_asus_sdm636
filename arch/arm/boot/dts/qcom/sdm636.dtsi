@@ -40,8 +40,15 @@
 		};
 	};
 
+	devfreq_memlat_0: qcom,arm-memlat-mon-0 {
+		qcom,core-dev-table-sts =
+		< 902400 762 >,
+		< 1401600 2086 >,
+		< 1881600 3879 >;
+	};
+	
 	devfreq_memlat_4: qcom,arm-memlat-mon-4 {
-		qcom,core-dev-table =
+		qcom,core-dev-table-sts =
 		< 1113600 762 >,
 		< 1401600 3879 >,
 		< 1804800 5163 >;
@@ -49,7 +56,11 @@
 
 	devfreq_cpufreq: devfreq-cpufreq {
 		mincpubw-cpufreq {
-			cpu-to-dev-map-4 =
+			cpu-to-dev-map-sts-0 =
+				< 633600 762 >,
+				< 1401600 1571 >,
+				< 1881600 2929 >;
+			cpu-to-dev-map-sts-4 =
 				< 1113600 762 >,
 				< 1401600 2086 >,
 				< 1747200 2929 >,

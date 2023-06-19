@@ -120,7 +120,7 @@
 
 		/* Cx ipeak limit supprt */
 		qcom,gpu-cx-ipeak = <&cx_ipeak_lm 1>;
-		qcom,gpu-cx-ipeak-clk = <700000000>;
+		qcom,gpu-cx-ipeak-clk = <750000000>;
 
 		/* CPU latency parameter */
 		qcom,pm-qos-active-latency = <518>;

@@ -484,6 +484,18 @@ config CPU_FREQ_GOV_BLU_SCHEDUTIL
 
 	  If in doubt, say N.
 
+config CPU_UNDERCLOCK_FREQ_LP
+	int "Low-power cluster underclock freq"
+	default "0"
+	help
+	  CPU underclock frequency for the low-power CPU cluster.
+
+config CPU_UNDERCLOCK_FREQ_PERF
+	int "Performance cluster underclock freq"
+	default "0"
+	help
+	  CPU underclock frequency for the performance CPU cluster.
+
 comment "CPU frequency scaling drivers"
 
 config CPU_FREQ_GOV_ALUCARDSCHED

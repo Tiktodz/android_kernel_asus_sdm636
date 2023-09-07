@@ -163,6 +163,7 @@ static struct irq_desc *alloc_desc(int irq, int node, struct module *owner)
 	lockdep_set_class(&desc->lock, &irq_desc_lock_class);
 
 	desc_set_defaults(irq, desc, node, owner);
+	sbalance_desc_add(desc);
 
 	return desc;
 
@@ -177,6 +178,7 @@ static void free_desc(unsigned int irq)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
 
+	sbalance_desc_del(desc);
 	unregister_irq_proc(irq, desc);
 
 	/*

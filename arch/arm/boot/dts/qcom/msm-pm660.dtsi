@@ -337,6 +337,14 @@
 					= <3000000 2500000 2000000 1500000
 						1000000 500000>;
 
+			qcom,micro-usb;
+			qcom,fcc-max-ua = <2700000>;
+			qcom,fv-max-uv = <4350000>;
+			qcom,usb-icl-ua = <2700000>;
+			qcom,float-option = <1>;
+			qcom,auto-recharge-soc;
+			qcom,pm-gpio3-vadc = <&pm660_vadc>;
+
 			qcom,chgr@1000 {
 				reg = <0x1000 0x100>;
 				interrupts =

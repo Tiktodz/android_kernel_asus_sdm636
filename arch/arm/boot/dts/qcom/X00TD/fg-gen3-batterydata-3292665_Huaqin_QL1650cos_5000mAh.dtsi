@@ -5,6 +5,7 @@ qcom,3292665_huaqin_ql1626cos_5000mah_averaged_masterslave_jan8th2018 {
 	qcom,max-voltage-uv = <4350000>;
 	qcom,nom-batt-capacity-mah = <5000>;
 	qcom,batt-id-kohm = <51>;
+	qcom,fcc-max-ua = <2700>;
 	qcom,battery-beta = <3435>;
 	qcom,fg-cc-cv-threshold-mv = <4340>;
 	qcom,battery-type = "3292665_huaqin_ql1626cos_5000mah_averaged_masterslave_jan8th2018";

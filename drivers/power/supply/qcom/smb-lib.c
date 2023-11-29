@@ -20,7 +20,6 @@
 #include <linux/input/qpnp-power-on.h>
 #include <linux/irq.h>
 #include <linux/pmic-voter.h>
-#include <linux/moduleparam.h>
 #include "smb-lib.h"
 #include "smb-reg.h"
 #include "battery.h"
@@ -133,9 +132,6 @@ void asus_smblib_relax(struct smb_charger *chg)
 	wake_unlock(&asus_chg_lock);
 }
 #endif
-
-static unsigned int forced_current = 0;
-module_param(forced_current, uint, S_IWUSR | S_IRUGO);
 
 static bool is_secure(struct smb_charger *chg, int addr)
 {
@@ -1034,44 +1030,6 @@ static int get_sdp_current(struct smb_charger *chg, int *icl_ua)
 	return rc;
 }
 
-static int smblib_force_icl_current(struct smb_charger *chg, int icl_ua)
-{
-	int rc = 0;
-
-	pr_info("%s, forcing current to %d\n", __func__, icl_ua);
-
-	disable_irq_nosync(chg->irq_info[USBIN_ICL_CHANGE_IRQ].irq);
-
-	rc = smblib_set_charge_param(chg, &chg->param.usb_icl,
-			icl_ua);
-	if (rc < 0) {
-		smblib_err(chg, "Couldn't set HC ICL rc=%d\n", rc);
-		goto enable_icl_changed_interrupt;
-	}
-
-	/* enforce override */
-	rc = smblib_masked_write(chg, USBIN_ICL_OPTIONS_REG,
-		USBIN_MODE_CHG_BIT, USBIN_MODE_CHG_BIT);
-
-	rc = smblib_icl_override(chg, true);
-	if (rc < 0) {
-		smblib_err(chg, "Couldn't set ICL override rc=%d\n", rc);
-		goto enable_icl_changed_interrupt;
-	}
-
-	/* unsuspend after configuring current and override */
-	rc = smblib_set_usb_suspend(chg, false);
-	if (rc < 0) {
-		smblib_err(chg, "Couldn't resume input rc=%d\n", rc);
-		goto enable_icl_changed_interrupt;
-	}
-
-enable_icl_changed_interrupt:
-	enable_irq(chg->irq_info[USBIN_ICL_CHANGE_IRQ].irq);
-
-	return rc;
-}
-
 int smblib_set_icl_current(struct smb_charger *chg, int icl_ua)
 {
 	int rc = 0;
@@ -1080,9 +1038,6 @@ int smblib_set_icl_current(struct smb_charger *chg, int icl_ua)
 	/* suspend and return if 25mA or less is requested */
 	if (icl_ua < USBIN_25MA)
 		return smblib_set_usb_suspend(chg, true);
-
-	if (forced_current)
-		return smblib_force_icl_current(chg, forced_current * 1500);
 
 	if (icl_ua == INT_MAX)
 		goto override_suspend_config;
@@ -2823,10 +2778,7 @@ static int smblib_handle_usb_current(struct smb_charger *chg,
 int smblib_set_prop_sdp_current_max(struct smb_charger *chg,
 				    const union power_supply_propval *val)
 {
-	int rc;
-
-	if (forced_current)
-		return smblib_force_icl_current(chg, forced_current * 1500);
+	int rc = 0;
 
 	if (!chg->pd_active) {
 		rc = smblib_handle_usb_current(chg, val->intval);
@@ -2837,10 +2789,7 @@ int smblib_set_prop_sdp_current_max(struct smb_charger *chg,
 		else
 			rc = vote(chg->usb_icl_votable,
 				PD_SUSPEND_SUPPORTED_VOTER, false, 0);
-	} else {
-		rc = 0;
 	}
-
 	return rc;
 }
 

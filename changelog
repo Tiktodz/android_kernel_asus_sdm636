@@ -1,11 +1,12 @@
-<b><#selectbg_g>Oct 12,2023</#></b>
+<b><#selectbg_g>Nov 29,2023</#></b>
 
-  <*> KernelSU update v0.6.9</*>
-  <*> power: Silence charger log spam</*>
-  <*> Boost DDR bus when committing a new frame</*>
-  <*> Speed up mdss_mdp_get_format_params for UBWC formats</*>
-  <*> Add cpumasks for big and LITTLE CPU clusters</*>
-  <*> Add API to mark IRQs and kthreads as performance critical</*>
+  <*> KernelSU update v0.7.1</*>
+  <*> iommu: Introduce Interface for IOMMU TLB Flushing</*>
+  <*> sdm660-gpu: enable unmap fast support</*>
+  <*> msm: kgsl: Relax CPU latency requirements to save power</*>
+  <*> msm: Disable DCVS</*>
+  <*> gpio: Remove validation while gpio probing</*>
+  <*> gpu: msm: Remove more tracing</*>
   <*> More Changes, and Improvements</*>
 
 
@@ -13,7 +14,7 @@
 <b><#selectbg_g>NOTES :</#></b>
 
   <*> KernelSU is enabled by default and will disabled automatically if Magisk has been installed</*>
-  <*> Recommended to use KernelSU Manager v0.6.9</*>
+  <*> Recommended to use KernelSU Manager v0.7.1</*>
   <*> If u don't want KernelSU, just disable it</*>
   <*> Kernel need sometimes to settle.</*>
 

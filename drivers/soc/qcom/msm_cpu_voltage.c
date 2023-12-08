@@ -14,7 +14,6 @@
 #include <linux/cpu.h>
 #include <linux/pm_opp.h>
 #include <linux/kernel.h>
-#include <linux/module.h>
 #include <soc/qcom/msm_cpu_voltage.h>
 
 #define MAX_FREQ_GAP_KHZ 200000
@@ -139,65 +138,3 @@ exit:
 	return target_freq;
 }
 EXPORT_SYMBOL(msm_match_cpu_voltage_btol);
-
-/**
- * get_cpu_voltage_freqs - show frequency voltages for the specified CPU
- */
-static int get_cpu_voltage_freqs(int cpu, char *buf)
-{
-	int cnt = 0;
-	struct dev_pm_opp *opp = NULL;
-	struct device *cls0_dev = NULL;
-	unsigned long freq = 0;
-	unsigned int temp_freq = 0;
-	unsigned long temp_volt = 0;
-	int i, max_opps_cls0 = 0;
-
-	cls0_dev = get_cpu_device(cpu);
-	if (!cls0_dev) {
-		pr_err("Error getting CPU[%d] device\n", cpu);
-		return 0;
-	}
-	rcu_read_lock();
-	max_opps_cls0 = dev_pm_opp_get_opp_count(cls0_dev);
-	if (max_opps_cls0 <= 0)
-		pr_err("Error getting OPP count for CPU[%d]\n", cpu);
-	for (i = 0, freq = 0; i < max_opps_cls0; i++, freq++) {
-		opp = dev_pm_opp_find_freq_ceil(cls0_dev, &freq);
-		if (IS_ERR(opp)) {
-			pr_err("Error getting OPP freq on cluster [%d]\n", cpu);
-			goto exit;
-		}
-		temp_freq = freq / 1000;
-		temp_volt = dev_pm_opp_get_voltage(opp);
-		cnt += snprintf(buf + cnt, PAGE_SIZE - cnt,
-				"%u:%lu\n", temp_freq, temp_volt);
-	}
-	cnt += snprintf(buf + cnt, PAGE_SIZE - cnt, "\n");
-
-exit:
-	rcu_read_unlock();
-	return cnt;
-}
-
-static int get_voltage_freqs_cpu0(char *buf, const struct kernel_param *kp)
-{
-	return get_cpu_voltage_freqs(0, buf);
-}
-
-static const struct kernel_param_ops param_ops_voltage_freqs_cpu0 = {
-	.get = get_voltage_freqs_cpu0,
-};
-module_param_cb(cpu0_voltage_freqs, &param_ops_voltage_freqs_cpu0,
-							NULL, 0444);
-
-static int get_voltage_freqs_cpu2(char *buf, const struct kernel_param *kp)
-{
-	return get_cpu_voltage_freqs(2, buf);
-}
-
-static const struct kernel_param_ops param_ops_voltage_freqs_cpu2 = {
-	.get = get_voltage_freqs_cpu2,
-};
-module_param_cb(cpu2_voltage_freqs, &param_ops_voltage_freqs_cpu2,
-							NULL, 0444);

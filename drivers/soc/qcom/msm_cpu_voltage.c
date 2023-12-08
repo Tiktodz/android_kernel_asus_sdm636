@@ -141,14 +141,15 @@ exit:
 EXPORT_SYMBOL(msm_match_cpu_voltage_btol);
 
 /**
- * get_cpu_available_volts - show frequency voltages for the specified CPU
+ * get_cpu_voltage_freqs - show frequency voltages for the specified CPU
  */
-static int get_cpu_available_volts(int cpu, char *buf)
+static int get_cpu_voltage_freqs(int cpu, char *buf)
 {
 	int cnt = 0;
 	struct dev_pm_opp *opp = NULL;
 	struct device *cls0_dev = NULL;
 	unsigned long freq = 0;
+	unsigned int temp_freq = 0;
 	unsigned long temp_volt = 0;
 	int i, max_opps_cls0 = 0;
 
@@ -167,9 +168,10 @@ static int get_cpu_available_volts(int cpu, char *buf)
 			pr_err("Error getting OPP freq on cluster [%d]\n", cpu);
 			goto exit;
 		}
+		temp_freq = freq / 1000;
 		temp_volt = dev_pm_opp_get_voltage(opp);
 		cnt += snprintf(buf + cnt, PAGE_SIZE - cnt,
-				"%lu ", temp_volt);
+				"%u:%lu\n", temp_freq, temp_volt);
 	}
 	cnt += snprintf(buf + cnt, PAGE_SIZE - cnt, "\n");
 
@@ -178,46 +180,24 @@ exit:
 	return cnt;
 }
 
-static int get_cpu0_available_volts(char *buf, const struct kernel_param *kp)
+static int get_voltage_freqs_cpu0(char *buf, const struct kernel_param *kp)
 {
-	return get_cpu_available_volts(0, buf);
+	return get_cpu_voltage_freqs(0, buf);
 }
 
-static const struct kernel_param_ops param_ops_available_volts_cpu0 = {
-	.get = get_cpu0_available_volts,
+static const struct kernel_param_ops param_ops_voltage_freqs_cpu0 = {
+	.get = get_voltage_freqs_cpu0,
 };
-module_param_cb(cpu0_available_volts, &param_ops_available_volts_cpu0,
+module_param_cb(cpu0_voltage_freqs, &param_ops_voltage_freqs_cpu0,
 							NULL, 0444);
 
-static int get_cpu1_available_volts(char *buf, const struct kernel_param *kp)
+static int get_voltage_freqs_cpu2(char *buf, const struct kernel_param *kp)
 {
-	return get_cpu_available_volts(1, buf);
+	return get_cpu_voltage_freqs(2, buf);
 }
 
-static const struct kernel_param_ops param_ops_available_volts_cpu1 = {
-	.get = get_cpu1_available_volts,
+static const struct kernel_param_ops param_ops_voltage_freqs_cpu2 = {
+	.get = get_voltage_freqs_cpu2,
 };
-module_param_cb(cpu1_available_volts, &param_ops_available_volts_cpu1,
-							NULL, 0444);
-
-static int get_cpu2_available_volts(char *buf, const struct kernel_param *kp)
-{
-	return get_cpu_available_volts(2, buf);
-}
-
-static const struct kernel_param_ops param_ops_available_volts_cpu2 = {
-	.get = get_cpu2_available_volts,
-};
-module_param_cb(cpu2_available_volts, &param_ops_available_volts_cpu2,
-							NULL, 0444);
-
-static int get_cpu3_available_volts(char *buf, const struct kernel_param *kp)
-{
-	return get_cpu_available_volts(3, buf);
-}
-
-static const struct kernel_param_ops param_ops_available_volts_cpu3 = {
-	.get = get_cpu3_available_volts,
-};
-module_param_cb(cpu3_available_volts, &param_ops_available_volts_cpu3,
+module_param_cb(cpu2_voltage_freqs, &param_ops_voltage_freqs_cpu2,
 							NULL, 0444);

@@ -1,5 +1,4 @@
-:coffee: *TheOneMemory Kernel*
-==========
+![TheOneMemory](https://raw.githubusercontent.com/Tiktodz/android_kernel_asus_sdm636/codelinaro-hmp/TheOneMemory.png)
 
 :star: Kernel Source Based from [Codelinaro](https://git.codelinaro.org/clo/la/kernel/msm-4.4/-/tree/LA.UM.9.2.r1-03700-SDMxx0.0), for Asus Zenfone Max Pro M1 | `ASUS_X00TD,X00TD,X00T`
 
@@ -14,7 +13,7 @@
 git clone --recursive https://github.com/Tiktodz/android_kernel_asus_sdm636 -b codelinaro-hmp
 ```
 
-:arrow_forward: For building <b>Android 9 or 10 ROM</b>, Revert this [commit](https://github.com/Tiktodz/kernel_asus_sdm636/commit/6ca62de00b763e51a65c8497d28e6faf5a47f7d9)
+:arrow_forward: For building <b>Android 9 or 10 ROM</b>, Revert this [commit](https://github.com/Tiktodz/android_kernel_asus_sdm636/commit/75a6f2ddf0ec85b8b979ae765be67659311708ab)
 ```bash
 git revert 6ca62de00b763e51a65c8497d28e6faf5a47f7d9
 ```

@@ -26,11 +26,6 @@
 			<0x0001001b 0x0102001a 0x0 0x0>;
 };
 
-&msm_vidc {
-	disable-dcvs-enc;
-	disable-dcvs-dec;
-};
-
 &tavil_snd {
 	qcom,msm-mbhc-hphl-swh = <0>;
 	qcom,msm-mbhc-gnd-swh = <0>;

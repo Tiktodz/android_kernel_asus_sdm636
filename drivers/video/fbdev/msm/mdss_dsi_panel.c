@@ -47,6 +47,22 @@ extern bool shutdown_flag;
 #endif
 #endif
 
+#ifdef CONFIG_FB_MSM_MDSS_CUSTOM_FRAMERATE
+unsigned int refresh_rate_cus = 60;
+
+static int __init read_refresh_rate_cmd(char *s)
+{
+	if (s)
+		refresh_rate_cus = simple_strtoul(s, NULL, 0);
+
+	if (refresh_rate_cus < 48 || refresh_rate_cus > 72)
+		refresh_rate_cus = 60;
+
+	return 1;
+}
+__setup("refresh.rate=", read_refresh_rate_cmd);
+#endif
+
 DEFINE_LED_TRIGGER(bl_led_trigger);
 
 void mdss_dsi_panel_pwm_cfg(struct mdss_dsi_ctrl_pdata *ctrl)
@@ -2631,6 +2647,9 @@ static int mdss_dsi_panel_timing_from_dt(struct device_node *np,
 
 	rc = of_property_read_u32(np, "qcom,mdss-dsi-panel-framerate", &tmp);
 	pt->timing.frame_rate = !rc ? tmp : DEFAULT_FRAME_RATE;
+#ifdef CONFIG_FB_MSM_MDSS_CUSTOM_FRAMERATE
+	WRITE_ONCE(pt->timing.frame_rate, refresh_rate_cus);
+#endif
 	rc = of_property_read_u64(np, "qcom,mdss-dsi-panel-clockrate", &tmp64);
 	if (rc == -EOVERFLOW) {
 		tmp64 = 0;

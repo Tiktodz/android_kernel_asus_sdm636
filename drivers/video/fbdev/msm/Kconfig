@@ -129,5 +129,12 @@ config FB_MSM_MDSS_KCAL_CTRL
 	---help---
 	  Enable sysfs for rgb/lut control for mdss-mdp display controllers
 	  in the MDSS sub-system.
+	  
+config FB_MSM_MDSS_CUSTOM_FRAMERATE
+	depends on FB_MSM_MDSS
+	bool "Custom Refresh Rate"
+	default y
+	---help---
+	Add Refresh Rate Changer Feature support with Cmdline.
 
 endif

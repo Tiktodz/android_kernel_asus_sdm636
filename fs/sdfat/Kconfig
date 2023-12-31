@@ -81,7 +81,7 @@ config SDFAT_ALIGNED_MPAGE_WRITE
 
 config SDFAT_VIRTUAL_XATTR
 	bool "Virtual xattr support for sdFAT"
-	default n
+	default y
 	depends on SDFAT_FS
 	help
 	  If you enable this feature, it supports virtual xattr.

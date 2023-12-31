@@ -76,7 +76,7 @@
 	qcom,micro-usb;
 	qcom,fcc-max-ua = <2300000>;
 	qcom,fv-max-uv = <4350000>;
-	qcom,usb-icl-ua = <1000000>;
+	qcom,usb-icl-ua = <2300000>;
 	qcom,float-option = <1>;
 	qcom,auto-recharge-soc;
 	qcom,pm-gpio3-vadc = <&pm660_vadc>;	

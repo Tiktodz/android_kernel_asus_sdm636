@@ -2713,7 +2713,7 @@ int smblib_get_prop_die_health(struct smb_charger *chg,
 #define TYPEC_HIGH_CURRENT_UA		3000000
 static int get_rp_based_dcp_current(struct smb_charger *chg, int typec_mode)
 {
-	int rp_ua;
+	int rp_ua = HVDCP_CURRENT_UA;
 
 	switch (typec_mode) {
 	case POWER_SUPPLY_TYPEC_SOURCE_HIGH:
@@ -3257,7 +3257,7 @@ int smblib_get_charge_current(struct smb_charger *chg,
 {
 	const struct apsd_result *apsd_result = smblib_get_apsd_result(chg);
 	union power_supply_propval val = {0, };
-	int rc = 0, typec_source_rd, current_ua = 0;
+	int rc = 0, typec_source_rd, current_ua = HVDCP_CURRENT_UA;
 	bool non_compliant;
 	u8 stat5;
 
@@ -3300,7 +3300,7 @@ int smblib_get_charge_current(struct smb_charger *chg,
 			current_ua = DCP_CURRENT_UA;
 			break;
 		default:
-			current_ua = 0;
+			current_ua = HVDCP_CURRENT_UA;
 			break;
 		}
 
@@ -3320,7 +3320,7 @@ int smblib_get_charge_current(struct smb_charger *chg,
 			current_ua = chg->default_icl_ua;
 			break;
 		default:
-			current_ua = 0;
+			current_ua = HVDCP_CURRENT_UA;
 			break;
 		}
 		break;
@@ -3440,7 +3440,7 @@ void asus_batt_RTC_work(struct work_struct *dat)
 	new_batAlarm_time.tv_sec = 0;
 	new_batAlarm_time.tv_nsec = 0;
 
-	RTCSetInterval = 60;
+	RTCSetInterval = 10800;
 
 	new_batAlarm_time.tv_sec = mtNow.tv_sec + RTCSetInterval;
 	pr_debug("%s: alarm start after %ds\n", __func__, RTCSetInterval);
@@ -3737,6 +3737,9 @@ void jeita_rule(void)
 	u8 ICL_reg;
 	u8 FCC_reg;
 	u8 USBIN_ICL_reg;
+	u8 FFCC_reg_val;
+
+	FFCC_reg_val = SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA;
 
 	/* reg1090, 0x10, =bit4=1
 	 * JEITA_EN_HARDLIMIT=enable
@@ -3798,7 +3801,7 @@ void jeita_rule(void)
 	case JEITA_STATE_RANGE_0_to_100:
 		charging_enable = EN_BAT_CHG_EN_COMMAND_TRUE;
 		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P485;
-		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA;
+		FCC_reg_value = FFCC_reg_val;
 		
 		rc = SW_recharge(smbchg_dev);
 		if (rc < 0)
@@ -3813,7 +3816,7 @@ void jeita_rule(void)
 #endif
 		charging_enable = EN_BAT_CHG_EN_COMMAND_TRUE;
 		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P485;
-		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA;
+		FCC_reg_value = FFCC_reg_val;
 
 		rc = SW_recharge(smbchg_dev);
 		if (rc < 0)
@@ -3828,7 +3831,7 @@ void jeita_rule(void)
 #endif
 		charging_enable = EN_BAT_CHG_EN_COMMAND_TRUE;
 		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P485;
-		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA;
+		FCC_reg_value = FFCC_reg_val;
 		break;
 
 #ifdef ASUS_CUSTOM_JEITA_SET_MODIFY
@@ -3849,7 +3852,7 @@ void jeita_rule(void)
 	} else {
 		charging_enable = EN_BAT_CHG_EN_COMMAND_TRUE;
 		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P485;
-		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA;
+		FCC_reg_value = FFCC_reg_val;
 	}
 
 	rc = jeita_status_regs_write(charging_enable, FV_CFG_reg_value,
@@ -3912,6 +3915,9 @@ void asus_chg_flow_work(struct work_struct *work)
 	int rc;
 	u8 set_icl;
 	u8 USBIN_1_cc;
+	u8 fc_icl;
+
+	fc_icl = ICL_4000mA;
 
 	if (!asus_get_prop_usb_present(smbchg_dev)) {
 		smblib_uusb_removal(smbchg_dev);
@@ -3939,7 +3945,7 @@ void asus_chg_flow_work(struct work_struct *work)
 			pr_err("%s: Couldn't read fast_CURRENT_LIMIT_CFG_REG\n",
 				__func__);
 
-		set_icl = ICL_4000mA;
+		set_icl = fc_icl;
 
 		rc = smblib_masked_write(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,
 						USBIN_CURRENT_LIMIT_MASK,
@@ -3953,7 +3959,7 @@ void asus_chg_flow_work(struct work_struct *work)
 		break;
 
 	case CDP_CHARGER_BIT:
-		set_icl = ICL_4000mA;
+		set_icl = fc_icl;
 
 		rc = smblib_masked_write(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,
 						USBIN_CURRENT_LIMIT_MASK,
@@ -3973,7 +3979,7 @@ void asus_chg_flow_work(struct work_struct *work)
 		break;
 
 	case OCP_CHARGER_BIT:
-		set_icl = ICL_4000mA;
+		set_icl = fc_icl;
 		rc = smblib_masked_write(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,
 						USBIN_CURRENT_LIMIT_MASK,
 						set_icl);
@@ -3995,7 +4001,7 @@ void asus_chg_flow_work(struct work_struct *work)
 			pr_err("%s: Couldn't read fast_CURRENT_LIMIT_CFG_REG\n",
 				__func__);
 
-		set_icl = ICL_4000mA;
+		set_icl = fc_icl;
 
 		rc = smblib_masked_write(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,
 						USBIN_CURRENT_LIMIT_MASK,
@@ -4127,6 +4133,8 @@ void asus_adapter_adc_work(struct work_struct *work)
 		break;
 	}
 
+		usb_max_current = ICL_4000mA;
+
 	rc = smblib_set_usb_suspend(smbchg_dev, 0);
 	if (rc < 0)
 		pr_warn("%s: Couldn't set 1340_USBIN_SUSPEND_BIT 0\n", __func__);
@@ -4170,7 +4178,7 @@ void asus_insertion_initial_settings(struct smb_charger *chg)
 		dev_err(chg->dev, "Couldn't set default PRE_CHARGE_CURRENT_CFG_REG rc=%d\n",
 			rc);
 
-	rc = smblib_write(chg, FAST_CHARGE_CURRENT_CFG_REG, 0x28);
+	rc = smblib_write(chg, FAST_CHARGE_CURRENT_CFG_REG, SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA);
 	if (rc < 0)
 		dev_err(chg->dev, "Couldn't set default FAST_CHARGE_CURRENT_CFG_REG rc=%d\n",
 			rc);

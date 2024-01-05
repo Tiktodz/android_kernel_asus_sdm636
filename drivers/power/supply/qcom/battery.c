@@ -882,7 +882,7 @@ static int usb_icl_vote_callback(struct votable *votable, void *data,
 
 	if (rerun_aicl) {
 		/* set a lower ICL */
-		pval.intval = 3000000;
+		pval.intval = 3000000 - ICL_STEP_UA, ICL_STEP_UA;
 		power_supply_set_property(chip->main_psy,
 				POWER_SUPPLY_PROP_CURRENT_MAX,
 				&pval);

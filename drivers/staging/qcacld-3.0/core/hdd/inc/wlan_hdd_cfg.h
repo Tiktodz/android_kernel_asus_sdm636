@@ -11435,7 +11435,7 @@ enum restart_beaconing_on_ch_avoid_rule {
  * </ini>
  */
 #define CFG_POWERSAVE_OFFLOAD_NAME                "gEnablePowerSaveOffload"
-#define CFG_POWERSAVE_OFFLOAD_MIN                 (0)
+#define CFG_POWERSAVE_OFFLOAD_MIN                 (4)
 #define CFG_POWERSAVE_OFFLOAD_MAX                 (PS_DUTY_CYCLING_QPOWER)
 #define CFG_POWERSAVE_OFFLOAD_DEFAULT             (CFG_POWERSAVE_OFFLOAD_MIN)
 

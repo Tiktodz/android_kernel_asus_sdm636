@@ -17,11 +17,16 @@
 #include <linux/export.h>
 #include <linux/suspend.h>
 #include <linux/seq_file.h>
-#include <linux/debugfs.h>
 #include <linux/pm_wakeirq.h>
 #include <linux/types.h>
 #include <linux/wakeup_reason.h>
 #include <trace/events/power.h>
+
+#ifdef CONFIG_DEBUG_FS
+#include <linux/debugfs.h>
+#else
+#include <linux/proc_fs.h>
+#endif
 
 #include "power.h"
 
@@ -1096,8 +1101,6 @@ void pm_wakep_autosleep_enabled(bool set)
 }
 #endif /* CONFIG_PM_AUTOSLEEP */
 
-static struct dentry *wakeup_sources_stats_dentry;
-
 /**
  * print_wakeup_source_stats - Print wakeup source statistics information.
  * @m: seq_file to print the statistics into.
@@ -1182,11 +1185,21 @@ static const struct file_operations wakeup_sources_stats_fops = {
 	.release = single_release,
 };
 
+#ifdef CONFIG_DEBUG_FS
 static int __init wakeup_sources_debugfs_init(void)
 {
-	wakeup_sources_stats_dentry = debugfs_create_file("wakeup_sources",
-			S_IRUGO, NULL, NULL, &wakeup_sources_stats_fops);
+	debugfs_create_file("wakeup_sources", S_IRUGO, NULL, NULL, &wakeup_sources_stats_fops);
 	return 0;
 }
 
 postcore_initcall(wakeup_sources_debugfs_init);
+
+#else
+static int __init wakelocks_proc_init(void)
+{
+	proc_create("wakelocks", S_IRUGO, NULL, &wakeup_sources_stats_fops);
+	return 0;
+}
+
+postcore_initcall(wakelocks_proc_init);
+#endif

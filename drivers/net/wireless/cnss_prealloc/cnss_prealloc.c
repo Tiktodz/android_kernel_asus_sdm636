@@ -180,7 +180,7 @@ void *wcnss_prealloc_get(size_t size)
 	}
 	spin_unlock_irqrestore(&alloc_lock, flags);
 
-	pr_err("wcnss: %s: prealloc not available for size: %zu\n",
+	pr_debug("wcnss: %s: prealloc not available for size: %zu\n",
 	       __func__, size);
 
 	return NULL;

@@ -1574,7 +1574,7 @@ int msm_rpm_wait_for_ack(uint32_t msg_id)
 	if (!elem)
 		return rc;
 
-	wait_for_completion(&elem->ack);
+	wait_for_completion_interruptible(&elem->ack);
 	trace_rpm_smd_ack_recvd(0, msg_id, 0xDEADFEED);
 
 	rc = elem->errno;
@@ -2122,7 +2122,7 @@ static int msm_rpm_dev_probe(struct platform_device *pdev)
 	spin_lock_init(&msm_rpm_data.smd_lock_read);
 	tasklet_init(&data_tasklet, data_fn_tasklet, 0);
 
-	wait_for_completion(&msm_rpm_data.smd_open);
+	wait_for_completion_interruptible(&msm_rpm_data.smd_open);
 
 	smd_disable_read_intr(msm_rpm_data.ch_info);
 

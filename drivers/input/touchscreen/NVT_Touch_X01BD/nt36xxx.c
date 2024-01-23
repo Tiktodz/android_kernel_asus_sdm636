@@ -15,7 +15,6 @@
  * more details.
  *
  */
-#include <linux/android_version.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/delay.h>
@@ -260,19 +259,6 @@ const uint16_t gesture_key_array[] = {
 	GESTURE_EVENT_SWIPE_DOWN,  //GESTURE_SLIDE_DOWN
 	GESTURE_EVENT_SWIPE_LEFT,  //GESTURE_SLIDE_LEFT
 	GESTURE_EVENT_SWIPE_RIGHT,  //GESTURE_SLIDE_RIGHT
-	KEYL_TP_GESTURE_C,
-	KEYL_TP_GESTURE_E,
-	KEYL_TP_GESTURE_S,
-	KEYL_TP_GESTURE_V,
-	KEYL_TP_GESTURE_W,
-	KEYL_TP_GESTURE_Z,
-	KEYL_TP_GESTURE_SWIPE_UP,
-	KEYL_TP_GESTURE_SWIPE_DOWN,
-	KEYL_TP_GESTURE_SWIPE_LEFT,
-	KEYL_TP_GESTURE_SWIPE_RIGHT,
-	KEY_M,  //GESTURE_WORD_M
-	KEY_O,  //GESTURE_WORD_O
-	KEY_WAKEUP,
 };
 #endif
 
@@ -1022,24 +1008,15 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id, uint8_t *data)
 	switch (gesture_id) {
 		case GESTURE_WORD_C:
 			NVT_LOG("Gesture : Word-C.\n");
-			if (get_android_version() < 11) {
-				keycode = gesture_key_array[13];
-			} else
-				keycode = gesture_key_array[0];
+			keycode = gesture_key_array[0];
 			break;
 		case GESTURE_WORD_W:
 			NVT_LOG("Gesture : Word-W.\n");
-			if (get_android_version() < 11) {
-				keycode = gesture_key_array[17];
-			} else
-				keycode = gesture_key_array[1];
+			keycode = gesture_key_array[1];
 			break;
 		case GESTURE_WORD_V:
 			NVT_LOG("Gesture : Word-V.\n");
-			if (get_android_version() < 11) {
-				keycode = gesture_key_array[16];
-			} else
-				keycode = gesture_key_array[2];
+			keycode = gesture_key_array[2];
 			break;
 		case GESTURE_DOUBLE_CLICK:
 			NVT_LOG("Gesture : Double Click.\n");
@@ -1047,66 +1024,39 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id, uint8_t *data)
 			break;
 		case GESTURE_WORD_Z:
 			NVT_LOG("Gesture : Word-Z.\n");
-			if (get_android_version() < 11) {
-				keycode = gesture_key_array[18];
-			} else
-				keycode = gesture_key_array[4];
+			keycode = gesture_key_array[4];
 			break;
 		case GESTURE_WORD_M:
 			NVT_LOG("Gesture : Word-M.\n");
-			if (get_android_version() < 11) {
-				keycode = gesture_key_array[23];
-			} else
-				keycode = gesture_key_array[5];
+			keycode = gesture_key_array[5];
 			break;
 		case GESTURE_WORD_O:
 			NVT_LOG("Gesture : Word-O.\n");
-			if (get_android_version() < 11) {
-				keycode = gesture_key_array[24];
-			} else
-				keycode = gesture_key_array[6];
+			keycode = gesture_key_array[6];
 			break;
 		case GESTURE_WORD_e:
 			NVT_LOG("Gesture : Word-e.\n");
-			if (get_android_version() < 11) {
-				keycode = gesture_key_array[14];
-			} else
-				keycode = gesture_key_array[7];
+			keycode = gesture_key_array[7];
 			break;
 		case GESTURE_WORD_S:
 			NVT_LOG("Gesture : Word-S.\n");
-			if (get_android_version() < 11) {
-				keycode = gesture_key_array[15];
-			} else
-				keycode = gesture_key_array[8];
+			keycode = gesture_key_array[8];
 			break;
 		case GESTURE_SLIDE_UP:
 			NVT_LOG("Gesture : Slide UP.\n");
-			if (get_android_version() < 11) {
-				keycode = gesture_key_array[19];
-			} else
-				keycode = gesture_key_array[9];
+			keycode = gesture_key_array[9];
 			break;
 		case GESTURE_SLIDE_DOWN:
 			NVT_LOG("Gesture : Slide DOWN.\n");
-			if (get_android_version() < 11) {
-				keycode = gesture_key_array[20];
-			} else
-				keycode = gesture_key_array[10];
+			keycode = gesture_key_array[10];
 			break;
 		case GESTURE_SLIDE_LEFT:
 			NVT_LOG("Gesture : Slide LEFT.\n");
-			if (get_android_version() < 11) {
-				keycode = gesture_key_array[21];
-			} else
-				keycode = gesture_key_array[11];
+			keycode = gesture_key_array[11];
 			break;
 		case GESTURE_SLIDE_RIGHT:
 			NVT_LOG("Gesture : Slide RIGHT.\n");
-			if (get_android_version() < 11) {
-				keycode = gesture_key_array[22];
-			} else
-				keycode = gesture_key_array[12];
+			keycode = gesture_key_array[12];
 			break;
 		default:
 			break;

@@ -260,6 +260,13 @@ static int32_t c_fw_version_show(struct seq_file *m, void *v)
 // Huaqin add for nvt_tp check function. by zhengwu.lu. at 2018/03/01  start
 	seq_printf(m, "vendor=Novatek\n");
 	seq_printf(m, "IC=nvt36672\n");
+	NVT_LOG("zhengwu1 nvt_tp_check=%d\n",nvt_tp_check);
+	if(nvt_tp_check == 0){
+	seq_printf(m, "module=DJ\n");
+	}
+	else if (nvt_tp_check == 1){
+	seq_printf(m, "module=TXD\n");
+	}
 // Huaqin add for nvt_tp check function. by zhengwu.lu. at 2018/03/01  end
 	seq_printf(m, "fw_ver=%d, x_num=%d, y_num=%d, button_num=%d\n", ts->fw_ver, ts->x_num, ts->y_num, ts->max_button_num);
 	return 0;

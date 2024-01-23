@@ -31,7 +31,6 @@
  * DOLLARS.
  */
 
-#include <linux/android_version.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/slab.h>
@@ -161,7 +160,7 @@
 #define GESTURE_EVENT_V 		KEY_TP_GESTURE_V
 #define GESTURE_EVENT_W 		KEY_TP_GESTURE_W
 #define GESTURE_EVENT_Z 		KEY_TP_GESTURE_Z
-#define GESTURE_EVENT_SWIPE_UP 		KEY_TP_GESTURE_SWIPE_UP
+#define GESTURE_EVENT_SWIPE_UP 		0x2f6
 #define GESTURE_EVENT_DOUBLE_CLICK 	KEY_WAKEUP
 
 #define SYNA_GESTURE_MODE 		"tpd_gesture"
@@ -1439,42 +1438,27 @@ static uint32_t synaptics_check_unicode_gesture(struct synaptics_rmi4_data *rmi4
 
 	switch (gesture_id) {
 		case GESTURE_C:
-				pr_debug("Gesture : Word-C.\n");
-				if (get_android_version() < 11) {
-					keycode = KEYL_TP_GESTURE_C;
-				} else
-					keycode = GESTURE_EVENT_C;
+				pr_err("Gesture : Word-C.\n");
+				keycode = GESTURE_EVENT_C;
 			break;
 		case GESTURE_W:
-				pr_debug("Gesture : Word-W.\n");
-				if (get_android_version() < 11) {
-					keycode = KEYL_TP_GESTURE_W;
-				} else
-					keycode = GESTURE_EVENT_W;
+				pr_err("Gesture : Word-W.\n");
+				keycode = GESTURE_EVENT_W;
 			break;
 
 		case GESTURE_Z:
-				pr_debug("Gesture : Word_Z.\n");
-				if (get_android_version() < 11) {
-					keycode = KEYL_TP_GESTURE_Z;
-				} else
-					keycode = GESTURE_EVENT_Z;
+				pr_err("Gesture : Word_Z.\n");
+				keycode = GESTURE_EVENT_Z;
 			break;
 
 		case GESTURE_E:
-				pr_debug("Gesture : Word_E.\n");
-				if (get_android_version() < 11) {
-					keycode = KEYL_TP_GESTURE_E;
-				} else
-					keycode = GESTURE_EVENT_E;
+				pr_err("Gesture : Word_E.\n");
+				keycode = GESTURE_EVENT_E;
 			break;
 
 		case GESTURE_S:
-				pr_debug("Gesture : Word_S.\n");
-				if (get_android_version() < 11) {
-					keycode = KEYL_TP_GESTURE_C;
-				} else
-					keycode = GESTURE_EVENT_S;
+				pr_err("Gesture : Word_S.\n");
+				keycode = GESTURE_EVENT_S;
 			break;
 
 		default:
@@ -1563,17 +1547,17 @@ static int synaptics_rmi4_f12_abs_report(struct synaptics_rmi4_data *rmi4_data,
 		if (gesture_type != F12_UDG_DETECT) {
 			switch (gesture_type) {
 				case F12_DOUBLECLICK_DETECT:
-					pr_debug("Gesture : Double click.\n");
+					pr_err("Gesture : Double click.\n");
 					keycode = GESTURE_EVENT_DOUBLE_CLICK;
 					break;
 
 				case F12_UNICODE_DETECT:
-					pr_debug("Gesture : Unicode detect.\n");
+					pr_err("Gesture : Unicode detect.\n");
 					keycode = synaptics_check_unicode_gesture(rmi4_data,rmi4_data->gesture_detection[2]);
 					break;
 
 				case F12_VEE_DETECT:
-					pr_debug("Gesture : Word_V.\n");
+					pr_err("Gesture : Word_V.\n");
 					keycode = GESTURE_EVENT_V;
 					break;
 
@@ -1582,17 +1566,14 @@ static int synaptics_rmi4_f12_abs_report(struct synaptics_rmi4_data *rmi4_data,
 					abs_y = abs(gesture_y_distance);
 					direction = (abs_x > abs_y) ? horizontal_direction : vertical_direction;
 					if ((direction == vertical_direction) &&(gesture_y_distance > 0)){
-						pr_debug("Gesture : Swipe up.\n");
-						if (get_android_version() < 11) {
-							keycode = KEYL_TP_GESTURE_SWIPE_UP;
-						} else
-							keycode = GESTURE_EVENT_SWIPE_UP;
+						pr_err("Gesture : Swipe up.\n");
+						keycode = GESTURE_EVENT_SWIPE_UP;
 					}
 					break;
 				default:
 					break;
 			}
-			pr_debug("Gesture : keycode = %ud.\n", keycode);
+			pr_err("Gesture : keycode = %ud.\n", keycode);
 			if (keycode > 0) {
 				input_report_key(rmi4_data->input_dev, keycode, 1);
 				input_sync(rmi4_data->input_dev);
@@ -3767,37 +3748,20 @@ static void synaptics_rmi4_set_params(struct synaptics_rmi4_data *rmi4_data)
 		/* Huaqin modify  for ZQL1650-1523 by diganyun at 2018/06/07 start */
 		set_bit(KEY_WAKEUP, rmi4_data->input_dev->keybit);
 		input_set_capability(rmi4_data->input_dev, EV_KEY, GESTURE_EVENT_DOUBLE_CLICK);
-		if (get_android_version() > 10) {
-			set_bit(KEY_C, rmi4_data->input_dev->keybit);
-			input_set_capability(rmi4_data->input_dev, EV_KEY, GESTURE_EVENT_C);
-			set_bit(KEY_E, rmi4_data->input_dev->keybit);
-			input_set_capability(rmi4_data->input_dev, EV_KEY, GESTURE_EVENT_E);
-			set_bit(KEY_S, rmi4_data->input_dev->keybit);
-			input_set_capability(rmi4_data->input_dev, EV_KEY, GESTURE_EVENT_S);
-			set_bit(KEY_W, rmi4_data->input_dev->keybit);
-			input_set_capability(rmi4_data->input_dev, EV_KEY, GESTURE_EVENT_W);
-			set_bit(KEY_Z, rmi4_data->input_dev->keybit);
-			input_set_capability(rmi4_data->input_dev, EV_KEY, GESTURE_EVENT_Z);
-			set_bit(KEY_V, rmi4_data->input_dev->keybit);
-			input_set_capability(rmi4_data->input_dev, EV_KEY, GESTURE_EVENT_V);
-			set_bit(KEY_UP, rmi4_data->input_dev->keybit);
-			input_set_capability(rmi4_data->input_dev, EV_KEY, GESTURE_EVENT_SWIPE_UP);
-		} else {
-			set_bit(KEY_C, rmi4_data->input_dev->keybit);
-			input_set_capability(rmi4_data->input_dev, EV_KEY, KEYL_TP_GESTURE_C);
-			set_bit(KEY_E, rmi4_data->input_dev->keybit);
-			input_set_capability(rmi4_data->input_dev, EV_KEY, KEYL_TP_GESTURE_E);
-			set_bit(KEY_S, rmi4_data->input_dev->keybit);
-			input_set_capability(rmi4_data->input_dev, EV_KEY, KEYL_TP_GESTURE_S);
-			set_bit(KEY_W, rmi4_data->input_dev->keybit);
-			input_set_capability(rmi4_data->input_dev, EV_KEY, KEYL_TP_GESTURE_W);
-			set_bit(KEY_Z, rmi4_data->input_dev->keybit);
-			input_set_capability(rmi4_data->input_dev, EV_KEY, KEYL_TP_GESTURE_Z);
-			set_bit(KEY_V, rmi4_data->input_dev->keybit);
-			input_set_capability(rmi4_data->input_dev, EV_KEY, KEYL_TP_GESTURE_V);
-			set_bit(KEY_UP, rmi4_data->input_dev->keybit);
-			input_set_capability(rmi4_data->input_dev, EV_KEY, KEYL_TP_GESTURE_SWIPE_UP);
-		}
+		set_bit(KEY_C, rmi4_data->input_dev->keybit);
+		input_set_capability(rmi4_data->input_dev, EV_KEY, GESTURE_EVENT_C);
+		set_bit(KEY_E, rmi4_data->input_dev->keybit);
+		input_set_capability(rmi4_data->input_dev, EV_KEY, GESTURE_EVENT_E);
+		set_bit(KEY_S, rmi4_data->input_dev->keybit);
+		input_set_capability(rmi4_data->input_dev, EV_KEY, GESTURE_EVENT_S);
+		set_bit(KEY_W, rmi4_data->input_dev->keybit);
+		input_set_capability(rmi4_data->input_dev, EV_KEY, GESTURE_EVENT_W);
+		set_bit(KEY_Z, rmi4_data->input_dev->keybit);
+		input_set_capability(rmi4_data->input_dev, EV_KEY, GESTURE_EVENT_Z);
+		set_bit(KEY_V, rmi4_data->input_dev->keybit);
+		input_set_capability(rmi4_data->input_dev, EV_KEY, GESTURE_EVENT_V);
+		set_bit(KEY_UP, rmi4_data->input_dev->keybit);
+		input_set_capability(rmi4_data->input_dev, EV_KEY, GESTURE_EVENT_SWIPE_UP);
 		/* Huaqin modify  for ZQL1650-1523 by diganyun at 2018/06/07 end */
 	}
 
@@ -5121,11 +5085,11 @@ exit:
 	rmi4_data->suspend = true;
 // Huaqin add for vsp/vsn. by zhengwu.lu. at 2018/03/07  start
 	if (rmi4_data->enable_wakeup_gesture){
-		pr_debug("gesture suspend end not disable vsp/vsn\n");
+		pr_err("gesture suspend end not disable vsp/vsn\n");
 	}
 	else{
 		syna_lcm_power_source_ctrl(rmi4_data, 0);//disable vsp/vsn
-		pr_debug("sleep suspend end  disable vsp/vsn\n");
+		pr_err("sleep suspend end  disable vsp/vsn\n");
 	}
 // Huaqin add for vsp/vsn. by zhengwu.lu. at 2018/03/07  end
 	return 0;

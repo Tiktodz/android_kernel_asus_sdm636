@@ -15,7 +15,6 @@
  * more details.
  *
  */
-#if 0
 /* Huaqin add by yuexinghan for ITO test start */
 #include <linux/init.h>
 #include <linux/cdev.h>
@@ -29,8 +28,6 @@
 #include <linux/list.h>
 #include <linux/device.h>
 /* Huaqin add by yuexinghan for ITO test end */
-#endif
-#include <linux/android_version.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/delay.h>
@@ -392,18 +389,13 @@ const uint16_t touch_key_array[TOUCH_KEY_NUM] = {
 /* Huaqin modify  for TT1176710 by liunianliang at 2018/03/30 start */
 #define GESTURE_EVENT_C 		KEY_TP_GESTURE_C
 #define GESTURE_EVENT_E 		KEY_TP_GESTURE_E
-#define GESTURE_EVENT_M			KEY_TP_GESTURE_M
-#define GESTURE_EVENT_O			KEY_TP_GESTURE_O
 #define GESTURE_EVENT_S 		KEY_TP_GESTURE_S
 #define GESTURE_EVENT_V 		KEY_TP_GESTURE_V
 #define GESTURE_EVENT_W 		KEY_TP_GESTURE_W
 #define GESTURE_EVENT_Z 		KEY_TP_GESTURE_Z
 /* Huaqin modify  for TT1176710 by liunianliang at 2018/03/30 end */
 /* Huaqin modify gesture keycode by yuexinghan 20171109 start */
-#define GESTURE_EVENT_SWIPE_UP KEY_TP_GESTURE_SWIPE_UP
-#define GESTURE_EVENT_SWIPE_DOWN	KEY_TP_GESTURE_SWIPE_DOWN
-#define GESTURE_EVENT_SWIPE_LEFT	KEY_TP_GESTURE_SWIPE_LEFT
-#define GESTURE_EVENT_SWIPE_RIGHT	KEY_TP_GESTURE_SWIPE_RIGHT
+#define GESTURE_EVENT_SWIPE_UP 0x2f6
 #define GESTURE_EVENT_DOUBLE_CLICK	KEY_WAKEUP
 /* Huaqin modify gesture keycode by yuexinghan 20171109 end */
 
@@ -413,27 +405,14 @@ const uint16_t gesture_key_array[] = {
 	GESTURE_EVENT_V,
 	GESTURE_EVENT_DOUBLE_CLICK,
 	GESTURE_EVENT_Z,
-	GESTURE_EVENT_M,
-	GESTURE_EVENT_O,
+	KEY_M,
+	KEY_O,
 	GESTURE_EVENT_E,
 	GESTURE_EVENT_S,
 	GESTURE_EVENT_SWIPE_UP,
-	KEYL_TP_GESTURE_C,
-	KEYL_TP_GESTURE_E,
-	KEYL_TP_GESTURE_S,
-	KEYL_TP_GESTURE_V,
-	KEYL_TP_GESTURE_W,
-	KEYL_TP_GESTURE_Z,
-	KEYL_TP_GESTURE_SWIPE_UP,
-	KEYL_TP_GESTURE_SWIPE_DOWN,
-	KEYL_TP_GESTURE_SWIPE_LEFT,
-	KEYL_TP_GESTURE_SWIPE_RIGHT,
-	KEY_WAKEUP,
-	GESTURE_EVENT_SWIPE_DOWN,
-	GESTURE_EVENT_SWIPE_LEFT,
-	GESTURE_EVENT_SWIPE_RIGHT,
-	KEY_M,
-	KEY_O,
+	KEY_POWER,
+	KEY_POWER,
+	KEY_POWER,
 };
 /* Huaqin add by yuexinghan for gesture mode 20171030 end */
 #endif
@@ -1003,7 +982,6 @@ static int32_t nvt_flash_proc_init(void)
 }
 #endif
 
-#if 0
 /* Huaqin add by yuexinghan for ITO test start */
 /**********add ito test mode function  *******************/
 int nvt_TestResultLen=0;
@@ -1055,7 +1033,6 @@ int nvt_test_node_init(struct platform_device *tpinfo_device)
 }
 /*************************************************/
 /* Huaqin add by yuexinghan for ITO test end */
-#endif
 
 #if WAKEUP_GESTURE
 /* Huaqin add by yuexinghan for gesture mode 20171030 start */
@@ -1064,14 +1041,14 @@ int nvt_test_node_init(struct platform_device *tpinfo_device)
 #define ID_GESTURE_WORD_V			14
 #define ID_GESTURE_DOUBLE_CLICK 		15
 #define ID_GESTURE_WORD_Z			16
-#define GESTURE_WORD_M			17
-#define GESTURE_WORD_O			18
+//#define GESTURE_WORD_M			17
+//#define GESTURE_WORD_O			18
 #define ID_GESTURE_WORD_e			19
 #define ID_GESTURE_WORD_S			20
 #define ID_GESTURE_SLIDE_UP		21
-#define GESTURE_SLIDE_DOWN		22
-#define GESTURE_SLIDE_LEFT		23
-#define GESTURE_SLIDE_RIGHT		24
+//#define GESTURE_SLIDE_DOWN		22
+//#define GESTURE_SLIDE_LEFT		23
+//#define GESTURE_SLIDE_RIGHT		24
 
 static struct wake_lock gestrue_wakelock;
 
@@ -1101,107 +1078,73 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id)
 	switch (gesture_id) {
 /* Huaqin add by yuexinghan for gesture mode 20171030 start */
 		case ID_GESTURE_WORD_C:
-			if (get_android_version() < 11) {
-				NVT_LOG("Gesture : Word-C.\n");
-				keycode = gesture_key_array[10];
-			} else if (gesture_mode & MASK_GESTURE_C) {
+			if (gesture_mode & MASK_GESTURE_C) {
 				NVT_LOG("Gesture : Word-C.\n");
 				keycode = gesture_key_array[0];
 			}
 			break;
 		case ID_GESTURE_WORD_W:
-			if (get_android_version() < 11) {
-				NVT_LOG("Gesture : Word-W.\n");
-				keycode = gesture_key_array[14];
-			} else if (gesture_mode & MASK_GESTURE_W) {
+			if (gesture_mode & MASK_GESTURE_W) {
 				NVT_LOG("Gesture : Word-W.\n");
 				keycode = gesture_key_array[1];
 			}
 			break;
 		case ID_GESTURE_WORD_V:
-			if (get_android_version() < 11) {
-				NVT_LOG("Gesture : Word-V.\n");
-				keycode = gesture_key_array[13];
-			} else if (gesture_mode & MASK_GESTURE_V) {
+			if (gesture_mode & MASK_GESTURE_V) {
 				NVT_LOG("Gesture : Word-V.\n");
 				keycode = gesture_key_array[2];
 			}
 			break;
 		case ID_GESTURE_DOUBLE_CLICK:
+			if (gesture_mode & MASK_GESTURE_DOUBLE_CLICK) {
 				NVT_LOG("Gesture : Double Click.\n");
 				keycode = gesture_key_array[3];
+			}
 			break;
 		case ID_GESTURE_WORD_Z:
-			if (get_android_version() < 11) {
-				NVT_LOG("Gesture : Word-Z.\n");
-				keycode = gesture_key_array[15];
-			} else if (gesture_mode & MASK_GESTURE_Z) {
+			if (gesture_mode & MASK_GESTURE_Z) {
 				NVT_LOG("Gesture : Word-Z.\n");
 				keycode = gesture_key_array[4];
 			}
 			break;
-		case GESTURE_WORD_M:
+		/* case GESTURE_WORD_M:
 			NVT_LOG("Gesture : Word-M.\n");
-			if (get_android_version() < 11) {
-				keycode = gesture_key_array[24];
-			} else
-				keycode = gesture_key_array[5];
+			keycode = gesture_key_array[5];
 			break;
 		case GESTURE_WORD_O:
 			NVT_LOG("Gesture : Word-O.\n");
-			if (get_android_version() < 11) {
-				keycode = gesture_key_array[25];
-			} else
-				keycode = gesture_key_array[6];
-			break;
+			keycode = gesture_key_array[6];
+			break; */
 		case ID_GESTURE_WORD_e:
-			if (get_android_version() < 11) {
-				NVT_LOG("Gesture : Word-e.\n");
-				keycode = gesture_key_array[11];
-			} else if (gesture_mode & MASK_GESTURE_E) {
+			if (gesture_mode & MASK_GESTURE_E) {
 				NVT_LOG("Gesture : Word-e.\n");
 				keycode = gesture_key_array[7];
 			}
 			break;
 		case ID_GESTURE_WORD_S:
-			if (get_android_version() < 11) {
-				NVT_LOG("Gesture : Word-C.\n");
-				keycode = gesture_key_array[12];
-			} else if (gesture_mode & MASK_GESTURE_S) {
+			if (gesture_mode & MASK_GESTURE_W) {
 				NVT_LOG("Gesture : Word-S.\n");
 				keycode = gesture_key_array[8];
 			}
 			break;
 		case ID_GESTURE_SLIDE_UP:
-			if (get_android_version() < 11) {
-				NVT_LOG("Gesture : Slide UP.\n");
-				keycode = gesture_key_array[16];
-			} else if (gesture_mode & MASK_GESTURE_SLIDE_UP) {
+			if (gesture_mode & MASK_GESTURE_SLIDE_UP) {
 				NVT_LOG("Gesture : Slide UP.\n");
 				keycode = gesture_key_array[9];
 			}
 			break;
-		case GESTURE_SLIDE_DOWN:
+		/* case GESTURE_SLIDE_DOWN:
 			NVT_LOG("Gesture : Slide DOWN.\n");
-			if (get_android_version() < 11) {
-				keycode = gesture_key_array[17];
-			} else
-				keycode = gesture_key_array[21];
+			keycode = gesture_key_array[10];
 			break;
 		case GESTURE_SLIDE_LEFT:
 			NVT_LOG("Gesture : Slide LEFT.\n");
-			if (get_android_version() < 11) {
-				keycode = gesture_key_array[18];
-			} else
-				keycode = gesture_key_array[22];
+			keycode = gesture_key_array[11];
 			break;
 		case GESTURE_SLIDE_RIGHT:
 			NVT_LOG("Gesture : Slide RIGHT.\n");
-			if (get_android_version() < 11) {
-				keycode = gesture_key_array[19];
-			} else
-				keycode = gesture_key_array[23];
-			break;
+			keycode = gesture_key_array[12];
+			break; */
 /* Huaqin add by yuexinghan for gesture mode 20171030 end */
 		default:
 			break;
@@ -1774,13 +1717,11 @@ static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_i
 	queue_delayed_work(nvt_fwu_wq, &ts->nvt_fwu_work, msecs_to_jiffies(14000));
 #endif
 
-#if 0
 	/* Huaqin add by yuexinghan for ITO test start */
 	//--------add ito node
 	platform_device_register(&hwinfo_device);
 	nvt_test_node_init(&hwinfo_device);
 	/* Huaqin add by yuexinghan for ITO test end */
-#endif
 // Huaqin add for esd check function. by zhengwu.lu. at 2018/2/28  start
 /********************add protect , 20170908***********************/
 #if NVT_TOUCH_ESD_PROTECT

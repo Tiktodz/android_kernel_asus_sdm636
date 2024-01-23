@@ -984,6 +984,16 @@ void Boot_Update_Firmware(struct work_struct *work)
 	int32_t ret = 0;
 
 	char firmware_name[256] = "";
+// Huaqin add for nvt_tp check function. by zhengwu.lu. at 2018/03/01  start
+	NVT_LOG("zhengwu nvt_tp_check=%d\n",nvt_tp_check);
+	if(nvt_tp_check == 0){
+	sprintf(firmware_name, DJ_BOOT_UPDATE_FIRMWARE_NAME);
+	NVT_LOG("it's dj tp\n");
+	}
+	else if (nvt_tp_check == 1){
+	sprintf(firmware_name, TXD_BOOT_UPDATE_FIRMWARE_NAME);
+	NVT_LOG("it's txd tp\n");
+	}
 // Huaqin add for nvt_tp check function. by zhengwu.lu. at 2018/03/01  end
 
 	// request bin file in "/etc/firmware"

@@ -955,15 +955,9 @@ static int set_sdp_current(struct smb_charger *chg, int icl_ua)
 	const struct apsd_result *apsd_result = smblib_get_apsd_result(chg);
 
 #ifdef CONFIG_FORCE_FAST_CHARGE
-	if (force_fast_charge) {
-		/* 
-		 * Apply properly forced fast charge according to USB version, 
-		 * do not set higher than supported mA.
-		 */
-		if (icl_ua == USBIN_100MA)
-			icl_ua = USBIN_500MA;
-		else if (icl_ua == USBIN_150MA)
-			icl_ua = USBIN_900MA;
+	if (force_fast_charge > 0 && icl_ua == USBIN_500MA)
+	{
+		icl_ua = USBIN_900MA;
 	}
 #endif
 
@@ -1025,12 +1019,6 @@ static int get_sdp_current(struct smb_charger *chg, int *icl_ua)
 		smblib_err(chg, "Couldn't get ICL options rc=%d\n", rc);
 		return rc;
 	}
-
-	#ifdef CONFIG_FORCE_FAST_CHARGE
-	/* Always set higher mA if force_fast_charge */
-	if (force_fast_charge)
-		icl_options |= USB51_MODE_BIT;
-	#endif
 
 	usb3 = (icl_options & CFG_USB3P0_SEL_BIT);
 

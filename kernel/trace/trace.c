@@ -2145,20 +2145,20 @@ void trace_printk_init_buffers(void)
 
 	/* trace_printk() is for debug use only. Don't use it in production. */
 
-	pr_warning("\n");
-	pr_warning("**********************************************************\n");
-	pr_warning("**   NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE   **\n");
-	pr_warning("**                                                      **\n");
-	pr_warning("** trace_printk() being used. Allocating extra memory.  **\n");
-	pr_warning("**                                                      **\n");
-	pr_warning("** This means that this is a DEBUG kernel and it is     **\n");
-	pr_warning("** unsafe for production use.                           **\n");
-	pr_warning("**                                                      **\n");
-	pr_warning("** If you see this message and you are not debugging    **\n");
-	pr_warning("** the kernel, report this immediately to your vendor!  **\n");
-	pr_warning("**                                                      **\n");
-	pr_warning("**   NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE   **\n");
-	pr_warning("**********************************************************\n");
+	pr_debug("\n");
+	pr_debug("**********************************************************\n");
+	pr_debug("**   NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE   **\n");
+	pr_debug("**                                                      **\n");
+	pr_debug("** trace_printk() being used. Allocating extra memory.  **\n");
+	pr_debug("**                                                      **\n");
+	pr_debug("** This means that this is a DEBUG kernel and it is     **\n");
+	pr_debug("** unsafe for production use.                           **\n");
+	pr_debug("**                                                      **\n");
+	pr_debug("** If you see this message and you are not debugging    **\n");
+	pr_debug("** the kernel, report this immediately to your vendor!  **\n");
+	pr_debug("**                                                      **\n");
+	pr_debug("**   NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE   **\n");
+	pr_debug("**********************************************************\n");
 
 	/* Expand the buffers to set size */
 	tracing_update_buffers();

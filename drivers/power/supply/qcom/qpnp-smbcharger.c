@@ -4933,7 +4933,7 @@ close_time:
 }
 
 #define AICL_IRQ_LIMIT_SECONDS	60
-#define AICL_IRQ_LIMIT_COUNT	35
+#define AICL_IRQ_LIMIT_COUNT	25
 static void increment_aicl_count(struct smbchg_chip *chip)
 {
 	bool bad_charger = false;

@@ -980,6 +980,7 @@ static int set_sdp_current(struct smb_charger *chg, int icl_ua)
 		icl_options = CFG_USB3P0_SEL_BIT | USB51_MODE_BIT;
 		break;
 	default:
+		smblib_err(chg, "ICL %duA isn't supported for SDP\n", icl_ua);
 		return -EINVAL;
 	}
 
@@ -1051,17 +1052,7 @@ int smblib_set_icl_current(struct smb_charger *chg, int icl_ua)
 			goto enable_icl_changed_interrupt;
 		}
 	} else {
-		/*
-		 * Try USB 2.0/3,0 option first on USB path when maximum input
-		 * current limit is 500mA or below for better accuracy; in case
-		 * of error, proceed to use USB high-current mode.
-		 */
-		if (icl_ua <= USBIN_900MA) {
-			rc = set_sdp_current(chg, icl_ua);
-			if (rc >= 0)
-				goto enable_icl_changed_interrupt;
-		}
-
+		set_sdp_current(chg, 100000);
 		rc = smblib_set_charge_param(chg, &chg->param.usb_icl, icl_ua);
 		if (rc < 0) {
 			smblib_err(chg, "Couldn't set HC ICL rc=%d\n", rc);
@@ -1074,13 +1065,13 @@ override_suspend_config:
 	override = true;
 	if (icl_ua == INT_MAX) {
 		/* remove override if no voters - hw defaults is desired */
-		override = true;
+		override = false;
 	} else if (chg->typec_mode == POWER_SUPPLY_TYPEC_SOURCE_DEFAULT) {
 		if (chg->real_charger_type == POWER_SUPPLY_TYPE_USB)
 			/* For std cable with type = SDP never override */
-			override = true;
+			override = false;
 		else if (chg->real_charger_type == POWER_SUPPLY_TYPE_USB_CDP
-			&& icl_ua == 2700000)
+			&& icl_ua == 1500000)
 			/*
 			 * For std cable with type = CDP override only if
 			 * current is not 1500mA
@@ -1248,8 +1239,13 @@ static int smblib_hvdcp_enable_vote_callback(struct votable *votable,
 	/* vote to enable/disable HW autonomous INOV */
 	vote(chg->hvdcp_hw_inov_dis_votable, client, !hvdcp_enable, 0);
 
+	/*
+	 * Disable the autonomous bit and auth bit for disabling hvdcp.
+	 * This ensures only qc 2.0 detection runs but no vbus
+	 * negotiation happens.
+	 */
 	if (!hvdcp_enable)
-		val = 0;
+		val = HVDCP_EN_BIT;
 
 	rc = smblib_masked_write(chg, USBIN_OPTIONS_1_CFG_REG,
 				 HVDCP_EN_BIT | HVDCP_AUTH_ALG_EN_CFG_BIT,
@@ -2699,7 +2695,7 @@ int smblib_get_prop_die_health(struct smb_charger *chg,
 #define TYPEC_HIGH_CURRENT_UA		3000000
 static int get_rp_based_dcp_current(struct smb_charger *chg, int typec_mode)
 {
-	int rp_ua = HVDCP_CURRENT_UA;
+	int rp_ua;
 
 	switch (typec_mode) {
 	case POWER_SUPPLY_TYPEC_SOURCE_HIGH:
@@ -3243,7 +3239,7 @@ int smblib_get_charge_current(struct smb_charger *chg,
 {
 	const struct apsd_result *apsd_result = smblib_get_apsd_result(chg);
 	union power_supply_propval val = {0, };
-	int rc = 0, typec_source_rd, current_ua = HVDCP_CURRENT_UA;
+	int rc = 0, typec_source_rd, current_ua = 0;
 	bool non_compliant;
 	u8 stat5;
 
@@ -3286,7 +3282,7 @@ int smblib_get_charge_current(struct smb_charger *chg,
 			current_ua = DCP_CURRENT_UA;
 			break;
 		default:
-			current_ua = HVDCP_CURRENT_UA;
+			current_ua = 0;
 			break;
 		}
 
@@ -3306,7 +3302,7 @@ int smblib_get_charge_current(struct smb_charger *chg,
 			current_ua = chg->default_icl_ua;
 			break;
 		default:
-			current_ua = HVDCP_CURRENT_UA;
+			current_ua = 0;
 			break;
 		}
 		break;
@@ -3415,7 +3411,7 @@ void asus_batt_RTC_work(struct work_struct *dat)
 	unsigned long batflags;
 	struct timespec new_batAlarm_time;
 	struct timespec mtNow;
-	int RTCSetInterval = 10800;
+	int RTCSetInterval = 60;
 
 	if (!smbchg_dev) {
 		pr_err("%s: driver not ready yet!\n", __func__);
@@ -3426,7 +3422,7 @@ void asus_batt_RTC_work(struct work_struct *dat)
 	new_batAlarm_time.tv_sec = 0;
 	new_batAlarm_time.tv_nsec = 0;
 
-	RTCSetInterval = 10800;
+	RTCSetInterval = 60;
 
 	new_batAlarm_time.tv_sec = mtNow.tv_sec + RTCSetInterval;
 	pr_debug("%s: alarm start after %ds\n", __func__, RTCSetInterval);
@@ -3450,10 +3446,8 @@ void asus_batt_RTC_work(struct work_struct *dat)
 #define ICL_1500mA	0x3C
 #define ICL_1900mA	0x4C
 #define ICL_2000mA	0x50
-#define ICL_2500mA	0x64
 #define ICL_2850mA	0x72
 #define ICL_3000mA	0x78
-#define ICL_4000mA	0xF8
 #define ASUS_MONITOR_CYCLE	60000
 #define TITAN_750K_MIN	675
 #define TITAN_750K_MAX	851
@@ -3477,8 +3471,6 @@ void smblib_asus_monitor_start(struct smb_charger *chg, int time)
 #define SMBCHG_FLOAT_VOLTAGE_VALUE_4P064		0x4D
 #define SMBCHG_FLOAT_VOLTAGE_VALUE_4P350		0x73
 #define SMBCHG_FLOAT_VOLTAGE_VALUE_4P357		0x74
-#define SMBCHG_FLOAT_VOLTAGE_VALUE_4P485		0xF8
-#define SMBCHG_FLOAT_VOLTAGE_VALUE_4P492		0xF9
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_850MA 	0x22
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_925MA 	0x25
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_1400MA 	0x38
@@ -3486,10 +3478,7 @@ void smblib_asus_monitor_start(struct smb_charger *chg, int time)
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_1500MA 	0x3C
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_2000MA 	0x50
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_2050MA 	0x52
-#define SMBCHG_FAST_CHG_CURRENT_VALUE_2500MA	0x64
-#define SMBCHG_FAST_CHG_CURRENT_VALUE_2850MA	0x72
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_3000MA 	0x78
-#define SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA 	0xF8
 
 enum JEITA_state {
 	JEITA_STATE_INITIAL,
@@ -3569,21 +3558,21 @@ int smbchg_jeita_judge_state(int old_State, int batt_tempr)
 		result_State = JEITA_STATE_RANGE_0_to_100;
 #ifdef ASUS_CUSTOM_JEITA_SET_MODIFY
 	/* 10 <= batt_tempr < 45 */
-	} else if (batt_tempr < 550) {
+	} else if (batt_tempr < 450) {
 		result_State = JEITA_STATE_RANGE_100_to_450;
 	/* 45 <= batt_tempr < 55 */
-	// } else if (batt_tempr < 550) {
-		// result_State = JEITA_STATE_RANGE_450_to_550;
+	} else if (batt_tempr < 550) {
+		result_State = JEITA_STATE_RANGE_450_to_550;
 	/* 55 <= batt_tempr */
 	} else
 		result_State = JEITA_STATE_LARGER_THAN_550;
 #else
 	/* 10 <= batt_tempr < 50 */
-	} else if (batt_tempr < 600) {
+	} else if (batt_tempr < 500) {
 		result_State = JEITA_STATE_RANGE_100_to_500;
 	/* 50 <= batt_tempr < 60 */
-	// } else if (batt_tempr < 600) {
-		// result_State = JEITA_STATE_RANGE_500_to_600;
+	} else if (batt_tempr < 600) {
+		result_State = JEITA_STATE_RANGE_500_to_600;
 	/* 60 <= batt_tempr */
 	} else
 		result_State = JEITA_STATE_LARGER_THAN_600;
@@ -3723,9 +3712,6 @@ void jeita_rule(void)
 	u8 ICL_reg;
 	u8 FCC_reg;
 	u8 USBIN_ICL_reg;
-	u8 FFCC_reg_val;
-
-	FFCC_reg_val = SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA;
 
 	/* reg1090, 0x10, =bit4=1
 	 * JEITA_EN_HARDLIMIT=enable
@@ -3781,14 +3767,14 @@ void jeita_rule(void)
 	case JEITA_STATE_LESS_THAN_0:
 		charging_enable = EN_BAT_CHG_EN_COMMAND_FALSE;
 		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P357;
-		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_1400MA;
+		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_850MA;
 		break;
 
 	case JEITA_STATE_RANGE_0_to_100:
 		charging_enable = EN_BAT_CHG_EN_COMMAND_TRUE;
-		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P485;
-		FCC_reg_value = FFCC_reg_val;
-		
+		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P350;
+		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_925MA;
+
 		rc = SW_recharge(smbchg_dev);
 		if (rc < 0)
 			pr_err("%s: SW_recharge failed rc = %d\n", __func__, rc);
@@ -3801,8 +3787,8 @@ void jeita_rule(void)
 	case JEITA_STATE_RANGE_100_to_500:
 #endif
 		charging_enable = EN_BAT_CHG_EN_COMMAND_TRUE;
-		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P485;
-		FCC_reg_value = FFCC_reg_val;
+		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P350;
+		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_2050MA;
 
 		rc = SW_recharge(smbchg_dev);
 		if (rc < 0)
@@ -3816,8 +3802,8 @@ void jeita_rule(void)
 	case JEITA_STATE_RANGE_500_to_600:
 #endif
 		charging_enable = EN_BAT_CHG_EN_COMMAND_TRUE;
-		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P485;
-		FCC_reg_value = FFCC_reg_val;
+		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P095;
+		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_2050MA;
 		break;
 
 #ifdef ASUS_CUSTOM_JEITA_SET_MODIFY
@@ -3827,18 +3813,14 @@ void jeita_rule(void)
 #endif
 		charging_enable = EN_BAT_CHG_EN_COMMAND_FALSE;
 		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P004;
-		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_1500MA;
+		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_1475MA;
 		break;
 	}
 
-	if (smartchg_stop_flag || smartchg_stop_flag) {
+	if (smartchg_stop_flag) {
 		pr_debug("%s: Stop charging, smart = %d\n", __func__,
 				smartchg_stop_flag);
 		charging_enable = EN_BAT_CHG_EN_COMMAND_FALSE;
-	} else {
-		charging_enable = EN_BAT_CHG_EN_COMMAND_TRUE;
-		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P485;
-		FCC_reg_value = FFCC_reg_val;
 	}
 
 	rc = jeita_status_regs_write(charging_enable, FV_CFG_reg_value,
@@ -3901,9 +3883,6 @@ void asus_chg_flow_work(struct work_struct *work)
 	int rc;
 	u8 set_icl;
 	u8 USBIN_1_cc;
-	u8 fc_icl;
-
-	fc_icl = ICL_4000mA;
 
 	if (!asus_get_prop_usb_present(smbchg_dev)) {
 		smblib_uusb_removal(smbchg_dev);
@@ -3931,7 +3910,7 @@ void asus_chg_flow_work(struct work_struct *work)
 			pr_err("%s: Couldn't read fast_CURRENT_LIMIT_CFG_REG\n",
 				__func__);
 
-		set_icl = fc_icl;
+		set_icl = ICL_500mA;
 
 		rc = smblib_masked_write(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,
 						USBIN_CURRENT_LIMIT_MASK,
@@ -3945,7 +3924,7 @@ void asus_chg_flow_work(struct work_struct *work)
 		break;
 
 	case CDP_CHARGER_BIT:
-		set_icl = fc_icl;
+		set_icl = ICL_1500mA;
 
 		rc = smblib_masked_write(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,
 						USBIN_CURRENT_LIMIT_MASK,
@@ -3965,7 +3944,8 @@ void asus_chg_flow_work(struct work_struct *work)
 		break;
 
 	case OCP_CHARGER_BIT:
-		set_icl = fc_icl;
+		set_icl = ICL_1000mA;
+
 		rc = smblib_masked_write(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,
 						USBIN_CURRENT_LIMIT_MASK,
 						set_icl);
@@ -3987,7 +3967,7 @@ void asus_chg_flow_work(struct work_struct *work)
 			pr_err("%s: Couldn't read fast_CURRENT_LIMIT_CFG_REG\n",
 				__func__);
 
-		set_icl = fc_icl;
+		set_icl = ICL_1000mA;
 
 		rc = smblib_masked_write(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,
 						USBIN_CURRENT_LIMIT_MASK,
@@ -4099,27 +4079,25 @@ void asus_adapter_adc_work(struct work_struct *work)
 	/* determine current-setting value for DCP type AC: */
 	switch (ASUS_ADAPTER_ID) {
 	case ASUS_750K:
-		usb_max_current = ICL_4000mA;
+		usb_max_current = ICL_2000mA;
 		break;
 
 	case ASUS_200K:
-		usb_max_current = ICL_4000mA;
+		usb_max_current = ICL_2000mA;
 		break;
 
 	case PB:
-		usb_max_current = ICL_4000mA;
+		usb_max_current = ICL_2000mA;
 		break;
 
 	case OTHERS:
-		usb_max_current = ICL_4000mA;
+		usb_max_current = ICL_2000mA;
 		break;
 
 	case ADC_NOT_READY:
-		usb_max_current = ICL_4000mA;
+		usb_max_current = ICL_1000mA;
 		break;
 	}
-
-		usb_max_current = ICL_4000mA;
 
 	rc = smblib_set_usb_suspend(smbchg_dev, 0);
 	if (rc < 0)
@@ -4164,7 +4142,7 @@ void asus_insertion_initial_settings(struct smb_charger *chg)
 		dev_err(chg->dev, "Couldn't set default PRE_CHARGE_CURRENT_CFG_REG rc=%d\n",
 			rc);
 
-	rc = smblib_write(chg, FAST_CHARGE_CURRENT_CFG_REG, SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA);
+	rc = smblib_write(chg, FAST_CHARGE_CURRENT_CFG_REG, 0x28);
 	if (rc < 0)
 		dev_err(chg->dev, "Couldn't set default FAST_CHARGE_CURRENT_CFG_REG rc=%d\n",
 			rc);
@@ -5413,28 +5391,12 @@ irqreturn_t smblib_handle_usb_typec_change(int irq, void *data)
 	return IRQ_HANDLED;
 }
 
-irqreturn_t smblib_handle_dcin_uv(int irq, void *data)
-{
-	struct smb_irq_data *irq_data = data;
-	struct smb_charger *chg = irq_data->parent_data;
-	struct storm_watch *wdata;
-
-	smblib_dbg(chg, PR_INTERRUPT, "IRQ: %s\n", irq_data->name);
-	if (!chg->irq_info[SWITCH_POWER_OK_IRQ].irq_data)
-		return IRQ_HANDLED;
-
-	wdata = &chg->irq_info[SWITCH_POWER_OK_IRQ].irq_data->storm_data;
-	reset_storm_count(wdata);
-	return IRQ_HANDLED;
-}
-
 irqreturn_t smblib_handle_dc_plugin(int irq, void *data)
 {
 	struct smb_irq_data *irq_data = data;
 	struct smb_charger *chg = irq_data->parent_data;
 
 	power_supply_changed(chg->dc_psy);
-	vote(chg->dc_suspend_votable, BOOST_BACK_VOTER, false, 0);
 	return IRQ_HANDLED;
 }
 
@@ -5491,6 +5453,9 @@ irqreturn_t smblib_handle_switcher_power_ok(int irq, void *data)
 	if ((stat & USE_USBIN_BIT) && usb_icl >= 0 && usb_icl < USBIN_25MA)
 		return IRQ_HANDLED;
 
+	if (stat & USE_DCIN_BIT)
+		return IRQ_HANDLED;
+
 	if (is_storming(&irq_data->storm_data)) {
 		/* This could be a weak charger reduce ICL */
 		if (!is_client_vote_enabled(chg->usb_icl_votable,
@@ -5508,10 +5473,7 @@ irqreturn_t smblib_handle_switcher_power_ok(int irq, void *data)
 		} else {
 			smblib_err(chg,
 				"Reverse boost detected: voting 0mA to suspend input\n");
-			if (stat & USE_USBIN_BIT)
-				vote(chg->usb_icl_votable, BOOST_BACK_VOTER, true, 0);
-			else
-				vote(chg->dc_suspend_votable, BOOST_BACK_VOTER, true, 0);
+			vote(chg->usb_icl_votable, BOOST_BACK_VOTER, true, 0);
 			vote(chg->awake_votable, BOOST_BACK_VOTER, true, 0);
 			/*
 			 * Remove the boost-back vote after a delay, to avoid

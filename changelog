@@ -1,7 +1,7 @@
-<b><#selectbg_g>Sep 18,2023</#></b>
+<b><#selectbg_g>Feb 14,2024</#></b>
 
-  <*> Bringup TheOneMemoryオニキス</*>
-  <*> KernelSU update to v0.6.8</*>
+  <*> Bringup TheOneMemory EAS/*>
+  <*> KernelSU update to v0.7.6</*>
   <*> More Changes, and Improvements</*>
 
 
@@ -9,8 +9,9 @@
 <b><#selectbg_g>NOTES :</#></b>
 
   <*> KernelSU is enabled by default and will disabled automatically if Magisk has been installed</*>
-  <*> Recommended to use KernelSU Manager v0.6.8 and above</*>
+  <*> Recommended to use KernelSU Manager v0.7.6 and above</*>
   <*> If u don't want KernelSU, just disable it</*>
+  <*> If u need KernelSU, just disable Magisk first, then reflash kernel</*>
   <*> Kernel need sometimes to settle.</*>
 
 

@@ -135,7 +135,7 @@ void asus_smblib_relax(struct smb_charger *chg)
 }
 #endif
 
-static unsigned int forced_current = 0;
+static unsigned int forced_current = 1;
 module_param(forced_current, uint, S_IWUSR | S_IRUGO);
 
 /*
@@ -144,10 +144,10 @@ charge_mode	:	SMBCHG_FAST_CHG_CURRENT_VALUE
 1			:	2050MA
 2			:	2500MA
 3			:	2850MA
-4			:	3000MA
+4			:	4000MA
 other		:	2000MA
 */
-static unsigned int charge_mode = 1;
+static unsigned int charge_mode = 4;
 module_param(charge_mode, uint, S_IWUSR | S_IRUGO);
 
 /*
@@ -156,11 +156,11 @@ adapter_ceeling_current	:	ICL VALUE
 1						:	2050MA
 2						:	2500MA
 3						:	2850MA
-4						:	3000MA
+4						:	4000MA
 5						:	1000MA
 other					:	2000MA
 */
-static unsigned int adapter_ceeling_current = 2;
+static unsigned int adapter_ceeling_current = 4;
 module_param(adapter_ceeling_current, uint, S_IWUSR | S_IRUGO);
 
 static bool is_secure(struct smb_charger *chg, int addr)

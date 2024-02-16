@@ -55,7 +55,7 @@ static struct smb_params v1_params = {
 	.fcc		= {
 		.name	= "fast charge current",
 		.reg	= FAST_CHARGE_CURRENT_CFG_REG,
-		.min_u	= 0,
+		.min_u	= 3000000,
 		.max_u	= 6000000,
 		.step_u	= 25000,
 	},
@@ -69,14 +69,14 @@ static struct smb_params v1_params = {
 	.usb_icl	= {
 		.name	= "usb input current limit",
 		.reg	= USBIN_CURRENT_LIMIT_CFG_REG,
-		.min_u	= 0,
+		.min_u	= 3000000,
 		.max_u	= 6000000,
 		.step_u	= 25000,
 	},
 	.dc_icl		= {
 		.name	= "dc input current limit",
 		.reg	= DCIN_CURRENT_LIMIT_CFG_REG,
-		.min_u	= 0,
+		.min_u	= 3000000,
 		.max_u	= 6000000,
 		.step_u	= 25000,
 	},
@@ -1162,7 +1162,7 @@ static struct smb_irq_info smb138x_irqs[] = {
 	},
 	[OTG_OVERCURRENT_IRQ] = {
 		.name		= "otg-overcurrent",
-		.handler	= smblib_handle_debug,
+		.handler	= smblib_handle_otg_overcurrent,
 	},
 	[OTG_OC_DIS_SW_STS_IRQ] = {
 		.name		= "otg-oc-dis-sw-sts",

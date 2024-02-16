@@ -378,7 +378,7 @@
 #define USB3_MAX_CURRENT_MA			900
 #define SMB1351_IRQ_REG_COUNT			8
 #define SMB1351_CHG_PRE_MIN_MA			100
-#define SMB1351_CHG_FAST_MIN_MA			2000
+#define SMB1351_CHG_FAST_MIN_MA			3000
 #define SMB1351_CHG_FAST_MAX_MA			4500
 #define SMB1351_CHG_PRE_SHIFT			5
 #define SMB1351_CHG_FAST_SHIFT			4
@@ -1615,7 +1615,7 @@ static int smb1351_parallel_set_property(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
 		chip->target_fastchg_current_max_ma =
-						val->intval / 1000;
+						val->intval / 3000;
 		if (!chip->parallel_charger_suspended)
 			rc = smb1351_fastchg_current_set(chip,
 					chip->target_fastchg_current_max_ma);
@@ -1689,7 +1689,7 @@ static int smb1351_parallel_get_property(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
 		if (!chip->parallel_charger_suspended)
-			val->intval = chip->fastchg_current_max_ma * 1000;
+			val->intval = chip->fastchg_current_max_ma * 3000;
 		else
 			val->intval = 0;
 		break;

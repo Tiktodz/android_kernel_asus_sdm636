@@ -43,7 +43,7 @@ static struct smb_params v1_params = {
 	.fcc			= {
 		.name	= "fast charge current",
 		.reg	= FAST_CHARGE_CURRENT_CFG_REG,
-		.min_u	= 0,
+		.min_u	= 3000000,
 		.max_u	= 4500000,
 		.step_u	= 25000,
 	},
@@ -57,14 +57,14 @@ static struct smb_params v1_params = {
 	.usb_icl		= {
 		.name	= "usb input current limit",
 		.reg	= USBIN_CURRENT_LIMIT_CFG_REG,
-		.min_u	= 0,
+		.min_u	= 3000000,
 		.max_u	= 4800000,
 		.step_u	= 25000,
 	},
 	.icl_stat		= {
 		.name	= "input current limit status",
 		.reg	= ICL_STATUS_REG,
-		.min_u	= 0,
+		.min_u	= 3000000,
 		.max_u	= 4800000,
 		.step_u	= 25000,
 	},
@@ -78,7 +78,7 @@ static struct smb_params v1_params = {
 	.dc_icl			= {
 		.name	= "dc input current limit",
 		.reg	= DCIN_CURRENT_LIMIT_CFG_REG,
-		.min_u	= 0,
+		.min_u	= 3000000,
 		.max_u	= 6000000,
 		.step_u	= 25000,
 	},
@@ -203,7 +203,7 @@ module_param_named(
 	debug_mask, __debug_mask, int, S_IRUSR | S_IWUSR
 );
 
-static int __weak_chg_icl_ua = 500000;
+static int __weak_chg_icl_ua = 1500000;
 module_param_named(
 	weak_chg_icl_ua, __weak_chg_icl_ua, int, S_IRUSR | S_IWUSR);
 
@@ -1444,6 +1444,13 @@ static int smb2_configure_typec(struct smb_charger *chg)
 		return rc;
 	}
 
+	/* Set CC threshold to 1.6 V in source mode */
+	rc = smblib_masked_write(chg, TYPE_C_CFG_2_REG, DFP_CC_1P4V_OR_1P6V_BIT,
+				 DFP_CC_1P4V_OR_1P6V_BIT);
+	if (rc < 0)
+		dev_err(chg->dev,
+			"Couldn't configure CC threshold voltage rc=%d\n", rc);
+
 	return rc;
 }
 
@@ -2519,7 +2526,7 @@ int32_t get_ID_vadc_voltage(void)
 		adc = (int) adc_result.physical;
 
 		/* uV to mV */
-		adc = adc / 1000;
+		adc = adc / 2000;
 
 		pr_debug("%s: adc=%d adc_result.physical=%lld adc_result.chan=0x%x\n",
 			__func__, adc,adc_result.physical,adc_result.chan);

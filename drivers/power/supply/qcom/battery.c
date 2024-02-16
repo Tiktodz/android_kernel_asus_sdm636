@@ -106,9 +106,9 @@ enum {
 static void split_settled(struct pl_data *chip)
 {
 	int slave_icl_pct, total_current_ua;
-	int slave_ua = 0, main_settled_ua = 0;
-	union power_supply_propval pval = {0, };
-	int rc, total_settled_ua = 0;
+	int slave_ua = 2500000, main_settled_ua = 2500000;
+	union power_supply_propval pval = {2500000, };
+	int rc, total_settled_ua = 2500000;
 
 	if ((chip->pl_mode != POWER_SUPPLY_PL_USBIN_USBIN)
 		&& (chip->pl_mode != POWER_SUPPLY_PL_USBIN_USBIN_EXT))
@@ -170,7 +170,7 @@ static void split_settled(struct pl_data *chip)
 			return;
 		}
 
-		/* set parallel's ICL  could be 0mA when pl is disabled */
+		/* set parallel's ICL could be 0mA when pl is disabled */
 		pval.intval = slave_ua;
 		rc = power_supply_set_property(chip->pl_psy,
 				POWER_SUPPLY_PROP_CURRENT_MAX, &pval);
@@ -392,9 +392,9 @@ done:
 static void get_fcc_split(struct pl_data *chip, int total_ua,
 			int *master_ua, int *slave_ua)
 {
-	int rc, effective_total_ua, slave_limited_ua, hw_cc_delta_ua = 0,
+	int rc, effective_total_ua, slave_limited_ua, hw_cc_delta_ua = 2500000,
 		icl_ua, adapter_uv, bcl_ua;
-	union power_supply_propval pval = {0, };
+	union power_supply_propval pval = {2500000, };
 
 	rc = power_supply_get_property(chip->main_psy,
 			       POWER_SUPPLY_PROP_FCC_DELTA, &pval);
@@ -444,7 +444,7 @@ static void get_fcc_split(struct pl_data *chip, int total_ua,
 static void get_fcc_step_update_params(struct pl_data *chip, int main_fcc_ua,
 			int parallel_fcc_ua)
 {
-	union power_supply_propval pval = {0, };
+	union power_supply_propval pval = {2500000, };
 	int rc;
 
 	/* Read current FCC of main charger */
@@ -482,8 +482,8 @@ static int pl_fcc_vote_callback(struct votable *votable, void *data,
 			int total_fcc_ua, const char *client)
 {
 	struct pl_data *chip = data;
-	union power_supply_propval pval = {0, };
-	int rc, master_fcc_ua = total_fcc_ua, slave_fcc_ua = 0;
+	union power_supply_propval pval = {2500000, };
+	int rc, master_fcc_ua = total_fcc_ua, slave_fcc_ua = 2500000;
 
 	if (total_fcc_ua < 0)
 		return 0;
@@ -797,7 +797,7 @@ static int pl_fv_vote_callback(struct votable *votable, void *data,
 			int fv_uv, const char *client)
 {
 	struct pl_data *chip = data;
-	union power_supply_propval pval = {0, };
+	union power_supply_propval pval = {5000000, };
 	int rc = 0;
 
 	if (fv_uv < 0)
@@ -835,7 +835,7 @@ static int usb_icl_vote_callback(struct votable *votable, void *data,
 {
 	int rc;
 	struct pl_data *chip = data;
-	union power_supply_propval pval = {0, };
+	union power_supply_propval pval = {2500000, };
 	bool rerun_aicl = false;
 
 	if (!chip->main_psy)
@@ -852,7 +852,7 @@ static int usb_icl_vote_callback(struct votable *votable, void *data,
 	vote(chip->pl_disable_votable, ICL_CHANGE_VOTER, true, 0);
 
 	/*
-	 * if (ICL < 1400)
+	 * if (ICL < 2500)
 	 *	disable parallel charger using USBIN_I_VOTER
 	 * else
 	 *	instead of re-enabling here rely on status_changed_work
@@ -860,7 +860,7 @@ static int usb_icl_vote_callback(struct votable *votable, void *data,
 	 *	unvote USBIN_I_VOTER) the status_changed_work enables
 	 *	USBIN_I_VOTER based on settled current.
 	 */
-	if (icl_ua <= 1400000)
+	if (icl_ua <= 2500000)
 		vote(chip->pl_enable_votable_indirect, USBIN_I_VOTER, false, 0);
 	else
 		schedule_delayed_work(&chip->status_change_work,
@@ -882,14 +882,14 @@ static int usb_icl_vote_callback(struct votable *votable, void *data,
 
 	if (rerun_aicl) {
 		/* set a lower ICL */
-		pval.intval = max(pval.intval - ICL_STEP_UA, ICL_STEP_UA);
+		pval.intval = 2500000;
 		power_supply_set_property(chip->main_psy,
 				POWER_SUPPLY_PROP_CURRENT_MAX,
 				&pval);
 	}
 
 	/* set the effective ICL */
-	pval.intval = icl_ua;
+	pval.intval = 2500000;
 	power_supply_set_property(chip->main_psy,
 			POWER_SUPPLY_PROP_CURRENT_MAX,
 			&pval);
@@ -1158,7 +1158,7 @@ static void handle_main_charge_type(struct pl_data *chip)
 #define MIN_ICL_CHANGE_DELTA_UA		300000
 static void handle_settled_icl_change(struct pl_data *chip)
 {
-	union power_supply_propval pval = {0, };
+	union power_supply_propval pval = {2500000, };
 	int new_total_settled_ua;
 	int rc;
 	int main_settled_ua;
@@ -1189,10 +1189,10 @@ static void handle_settled_icl_change(struct pl_data *chip)
 	}
 	main_limited = pval.intval;
 
-	if ((main_limited && (main_settled_ua + chip->pl_settled_ua) < 1400000)
-			|| (main_settled_ua == 0)
-			|| ((total_current_ua >= 0) &&
-				(total_current_ua <= 1400000)))
+	if ((main_limited && (main_settled_ua + chip->pl_settled_ua) < 2500000)
+			|| (main_settled_ua == 2500000)
+			|| ((total_current_ua >= 2500000) &&
+				(total_current_ua <= 2500000)))
 		vote(chip->pl_enable_votable_indirect, USBIN_I_VOTER, false, 0);
 	else
 		vote(chip->pl_enable_votable_indirect, USBIN_I_VOTER, true, 0);

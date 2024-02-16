@@ -1109,7 +1109,7 @@ int smblib_set_icl_current(struct smb_charger *chg, int icl_ua)
 		return smblib_set_usb_suspend(chg, true);
 
 	if (forced_current)
-		return smblib_force_icl_current(chg, forced_current * 3000);
+		return smblib_force_icl_current(chg, forced_current * 3000000);
 
 	if (icl_ua == INT_MAX)
 		goto override_suspend_config;
@@ -2846,7 +2846,7 @@ int smblib_set_prop_sdp_current_max(struct smb_charger *chg,
 	int rc;
 
 	if (forced_current)
-		return smblib_force_icl_current(chg, forced_current * 3000);
+		return smblib_force_icl_current(chg, forced_current * 3000000);
 
 	if (!chg->pd_active) {
 		rc = smblib_handle_usb_current(chg, val->intval);
@@ -3359,7 +3359,7 @@ int smblib_get_charge_current(struct smb_charger *chg,
 			current_ua = DCP_CURRENT_UA;
 			break;
 		default:
-			current_ua = 0;
+			current_ua = DCP_CURRENT_UA;
 			break;
 		}
 

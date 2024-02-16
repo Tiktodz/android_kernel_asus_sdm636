@@ -2591,8 +2591,8 @@ static void fg_ttf_update(struct fg_chip *chip)
 
 	chip->online_status = online;
 	if (online)
-		/* wait 35 seconds for the input to settle */
-		delay_ms = 35000;
+		/* wait 30 seconds for the input to settle */
+		delay_ms = 30000;
 	else
 		/* wait 5 seconds for current to settle during discharge */
 		delay_ms = 5000;

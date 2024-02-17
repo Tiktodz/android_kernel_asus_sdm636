@@ -1615,7 +1615,7 @@ static int smb1351_parallel_set_property(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
 		chip->target_fastchg_current_max_ma =
-						val->intval / 3000;
+						val->intval / 1000;
 		if (!chip->parallel_charger_suspended)
 			rc = smb1351_fastchg_current_set(chip,
 					chip->target_fastchg_current_max_ma);
@@ -1689,7 +1689,7 @@ static int smb1351_parallel_get_property(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
 		if (!chip->parallel_charger_suspended)
-			val->intval = chip->fastchg_current_max_ma * 3000;
+			val->intval = chip->fastchg_current_max_ma * 1000;
 		else
 			val->intval = 0;
 		break;

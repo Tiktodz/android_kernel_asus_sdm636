@@ -3409,6 +3409,8 @@ int asus_get_prop_batt_temp(struct smb_charger *chg)
 	rc = smblib_get_prop_from_bms(chg, POWER_SUPPLY_PROP_TEMP,
 					&temp_val);
 
+    pr_info("asus_getprop_battery_temp: %d\n", temp_val.intval);
+
     if (temp_val.intval < 550) {
         return 450;
     } else {

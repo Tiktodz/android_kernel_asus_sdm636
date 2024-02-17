@@ -3859,7 +3859,7 @@ void jeita_rule(void)
 	charging_current = asus_get_prop_charging_current(smbchg_dev);
 	bat_capacity = asus_get_prop_batt_capacity(smbchg_dev);
 	state = smbchg_jeita_judge_state(state, bat_temp);
-	pr_debug("%s: state=%d, batt_health = %s, bat_temp = %d, bat_volt = %d,charg_current = %d, bat_capacity=%d, ICL = 0x%x, FV_reg=0x%x\n",
+	pr_info("%s: state=%d, batt_health = %s, bat_temp = %d, bat_volt = %d,charg_current = %d, bat_capacity=%d, ICL = 0x%x, FV_reg=0x%x\n",
 		__func__,state, health_type[bat_health], bat_temp, bat_volt,charging_current, bat_capacity, ICL_reg, FV_reg);
 
 	switch (state) {

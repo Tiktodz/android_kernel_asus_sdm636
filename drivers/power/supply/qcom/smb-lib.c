@@ -3510,6 +3510,7 @@ void smblib_asus_monitor_start(struct smb_charger *chg, int time)
 #define SMBCHG_FLOAT_VOLTAGE_VALUE_4P357		0x74
 #define SMBCHG_FLOAT_VOLTAGE_VALUE_4P485		0xF8
 #define SMBCHG_FLOAT_VOLTAGE_VALUE_4P492		0xF9
+#define SMBCHG_FLOAT_VOLTAGE_VALUE_4P852		0xB6
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_850MA 	0x22
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_925MA 	0x25
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_1400MA 	0x38
@@ -3829,7 +3830,7 @@ void jeita_rule(void)
 	case JEITA_STATE_RANGE_100_to_500:
 #endif
 		charging_enable = EN_BAT_CHG_EN_COMMAND_TRUE;
-		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P485;
+		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P852;
 		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA;
 
 		rc = SW_recharge(smbchg_dev);

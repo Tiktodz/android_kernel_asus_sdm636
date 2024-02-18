@@ -3484,7 +3484,7 @@ void asus_batt_RTC_work(struct work_struct *dat)
 #define ICL_2500mA	0x64
 #define ICL_2850mA	0x72
 #define ICL_3000mA	0x78
-#define ICL_4000mA	0xF8
+#define ICL_4000mA	0xA0
 #define ASUS_MONITOR_CYCLE	60000
 #define TITAN_750K_MIN	675
 #define TITAN_750K_MAX	851
@@ -3520,7 +3520,7 @@ void smblib_asus_monitor_start(struct smb_charger *chg, int time)
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_2500MA	0x64
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_2850MA	0x72
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_3000MA 	0x78
-#define SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA 	0xF8
+#define SMBCHG_FAST_CHG_CURRENT_VALUE_4000MA 	0xA0
 
 enum JEITA_state {
 	JEITA_STATE_INITIAL,

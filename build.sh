@@ -29,10 +29,10 @@ tg_post_build()
 	fi
 }
 
-if ! [ -d "$KERNELDIR/trb_clang" ]; then
-if ! git clone https://gitlab.com/varunhardgamer/trb_clang --depth=1 -b 17 --single-branch trb_clang; then
-exit 1
-fi
+if ! [ -d "$KERNELDIR/neutron" ]; then
+mkdir -p neutron && cd neutron
+bash <(curl -s "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman") -S=11032023
+cd ..
 fi
 
 if ! [ -d "$KERNELDIR/AnyKernel3" ]; then
@@ -49,12 +49,13 @@ DATE=$(date '+%Y%m%d')
 BUILD_START=$(date +"%s")
 FINAL_KERNEL_ZIP="$KERNELNAME-$VERSION-$VARIANT-$(date '+%Y%m%d-%H%M')"
 KERVER=$(make kernelversion)
-export PATH="$KERNELDIR/trb_clang/bin:$PATH"
+#export PATH="$KERNELDIR/trb_clang/bin:$PATH"
+export PATH="$KERNELDIR/neutron/bin:$PATH"
 export ARCH=arm64
 export SUBARCH=arm64
 export KBUILD_BUILD_USER="queen"
 export KBUILD_BUILD_HOST=$(source /etc/os-release && echo "${NAME}")
-export KBUILD_COMPILER_STRING="$($KERNELDIR/trb_clang/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
+export KBUILD_COMPILER_STRING="$($KERNELDIR/neutron/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
 
 # Speed up build process
 MAKE="./makeparallel"
@@ -68,18 +69,18 @@ make O=out clean
 make $KERNEL_DEFCONFIG O=out 2>&1 | tee -a error.log
 make -j$(nproc --all) O=out LLVM=1 \
 		ARCH=arm64 \
-		AS="$KERNELDIR/trb_clang/bin/llvm-as" \
-		CC="$KERNELDIR/trb_clang/bin/clang" \
-		LD="$KERNELDIR/trb_clang/bin/ld.lld" \
-		AR="$KERNELDIR/trb_clang/bin/llvm-ar" \
-		NM="$KERNELDIR/trb_clang/bin/llvm-nm" \
-		STRIP="$KERNELDIR/trb_clang/bin/llvm-strip" \
-		OBJCOPY="$KERNELDIR/trb_clang/bin/llvm-objcopy" \
-		OBJDUMP="$KERNELDIR/trb_clang/bin/llvm-objdump" \
+		AS="$KERNELDIR/neutron/bin/llvm-as" \
+		CC="$KERNELDIR/neutron/bin/clang" \
+		LD="$KERNELDIR/neutron/bin/ld.lld" \
+		AR="$KERNELDIR/neutron/bin/llvm-ar" \
+		NM="$KERNELDIR/neutron/bin/llvm-nm" \
+		STRIP="$KERNELDIR/neutron/bin/llvm-strip" \
+		OBJCOPY="$KERNELDIR/neutron/bin/llvm-objcopy" \
+		OBJDUMP="$KERNELDIR/neutron/bin/llvm-objdump" \
 		CLANG_TRIPLE=aarch64-linux-gnu- \
-		CROSS_COMPILE="$KERNELDIR/trb_clang/bin/clang" \
-		CROSS_COMPILE_COMPAT="$KERNELDIR/trb_clang/bin/clang" \
-		CROSS_COMPILE_ARM32="$KERNELDIR/trb_clang/bin/clang" 2>&1 | tee -a error.log
+		CROSS_COMPILE="$KERNELDIR/neutron/bin/clang" \
+		CROSS_COMPILE_COMPAT="$KERNELDIR/neutron/bin/clang" \
+		CROSS_COMPILE_ARM32="$KERNELDIR/neutron/bin/clang" 2>&1 | tee -a error.log
 
 if ! [ -f $KERNELDIR/out/arch/arm64/boot/Image.gz-dtb ];then
     tg_post_build "error.log" "Build Error!"
@@ -132,4 +133,4 @@ ZIP_FINAL="$ZIP_FINAL-signed"
 BUILD_END=$(date +"%s")
 DIFF=$(($BUILD_END - $BUILD_START))
 
-tg_post_build "$ZIP_FINAL.zip" "Build completed in $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds"
+tg_post_build "$ZIP_FINAL.zip" "Build completed in $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s)"

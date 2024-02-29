@@ -94,8 +94,7 @@ done:
 static int cass_best_cpu(struct task_struct *p, int prev_cpu, bool sync)
 {
 	/* Initialize @best such that @best always has a valid CPU at the end */
-	struct cass_cpu_cand cands[2], *best = cands, *curr;
-	struct cpuidle_state *idle_state;
+	struct cass_cpu_cand cands[2], *best = cands;
 	bool has_idle = false;
 	unsigned long p_util;
 	int cidx = 0, cpu;
@@ -110,8 +109,9 @@ static int cass_best_cpu(struct task_struct *p, int prev_cpu, bool sync)
 	rcu_read_lock();
 	for_each_cpu_and(cpu, &p->cpus_allowed, cpu_active_mask) {
 		/* Use the free candidate slot */
-		curr = &cands[cidx];
-		curr->cpu = cpu;
+		/* Use the free candidate slot for @curr */
+		struct cass_cpu_cand *curr = &cands[cidx];
+		struct cpuidle_state *idle_state;
 
 		/*
 		 * Check if this CPU is idle. For sync wakes, always treat the
@@ -164,6 +164,7 @@ static int cass_best_cpu(struct task_struct *p, int prev_cpu, bool sync)
 		 * If @best == @curr then there's no need to compare them, but
 		 * cidx still needs to be changed to the other candidate slot.
 		 */
+		curr->cpu = cpu;
 		if (best == curr ||
 		    cass_cpu_better(curr, best, prev_cpu, sync)) {
 			best = curr;

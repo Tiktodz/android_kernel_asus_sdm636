@@ -1746,7 +1746,8 @@ int smblib_get_prop_adapter_id(struct smb_charger *chg,
 				union power_supply_propval *val)
 {
 	val->intval = ASUS_ADAPTER_ID;
-	smblib_err(chg, "adapter ID=%d\n", val->intval);
+	if (val->intval)
+		smblib_err(chg, "adapter ID=%d\n", val->intval);
 
 	return 0;
 }

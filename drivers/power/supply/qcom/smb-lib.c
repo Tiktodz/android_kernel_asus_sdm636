@@ -3449,7 +3449,7 @@ void asus_batt_RTC_work(struct work_struct *dat)
 #define ICL_2500mA	0x64
 #define ICL_2850mA	0x72
 #define ICL_3000mA	0x78
-#define ICL_4000mA	0xF8
+#define ICL_4000mA	0xA0
 #define ASUS_MONITOR_CYCLE	60000
 #define TITAN_750K_MIN	675
 #define TITAN_750K_MAX	851
@@ -3473,7 +3473,7 @@ void smblib_asus_monitor_start(struct smb_charger *chg, int time)
 #define SMBCHG_FLOAT_VOLTAGE_VALUE_4P064		0x4D
 #define SMBCHG_FLOAT_VOLTAGE_VALUE_4P350		0x73
 #define SMBCHG_FLOAT_VOLTAGE_VALUE_4P357		0x74
-#define SMBCHG_FLOAT_VOLTAGE_VALUE_4P485		0xF8
+#define SMBCHG_FLOAT_VOLTAGE_VALUE_4P485		0xA0
 #define SMBCHG_FLOAT_VOLTAGE_VALUE_4P492		0xF9
 #define SMBCHG_FLOAT_VOLTAGE_VALUE_4P852		0xB6
 #define SMBCHG_FAST_CHG_CURRENT_VALUE_850MA 	0x22

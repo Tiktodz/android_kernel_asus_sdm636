@@ -1,16 +1,16 @@
-<b><#selectbg_g>Mar 01,2024</#></b>
+<b><#selectbg_g>Mar 15,2024</#></b>
 
   <*> KernelSU update v0.8.1</*>
   <*> Improve network stability</*>
-  <*> More Changes, and Improvements</*>
+  <*> adsprpc: Handle UAF</*>
+  <*> Add More Tweak Changes, and Improvements</*>
 
 
 
 <b><#selectbg_g>NOTES :</#></b>
 
-  <*> KernelSU is enabled by default and will disabled automatically if Magisk has been installed</*>
+  <*> Now you can use both KernelSU and Magisk, it's better to just choose one</*>
   <*> Recommended to use KernelSU Manager v0.8.1</*>
-  <*> If u don't want KernelSU, just disable it</*>
   <*> Kernel need sometimes to settle.</*>
 
 

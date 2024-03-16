@@ -30,9 +30,9 @@ tg_post_build()
 }
 
 if ! [ -d "$KERNELDIR/ew" ]; then
-if ! git clone --depth=1 https://gitlab.com/Tiktodz/electrowizard-clang.git -b 16 --single-branch ew; then
-exit 1
-fi
+mkdir -p ew && cd ew
+bash <(curl -s "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman") -S=09092023
+cd ..
 fi
 
 if ! [ -d "$KERNELDIR/AnyKernel3" ]; then

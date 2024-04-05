@@ -33,6 +33,7 @@ if ! [ -d "$KERNELDIR/trb_clang" ]; then
 if ! git clone https://gitlab.com/varunhardgamer/trb_clang --depth=1 -b 17 --single-branch trb_clang; then
 exit 1
 fi
+fi
 
 if ! [ -d "$KERNELDIR/AnyKernel3" ]; then
 if ! git clone --depth=1 https://github.com/Tiktodz/AnyKernel3 -b hmp-old AnyKernel3; then

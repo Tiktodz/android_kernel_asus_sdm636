@@ -50,13 +50,13 @@ on property:persist.spectrum.profile=0
     write /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq 633600
     ## Little max freq
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq
-    write /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq 1612800
+    write /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq 1747200
     ## Little min info
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_min_freq
     write /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_min_freq 633600
     ## Little max info
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq
-    write /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq 1612800
+    write /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq 1747200
 
     ## Big gov
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy4/scaling_governor
@@ -91,6 +91,7 @@ on property:persist.spectrum.profile=0
 
     ## I/O Scheduler
     write /sys/block/mmcblk0/queue/scheduler "cfq"
+    write /sys/block/mmcblk1/queue/scheduler "cfq"
 
     ## Adreno Idler
     write /sys/module/adreno_idler/parameters/adreno_idler_active "Y"
@@ -114,13 +115,13 @@ on property:persist.spectrum.profile=1
     write /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq 633600
     ## Little max freq
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq
-    write /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq 1804800
+    write /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq 1843200
     ## Little min info
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_min_freq
     write /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_min_freq 633600
     ## Little max info
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq
-    write /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq 1804800
+    write /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq 1843200
 
     ## Big gov
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy4/scaling_governor
@@ -130,13 +131,13 @@ on property:persist.spectrum.profile=1
     write /sys/devices/system/cpu/cpufreq/policy4/scaling_min_freq 1113600
     ## Big max freq
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq
-    write /sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq 2208000
+    write /sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq 2250000
     ## Big min info
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy4/cpuinfo_min_freq
     write /sys/devices/system/cpu/cpufreq/policy4/cpuinfo_min_freq 1113600
     ## Big max info
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy4/cpuinfo_max_freq
-    write /sys/devices/system/cpu/cpufreq/policy4/cpuinfo_max_freq 2208000
+    write /sys/devices/system/cpu/cpufreq/policy4/cpuinfo_max_freq 2250000
 
     # Power Efficient Workqueues
     write /sys/module/workqueue/parameters/power_efficient "N"
@@ -149,12 +150,13 @@ on property:persist.spectrum.profile=1
     write /sys/class/kgsl/kgsl-3d0/max_clock_mhz 585
     write /sys/class/kgsl/kgsl-3d0/min_clock_mhz 160
     write /sys/class/kgsl/kgsl-3d0/devfreq/governor "msm-adreno-tz"
-    write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 2
+    write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 1
     write /sys/class/kgsl/kgsl-3d0/throttling 0
     write /sys/devices/soc/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor "msm-adreno-tz"
 
     ## I/O Scheduler
     write /sys/block/mmcblk0/queue/scheduler "anxiety"
+    write /sys/block/mmcblk1/queue/scheduler "anxiety"
 
     ## Adreno Idler
     write /sys/module/adreno_idler/parameters/adreno_idler_active "N"
@@ -212,13 +214,14 @@ on property:persist.spectrum.profile=2
     write /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 160000000
     write /sys/class/kgsl/kgsl-3d0/max_clock_mhz 370
     write /sys/class/kgsl/kgsl-3d0/min_clock_mhz 160
-    write /sys/class/kgsl/kgsl-3d0/devfreq/governor "powersave"
+    write /sys/class/kgsl/kgsl-3d0/devfreq/governor "msm-adreno-tz"
     write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 0
     write /sys/class/kgsl/kgsl-3d0/throttling 1
-    write /sys/devices/soc/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor "powersave"
+    write /sys/devices/soc/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor "msm-adreno-tz"
 
     ## I/O Scheduler
     write /sys/block/mmcblk0/queue/scheduler "cfq"
+    write /sys/block/mmcblk1/queue/scheduler "cfq"
 
     ## Adreno Idler
     write /sys/module/adreno_idler/parameters/adreno_idler_active "Y"
@@ -242,13 +245,13 @@ on property:persist.spectrum.profile=3
     write /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq 633600
     ## Little max freq
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq
-    write /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq 1804800
+    write /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq 1843200
     ## Little min info
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_min_freq
     write /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_min_freq 633600
     ## Little max info
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq
-    write /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq 1804800
+    write /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq 1843200
 
     ## Big gov
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy4/scaling_governor
@@ -258,13 +261,13 @@ on property:persist.spectrum.profile=3
     write /sys/devices/system/cpu/cpufreq/policy4/scaling_min_freq 1113600
     ## Big max freq
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq
-    write /sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq 2208000
+    write /sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq 2450000
     ## Big min info
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy4/cpuinfo_min_freq
     write /sys/devices/system/cpu/cpufreq/policy4/cpuinfo_min_freq 1113600
     ## Big max info
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy4/cpuinfo_max_freq
-    write /sys/devices/system/cpu/cpufreq/policy4/cpuinfo_max_freq 2208000
+    write /sys/devices/system/cpu/cpufreq/policy4/cpuinfo_max_freq 2450000
 
     # Power Efficient Workqueues
     write /sys/module/workqueue/parameters/power_efficient "N"
@@ -276,13 +279,14 @@ on property:persist.spectrum.profile=3
     write /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 160000000
     write /sys/class/kgsl/kgsl-3d0/max_clock_mhz 585
     write /sys/class/kgsl/kgsl-3d0/min_clock_mhz 160
-    write /sys/class/kgsl/kgsl-3d0/devfreq/governor "performance"
-    write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 3
+    write /sys/class/kgsl/kgsl-3d0/devfreq/governor "msm-adreno-tz"
+    write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 0
     write /sys/class/kgsl/kgsl-3d0/throttling 0
-    write /sys/devices/soc/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor "performance"
+    write /sys/devices/soc/1c00000.qcom,kgsl-3d0/devfreq/1c00000.qcom,kgsl-3d0/governor "msm-adreno-tz"
 
     ## I/O Scheduler
     write /sys/block/mmcblk0/queue/scheduler "anxiety"
+    write /sys/block/mmcblk1/queue/scheduler "anxiety"
 
     ## Adreno Idler
     write /sys/module/adreno_idler/parameters/adreno_idler_active "N"

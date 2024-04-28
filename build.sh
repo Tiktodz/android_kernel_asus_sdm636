@@ -3,7 +3,7 @@
 KERNELDIR=$(pwd)
 
 # Identity
-CODENAME=Hayzel
+CODENAME=Onyx
 KERNELNAME=TheOneMemory
 VARIANT=HMP
 VERSION=CLO
@@ -47,7 +47,7 @@ ANYKERNEL3_DIR=$KERNELDIR/AnyKernel3/
 TZ=Asia/Jakarta
 DATE=$(date '+%Y%m%d')
 BUILD_START=$(date +"%s")
-FINAL_KERNEL_ZIP="$KERNELNAME-$VERSION-$VARIANT-$(date '+%Y%m%d-%H%M')"
+FINAL_KERNEL_ZIP="$KERNELNAME-$VERSION-$VARIANT-OC-$(date '+%Y%m%d-%H%M')"
 KERVER=$(make kernelversion)
 
 # Exporting

@@ -99,10 +99,10 @@ sed -i "s/kernel.type=.*/kernel.type=$VARIANT/g" anykernel.sh
 sed -i "s/kernel.for=.*/kernel.for=$CODENAME/g" anykernel.sh
 sed -i "s/kernel.compiler=.*/kernel.compiler=$KBUILD_COMPILER_STRING/g" anykernel.sh
 sed -i "s/kernel.made=.*/kernel.made=dotkit @fakedotkit/g" anykernel.sh
-sed -i "s/kernel.version=.*/kernel.version=$VERSION/g" anykernel.sh
+sed -i "s/kernel.version=.*/kernel.version=$KERVER/g" anykernel.sh
 sed -i "s/message.word=.*/message.word=Appreciate your efforts for choosing TheOneMemory kernel./g" anykernel.sh
 sed -i "s/build.date=.*/build.date=$DATE/g" anykernel.sh
-sed -i "s/build.type=.*/build.type=$VERSION/g" anykernel.sh
+sed -i "s/build.type=.*/build.type=LA.UM.9.2.r1-03700-SDMxx0.0/g" anykernel.sh
 sed -i "s/supported.versions=.*/supported.versions=9-13/g" anykernel.sh
 sed -i "s/device.name1=.*/device.name1=X00TD/g" anykernel.sh
 sed -i "s/device.name2=.*/device.name2=X00T/g" anykernel.sh

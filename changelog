@@ -1,7 +1,8 @@
-<b><#selectbg_g>Mar 01,2024</#></b>
+<b><#selectbg_g>Jun 03,2024</#></b>
 
-  <*> Bringup TheOneMemory EAS/*>
-  <*> KernelSU update to v0.8.1</*>
+  <*> Bringup TheOneMemory EAS</*>
+  <*> Introduce SBalance IRQ balancer</*>
+  <*> Enable UClamp instead of Schedtune</*>
   <*> More Changes, and Improvements</*>
 
 
@@ -9,7 +10,7 @@
 <b><#selectbg_g>NOTES :</#></b>
 
   <*> KernelSU is enabled by default and will disabled automatically if Magisk has been installed</*>
-  <*> Recommended to use KernelSU Manager v0.8.1 and above</*>
+  <*> Recommended to use KernelSU Manager v0.7.6</*>
   <*> If u don't want KernelSU, just disable it</*>
   <*> If u need KernelSU, just disable Magisk first, then reflash kernel</*>
   <*> Kernel need sometimes to settle.</*>

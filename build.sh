@@ -31,7 +31,8 @@ tg_post_build()
 
 if ! [ -d "$KERNELDIR/ew" ]; then
 mkdir -p ew && cd ew
-bash <(curl -s "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman") -S=09092023
+wget https://github.com/ftrsndrya/ElectroWizard-CLang/releases/download/ElectroWizard-Clang-19.0.0-release/ElectroWizard-Clang-19.0.0.tar.gz -O "ElectroWizard-clang.tar.gz" tar -xvf ElectroWizard-clang.tar.gz && rm -rf ElectroWizard-clang.tar.gz
+#bash <(curl -s "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman") -S=09092023
 cd ..
 fi
 
@@ -123,14 +124,14 @@ sed -i "s/KBDATE/$DATE/g" aroma-config
 sed -i "s/KVARIANT/$VARIANT/g" aroma-config
 cd ../../../..
 
-zip -r9 "../$FINAL_KERNEL_ZIP" * -x .git README.md anykernel-real.sh placeholder .gitignore zipsigner* "*.zip"
+zip -r9 "../$FINAL_KERNEL_ZIP" * -x .git README.md anykernel-real.sh ./*placeholder .gitignore "*.zip"
 
 ZIP_FINAL="$FINAL_KERNEL_ZIP"
 
 cd ..
 
-curl -sLo zipsigner-3.0.jar https://github.com/Magisk-Modules-Repo/zipsigner/raw/master/bin/zipsigner-3.0-dexed.jar
-java -jar zipsigner-3.0.jar "$ZIP_FINAL".zip "$ZIP_FINAL"-signed.zip
+curl -sLo zipsigner-4.0.jar https://raw.githubusercontent.com/baalajimaestro/AnyKernel3/master/zipsigner-4.0.jar
+java -jar zipsigner-4.0.jar "$ZIP_FINAL".zip "$ZIP_FINAL"-signed.zip
 ZIP_FINAL="$ZIP_FINAL-signed"
 
 BUILD_END=$(date +"%s")

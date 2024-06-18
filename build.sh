@@ -29,10 +29,10 @@ tg_post_build()
 	fi
 }
 
-if ! [ -d "$KERNELDIR/trb_clang" ]; then
-if ! git clone https://gitlab.com/varunhardgamer/trb_clang --depth=1 -b 17 --single-branch trb_clang; then
-exit 1
-fi
+if ! [ -d "$KERNELDIR/ew" ]; then
+mkdir -p ew && cd ew
+bash <(curl -s "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman") -S=09092023
+cd ..
 fi
 
 if ! [ -d "$KERNELDIR/AnyKernel3" ]; then
@@ -51,12 +51,12 @@ FINAL_KERNEL_ZIP="$KERNELNAME-$VERSION-$VARIANT-$(date '+%Y%m%d-%H%M')"
 KERVER=$(make kernelversion)
 
 # Exporting
-export PATH="$KERNELDIR/trb_clang/bin:$PATH"
+export PATH="$KERNELDIR/ew/bin:$PATH"
 export ARCH=arm64
 export SUBARCH=arm64
 export KBUILD_BUILD_USER="queen"
 export KBUILD_BUILD_HOST=$(source /etc/os-release && echo "${NAME}")
-export KBUILD_COMPILER_STRING="$($KERNELDIR/trb_clang/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
+export KBUILD_COMPILER_STRING="$($KERNELDIR/ew/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
 
 # Speed up build process
 MAKE="./makeparallel"
@@ -72,18 +72,18 @@ make O=out clean
 make $KERNEL_DEFCONFIG O=out 2>&1 | tee -a error.log
 make -j$(nproc --all) O=out LLVM=1 \
 		ARCH=arm64 \
-		AS="$KERNELDIR/trb_clang/bin/llvm-as" \
-		CC="$KERNELDIR/trb_clang/bin/clang" \
-		LD="$KERNELDIR/trb_clang/bin/ld.lld" \
-		AR="$KERNELDIR/trb_clang/bin/llvm-ar" \
-		NM="$KERNELDIR/trb_clang/bin/llvm-nm" \
-		STRIP="$KERNELDIR/trb_clang/bin/llvm-strip" \
-		OBJCOPY="$KERNELDIR/trb_clang/bin/llvm-objcopy" \
-		OBJDUMP="$KERNELDIR/trb_clang/bin/llvm-objdump" \
+		AS="$KERNELDIR/ew/bin/llvm-as" \
+		CC="$KERNELDIR/ew/bin/clang" \
+		LD="$KERNELDIR/ew/bin/ld.lld" \
+		AR="$KERNELDIR/ew/bin/llvm-ar" \
+		NM="$KERNELDIR/ew/bin/llvm-nm" \
+		STRIP="$KERNELDIR/ew/bin/llvm-strip" \
+		OBJCOPY="$KERNELDIR/ew/bin/llvm-objcopy" \
+		OBJDUMP="$KERNELDIR/ew/bin/llvm-objdump" \
 		CLANG_TRIPLE=aarch64-linux-gnu- \
-		CROSS_COMPILE="$KERNELDIR/trb_clang/bin/clang" \
-		CROSS_COMPILE_COMPAT="$KERNELDIR/trb_clang/bin/clang" \
-		CROSS_COMPILE_ARM32="$KERNELDIR/trb_clang/bin/clang" 2>&1 | tee -a error.log
+		CROSS_COMPILE="$KERNELDIR/ew/bin/clang" \
+		CROSS_COMPILE_COMPAT="$KERNELDIR/ew/bin/clang" \
+		CROSS_COMPILE_ARM32="$KERNELDIR/ew/bin/clang" 2>&1 | tee -a error.log
 
 if ! [ -f $KERNELDIR/out/arch/arm64/boot/Image.gz-dtb ];then
     tg_post_build "error.log" "Build Error!"

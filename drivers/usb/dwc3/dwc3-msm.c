@@ -2402,6 +2402,9 @@ static void dwc3_ext_event_notify(struct dwc3_msm *mdwc)
 	/* Flush processing any pending events before handling new ones */
 	flush_delayed_work(&mdwc->sm_work);
 
+#ifdef CONFIG_MACH_ASUS_SDM660
+	clear_bit(ID, &mdwc->inputs);
+#else
 	if (mdwc->id_state == DWC3_ID_FLOAT) {
 		dev_dbg(mdwc->dev, "XCVR: ID set\n");
 		set_bit(ID, &mdwc->inputs);
@@ -2409,6 +2412,7 @@ static void dwc3_ext_event_notify(struct dwc3_msm *mdwc)
 		dev_dbg(mdwc->dev, "XCVR: ID clear\n");
 		clear_bit(ID, &mdwc->inputs);
 	}
+#endif
 
 	if (mdwc->vbus_active && !mdwc->in_restart) {
 		dev_dbg(mdwc->dev, "XCVR: BSV set\n");

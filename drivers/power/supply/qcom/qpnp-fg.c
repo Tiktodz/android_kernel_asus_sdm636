@@ -2677,8 +2677,8 @@ resched:
 }
 
 #ifdef CONFIG_MACH_ASUS_SDM660
-#define TEMP_THROTTLE		475
-#define TEMP_UNTHROTTLE		450
+#define TEMP_THROTTLE		500
+#define TEMP_UNTHROTTLE		495
 static bool is_charger_available(struct fg_chip *chip);
 
 static bool charging_is_throttled(struct fg_chip *chip)

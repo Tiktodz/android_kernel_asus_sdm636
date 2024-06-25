@@ -1,4 +1,4 @@
-<b><#selectbg_g>Jun 23,2024</#></b>
+<b><#selectbg_g>Jun 25,2024</#></b>
 
   <*> Add Some Tweak Changes, and Improvements</*>
 
@@ -6,6 +6,8 @@
 
 <b><#selectbg_g>NOTES :</#></b>
 
+  <*> Use KernelSU manager v0.7.6 for Android 9-10 ROMs</*>
+  <*> Use KernelSU manager v0.9.5 for Android 11-13 ROMs</*>
   <*> Kernel need sometimes to settle.</*>
 
 

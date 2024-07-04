@@ -1323,7 +1323,7 @@ static void l2cap_sock_teardown_cb(struct l2cap_chan *chan, int err)
 	if (!sk)
 		return;
 
-	BT_DBG("chan %p state %s", chan, state_to_string(chan->state));
+	BT_DBG("chan %pK state %s", chan, state_to_string(chan->state));
 
 	/* This callback can be called both for server (BT_LISTEN)
 	 * sockets as well as "normal" ones. To avoid lockdep warnings

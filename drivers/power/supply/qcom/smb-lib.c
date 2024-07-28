@@ -25,6 +25,7 @@
 #include "battery.h"
 #include "step-chg-jeita.h"
 #include "storm-watch.h"
+
 #ifdef CONFIG_MACH_ASUS_SDM660
 #include <linux/qpnp/qpnp-adc.h>
 #include <linux/gpio.h>
@@ -42,6 +43,7 @@
 
 #ifdef CONFIG_FORCE_FAST_CHARGE
 #include <linux/fastchg.h>
+#define USB_FASTCHG_LOAD 2000 /* uA */
 #endif
 
 #define smblib_err(chg, fmt, ...)		\
@@ -951,9 +953,12 @@ static int set_sdp_current(struct smb_charger *chg, int icl_ua)
 	const struct apsd_result *apsd_result = smblib_get_apsd_result(chg);
 
 #ifdef CONFIG_FORCE_FAST_CHARGE
-	if (force_fast_charge > 0 && icl_ua == USBIN_500MA)
-	{
+	if (force_fast_charge == 1) {
+			icl_ua = USB_FASTCHG_LOAD;
+			pr_info("USB fast charging is ON - 2000mA.\n");
+	} else {
 		icl_ua = USBIN_900MA;
+		pr_info("USB fast charging is OFF.\n");
 	}
 #endif
 

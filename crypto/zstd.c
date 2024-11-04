@@ -1,16 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Cryptographic API.
  *
  * Copyright (c) 2017-present, Facebook, Inc.
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by
- * the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
  */
 #include <linux/crypto.h>
 #include <linux/init.h>
@@ -21,26 +13,25 @@
 #include <linux/vmalloc.h>
 #include <linux/zstd.h>
 
-
 #define ZSTD_DEF_LEVEL	3
 
 struct zstd_ctx {
-	ZSTD_CCtx *cctx;
-	ZSTD_DCtx *dctx;
+	zstd_cctx *cctx;
+	zstd_dctx *dctx;
 	void *cwksp;
 	void *dwksp;
 };
 
-static ZSTD_parameters zstd_params(void)
+static zstd_parameters zstd_params(void)
 {
-	return ZSTD_getParams(ZSTD_DEF_LEVEL, 0, 0);
+	return zstd_get_params(ZSTD_DEF_LEVEL, 0);
 }
 
 static int zstd_comp_init(struct zstd_ctx *ctx)
 {
 	int ret = 0;
-	const ZSTD_parameters params = zstd_params();
-	const size_t wksp_size = ZSTD_CCtxWorkspaceBound(params.cParams);
+	const zstd_parameters params = zstd_params();
+	const size_t wksp_size = zstd_cctx_workspace_bound(&params.cParams);
 
 	ctx->cwksp = vzalloc(wksp_size);
 	if (!ctx->cwksp) {
@@ -48,7 +39,7 @@ static int zstd_comp_init(struct zstd_ctx *ctx)
 		goto out;
 	}
 
-	ctx->cctx = ZSTD_initCCtx(ctx->cwksp, wksp_size);
+	ctx->cctx = zstd_init_cctx(ctx->cwksp, wksp_size);
 	if (!ctx->cctx) {
 		ret = -EINVAL;
 		goto out_free;
@@ -63,7 +54,7 @@ out_free:
 static int zstd_decomp_init(struct zstd_ctx *ctx)
 {
 	int ret = 0;
-	const size_t wksp_size = ZSTD_DCtxWorkspaceBound();
+	const size_t wksp_size = zstd_dctx_workspace_bound();
 
 	ctx->dwksp = vzalloc(wksp_size);
 	if (!ctx->dwksp) {
@@ -71,7 +62,7 @@ static int zstd_decomp_init(struct zstd_ctx *ctx)
 		goto out;
 	}
 
-	ctx->dctx = ZSTD_initDCtx(ctx->dwksp, wksp_size);
+	ctx->dctx = zstd_init_dctx(ctx->dwksp, wksp_size);
 	if (!ctx->dctx) {
 		ret = -EINVAL;
 		goto out_free;
@@ -135,10 +126,10 @@ static int __zstd_compress(const u8 *src, unsigned int slen,
 {
 	size_t out_len;
 	struct zstd_ctx *zctx = ctx;
-	const ZSTD_parameters params = zstd_params();
+	const zstd_parameters params = zstd_params();
 
-	out_len = ZSTD_compressCCtx(zctx->cctx, dst, *dlen, src, slen, params);
-	if (ZSTD_isError(out_len))
+	out_len = zstd_compress_cctx(zctx->cctx, dst, *dlen, src, slen, &params);
+	if (zstd_is_error(out_len))
 		return -EINVAL;
 	*dlen = out_len;
 	return 0;
@@ -158,8 +149,8 @@ static int __zstd_decompress(const u8 *src, unsigned int slen,
 	size_t out_len;
 	struct zstd_ctx *zctx = ctx;
 
-	out_len = ZSTD_decompressDCtx(zctx->dctx, dst, *dlen, src, slen);
-	if (ZSTD_isError(out_len))
+	out_len = zstd_decompress_dctx(zctx->dctx, dst, *dlen, src, slen);
+	if (zstd_is_error(out_len))
 		return -EINVAL;
 	*dlen = out_len;
 	return 0;
@@ -192,7 +183,7 @@ static int __init zstd_mod_init(void)
 	ret = crypto_register_alg(&alg);
 	if (ret)
 		return ret;
-
+		
 	return ret;
 }
 

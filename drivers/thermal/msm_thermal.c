@@ -672,7 +672,7 @@ static void msm_thermal_update_freq(bool is_shutdown, bool mitigate)
 	if (freq_mitigation_task)
 		complete(&freq_mitigation_complete);
 	else
-		pr_err("Freq mitigation task is not initialized\n");
+		pr_debug("Freq mitigation task is not initialized\n");
 notify_exit:
 	return;
 }
@@ -803,7 +803,7 @@ static int devmgr_client_cpufreq_update(struct device_manager_data *dev_mgr)
 	if (freq_mitigation_task) {
 		complete(&freq_mitigation_complete);
 	} else {
-		pr_err("Frequency mitigation task is not initialized\n");
+		pr_debug("Frequency mitigation task is not initialized\n");
 		ret = -ESRCH;
 	}
 
@@ -4039,7 +4039,7 @@ static int freq_mitigation_notify(enum thermal_trip_type type,
 		cpu_node->freq_thresh_clear = true;
 		complete(&freq_mitigation_complete);
 	} else {
-		pr_err("Frequency mitigation task is not initialized\n");
+		pr_debug("Frequency mitigation task is not initialized\n");
 	}
 
 	return 0;
@@ -4268,7 +4268,7 @@ int msm_thermal_set_cluster_freq(uint32_t cluster, uint32_t freq, bool is_max)
 		if (notify)
 			complete(&freq_mitigation_complete);
 	} else {
-		pr_err("Frequency mitigation task is not initialized\n");
+		pr_debug("Frequency mitigation task is not initialized\n");
 		return -ESRCH;
 	}
 
@@ -4307,7 +4307,7 @@ int msm_thermal_set_frequency(uint32_t cpu, uint32_t freq, bool is_max)
 	if (freq_mitigation_task) {
 		complete(&freq_mitigation_complete);
 	} else {
-		pr_err("Frequency mitigation task is not initialized\n");
+		pr_debug("Frequency mitigation task is not initialized\n");
 		ret = -ESRCH;
 		goto set_freq_exit;
 	}
@@ -6035,7 +6035,7 @@ static void thermal_cpu_freq_mit_disable(void)
 	if (freq_mitigation_task)
 		complete(&freq_mitigation_complete);
 	else
-		pr_err("Freq mit task is not initialized\n");
+		pr_debug("Freq mit task is not initialized\n");
 }
 
 static void thermal_cpu_hotplug_mit_disable(void)

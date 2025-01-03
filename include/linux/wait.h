@@ -115,7 +115,7 @@ static inline int waitqueue_active(wait_queue_head_t *q)
  *
  * Please refer to the comment for waitqueue_active.
  */
-static inline bool wq_has_sleeper(wait_queue_head_t *wq)
+static inline bool skwq_has_sleeper(wait_queue_head_t *wq)
 {
 	/*
 	 * We need to be sure we are in sync with the

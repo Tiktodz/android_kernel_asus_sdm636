@@ -3671,6 +3671,7 @@ static int jeita_status_regs_write(u8 chg_en, u8 FV_CFG, u8 FCC)
 	return 0;
 }
 
+#if 0 /* Skip asus usb alert setup and check */
 void asus_update_usb_connector_state(struct smb_charger *chip)
 {
 	int64_t  phy_volta = 0;
@@ -3697,6 +3698,7 @@ void asus_update_usb_connector_state(struct smb_charger *chip)
 		return;
 	}
 }
+#endif
 
 void jeita_rule(void)
 {
@@ -3869,7 +3871,7 @@ void asus_min_monitor_work(struct work_struct *work)
 			charger_limit_value);
 	}
 
-	asus_update_usb_connector_state(smbchg_dev);
+	//asus_update_usb_connector_state(smbchg_dev);
 
 	if (asus_get_prop_usb_present(smbchg_dev)) {
 		last_jeita_time = current_kernel_time();
@@ -4077,6 +4079,9 @@ void asus_adapter_adc_work(struct work_struct *work)
 		pr_err("%s: Failed to set USBIN_OPTIONS_1_CFG_REG\n", __func__);
 
 	msleep(5);
+
+/*Skip Adapter ID check */
+#if 0
 	CHG_TYPE_judge(smbchg_dev);
 
 	/* determine current-setting value for DCP type AC: */
@@ -4101,6 +4106,8 @@ void asus_adapter_adc_work(struct work_struct *work)
 		usb_max_current = ICL_4000mA;
 		break;
 	}
+#endif
+		usb_max_current = ICL_4000mA;
 
 	rc = smblib_set_usb_suspend(smbchg_dev, 0);
 	if (rc < 0)
@@ -4357,7 +4364,7 @@ static void smblib_micro_usb_plugin(struct smb_charger *chg, bool vbus_rising)
 			asus_smblib_stay_awake(smbchg_dev);
 			schedule_delayed_work(&smbchg_dev->asus_chg_flow_work,
 						msecs_to_jiffies(12000));
-			asus_update_usb_connector_state(smbchg_dev);
+		//asus_update_usb_connector_state(smbchg_dev);
 		}
 #endif
 	} else {

@@ -69,7 +69,7 @@
 #endif
 
 /* Default temperature */
-#define DEFAULT_TEMP 40
+#define DEFAULT_TEMP 60
 
 struct thermal_zone_device;
 struct thermal_cooling_device;

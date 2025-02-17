@@ -32,8 +32,8 @@
  * Default termperature threshold for charging.
  * Every temperature units are in tenth of centigrade.
  */
-#define CM_DEFAULT_RECHARGE_TEMP_DIFF	50
-#define CM_DEFAULT_CHARGE_TEMP_MAX	500
+#define CM_DEFAULT_RECHARGE_TEMP_DIFF	60
+#define CM_DEFAULT_CHARGE_TEMP_MAX	600
 
 static const char * const default_event_names[] = {
 	[CM_EVENT_UNKNOWN] = "Unknown",

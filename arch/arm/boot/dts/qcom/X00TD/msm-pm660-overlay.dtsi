@@ -107,5 +107,6 @@
 	qcom,fg-recharge-voltage = <4150>;
 	qcom,fg-recharge-soc-thr = <98>;
 	qcom,fg-auto-recharge-soc;
-	qcom,fg-rsense-sel=<1>;
+	qcom,fg-rsense-sel = <1>;
+	qcom,cl-disable = <1>;
 };

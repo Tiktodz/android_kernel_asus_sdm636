@@ -158,8 +158,10 @@
 
 &pm660_fg {
 	qcom,battery-data = <&qrd_batterydata>;
-	qcom,fg-jeita-thresholds = <0 15 45 60>;
+	qcom,fg-jeita-thresholds = <0 15 55 60>;
 	qcom,battery-thermal-coefficients = [9d 50 ff];
+	qcom,linearize-soc;
+	qcom,hold-soc-while-full;
 };
 
 &uartblsp1dm1 {

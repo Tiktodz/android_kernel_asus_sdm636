@@ -2670,7 +2670,8 @@ int smblib_get_prop_input_current_settled(struct smb_charger *chg,
 					  union power_supply_propval *val)
 {
 	if (const_icl_enable) {
-		return CONST_ICL_UA;
+		 val->intval = CONST_ICL_UA;
+		 return 0;
 	}
 	return smblib_get_charge_param(chg, &chg->param.icl_stat, &val->intval);
 }

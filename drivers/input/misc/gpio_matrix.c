@@ -241,7 +241,7 @@ static irqreturn_t gpio_keypad_irq_handler(int irq_in, void *dev_id)
 		else
 			gpio_direction_input(mi->output_gpios[i]);
 	}
-	__pm_stay_awake(&kp->wake_src);
+			__pm_stay_awake(&kp->wake_src);
 	hrtimer_start(&kp->timer, ktime_set(0, 0), HRTIMER_MODE_REL);
 	return IRQ_HANDLED;
 }
@@ -405,7 +405,7 @@ int gpio_event_matrix_func(struct gpio_event_input_devs *input_devs,
 			kp->use_irq ? "interrupt" : "polling");
 
 		if (kp->use_irq)
-			__pm_stay_awake(&kp->wake_src);
+			wake_lock(&kp->wake_lock);
 		hrtimer_start(&kp->timer, ktime_set(0, 0), HRTIMER_MODE_REL);
 
 		return 0;

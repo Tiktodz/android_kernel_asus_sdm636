@@ -47,6 +47,9 @@
 #include <linux/kthread.h>
 #include <linux/dma-buf.h>
 #include <linux/devfreq_boost.h>
+#ifdef CONFIG_MACH_ASUS_SDM660
+#include <linux/wakelock.h>
+#endif
 #include <sync.h>
 #include <sw_sync.h>
 
@@ -94,7 +97,7 @@
 extern int focal_detect_flag;
 #endif
 
-static struct wakeup_source early_unblank_wakelock;
+static struct wake_lock early_unblank_wakelock;
 extern bool lcd_suspend_flag;
 static void asus_lcd_early_unblank_func(struct work_struct *);
 static struct workqueue_struct *asus_lcd_early_unblank_wq;
@@ -1680,7 +1683,7 @@ static void asus_lcd_early_unblank_func(struct work_struct *work)
 	if (!fbi)
 		return;
 
-	__pm_wakeup_event(&early_unblank_wakelock,msecs_to_jiffies(300));
+	wake_lock_timeout(&early_unblank_wakelock,msecs_to_jiffies(300));
 	fb_blank(fbi, FB_BLANK_UNBLANK);
 	lcd_suspend_flag = false;
 	mfd->early_unblank_work_queued = false;
@@ -5367,7 +5370,7 @@ int __init mdss_fb_init(void)
 
 #ifdef CONFIG_MACH_ASUS_SDM660
 	asus_lcd_early_unblank_wq = create_singlethread_workqueue("display_early_wq");
-	wakeup_source_init(&early_unblank_wakelock,
+	wake_lock_init(&early_unblank_wakelock, WAKE_LOCK_SUSPEND,
 			"early_unblank-update");
 #endif
 	return 0;

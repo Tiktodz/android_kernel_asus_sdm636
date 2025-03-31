@@ -17,6 +17,7 @@
 #include <linux/fs.h>
 #include <linux/init.h>
 #include <linux/io.h>
+#include <linux/kthread.h>
 #include <linux/kernel.h>
 #include <linux/miscdevice.h>
 #include <linux/module.h>
@@ -96,11 +97,12 @@ struct cpu_static_info {
 };
 
 static DEFINE_MUTEX(policy_update_mutex);
-static DEFINE_MUTEX(suspend_update_mutex);
+static DEFINE_MUTEX(kthread_update_mutex);
 static DEFINE_SPINLOCK(update_lock);
 #ifdef ENABLE_TSENS_SAMPLING
-static struct work_struct sampling_work;
-static struct workqueue_struct *msm_core_wq;
+static struct delayed_work sampling_work;
+static struct completion sampling_completion;
+static struct task_struct *sampling_task;
 static int low_hyst_temp;
 static int high_hyst_temp;
 static uint32_t scaling_factor;
@@ -124,8 +126,6 @@ static bool activate_power_table;
 static int max_throttling_temp = 80; /* in C */
 module_param_named(throttling_temp, max_throttling_temp, int,
 		S_IRUGO | S_IWUSR | S_IWGRP);
-
-static unsigned long forced_timeout;
 
 /*
  * Cannot be called from an interrupt context
@@ -180,10 +180,9 @@ static void set_threshold(struct cpu_activity_info *cpu_node)
 		&cpu_node->low_threshold);
 }
 
-static inline void schedule_sampling(void)
+static void samplequeue_handle(struct work_struct *work)
 {
-	if (!work_busy(&sampling_work) && !in_suspend)
-		queue_work(msm_core_wq, &sampling_work);
+	complete(&sampling_completion);
 }
 
 /* May be called from an interrupt context */
@@ -200,11 +199,7 @@ static void core_temp_notify(enum thermal_trip_type type,
 
 	cpu_node->temp = temp;
 
-	/* Schedule resampling if the forced timeout is over */
-	if (time_after(jiffies, forced_timeout)) {
-		forced_timeout = jiffies + msecs_to_jiffies(poll_ms);
-		schedule_sampling();
-	}
+	complete(&sampling_completion);
 }
 #endif
 
@@ -318,38 +313,44 @@ static void update_related_freq_table(struct cpufreq_policy *policy)
 }
 
 #ifdef ENABLE_TSENS_SAMPLING
-static inline void do_sampling(void)
+static __ref int do_sampling(void *data)
 {
 	int cpu;
 	struct cpu_activity_info *cpu_node;
 	static int prev_temp[NR_CPUS];
 
-	mutex_lock(&suspend_update_mutex);
-	if (in_suspend)
-		goto unlock;
+	while (!kthread_should_stop()) {
+		wait_for_completion_interruptible(&sampling_completion);
+		cancel_delayed_work(&sampling_work);
 
-	trigger_cpu_pwr_stats_calc();
+		mutex_lock(&kthread_update_mutex);
+		if (in_suspend)
+			goto unlock;
 
-	for_each_online_cpu(cpu) {
-		cpu_node = &activity[cpu];
-		if (prev_temp[cpu] != cpu_node->temp) {
-			prev_temp[cpu] = cpu_node->temp;
-			set_threshold(cpu_node);
-			trace_temp_threshold(cpu, cpu_node->temp,
-				cpu_node->hi_threshold.temp /
-				scaling_factor,
-				cpu_node->low_threshold.temp /
-				scaling_factor);
+		trigger_cpu_pwr_stats_calc();
+
+		for_each_online_cpu(cpu) {
+			cpu_node = &activity[cpu];
+			if (prev_temp[cpu] != cpu_node->temp) {
+				prev_temp[cpu] = cpu_node->temp;
+				set_threshold(cpu_node);
+				trace_temp_threshold(cpu, cpu_node->temp,
+					cpu_node->hi_threshold.temp /
+					scaling_factor,
+					cpu_node->low_threshold.temp /
+					scaling_factor);
+			}
 		}
-	}
-unlock:
-	mutex_unlock(&suspend_update_mutex);
-}
+		if (!poll_ms)
+			goto unlock;
 
-static void samplequeue_handle(struct work_struct *work)
-{
-	do_sampling();
-	forced_timeout = jiffies + msecs_to_jiffies(poll_ms);
+		queue_delayed_work(system_power_efficient_wq,
+			&sampling_work,
+			msecs_to_jiffies(poll_ms));
+unlock:
+		mutex_unlock(&kthread_update_mutex);
+	}
+	return 0;
 }
 #endif
 
@@ -612,10 +613,13 @@ static int msm_core_stats_init(struct device *dev, int cpu)
 #ifdef ENABLE_TSENS_SAMPLING
 static int msm_core_task_init(struct device *dev)
 {
-	msm_core_wq = alloc_workqueue("msm-core_wq", WQ_HIGHPRI, 0);
-	if (!msm_core_wq)
-		return -EFAULT;
-
+	init_completion(&sampling_completion);
+	sampling_task = kthread_run(do_sampling, NULL, "msm-core:sampling");
+	if (IS_ERR(sampling_task)) {
+		pr_err("Failed to create do_sampling err: %ld\n",
+				PTR_ERR(sampling_task));
+		return PTR_ERR(sampling_task);
+	}
 	return 0;
 }
 #endif
@@ -842,26 +846,26 @@ static int system_suspend_handler(struct notifier_block *nb,
 {
 	int cpu;
 
-	mutex_lock(&suspend_update_mutex);
+	mutex_lock(&kthread_update_mutex);
 	switch (val) {
 	case PM_POST_HIBERNATION:
 	case PM_POST_SUSPEND:
 	case PM_POST_RESTORE:
 		/*
-		 * Schedule resampling to read temperature and repopulate
+		 * Set completion event to read temperature and repopulate
 		 * stats
 		 */
 		in_suspend = 0;
-		schedule_sampling();
+		complete(&sampling_completion);
 		break;
 	case PM_HIBERNATION_PREPARE:
 	case PM_SUSPEND_PREPARE:
 		/*
-		 * cancel work to be able to restart immediately
+		 * cancel delayed work to be able to restart immediately
 		 * after system resume
 		 */
 		in_suspend = 1;
-		cancel_work(&sampling_work);
+		cancel_delayed_work(&sampling_work);
 		/*
 		 * cancel TSENS interrupts as we do not want to wake up from
 		 * suspend to take care of repopulate stats while the system is
@@ -880,7 +884,7 @@ static int system_suspend_handler(struct notifier_block *nb,
 	default:
 		break;
 	}
-	mutex_unlock(&suspend_update_mutex);
+	mutex_unlock(&kthread_update_mutex);
 
 	return NOTIFY_OK;
 }
@@ -1103,7 +1107,7 @@ static int msm_core_dev_probe(struct platform_device *pdev)
 		goto failed;
 
 #ifdef ENABLE_TSENS_SAMPLING
-	INIT_WORK(&sampling_work, samplequeue_handle);
+	INIT_DEFERRABLE_WORK(&sampling_work, samplequeue_handle);
 	ret = msm_core_task_init(&pdev->dev);
 	if (ret)
 		goto failed;
@@ -1111,8 +1115,7 @@ static int msm_core_dev_probe(struct platform_device *pdev)
 	for_each_possible_cpu(cpu)
 		set_threshold(&activity[cpu]);
 
-	schedule_sampling();
-
+	schedule_delayed_work(&sampling_work, msecs_to_jiffies(0));
 	pm_notifier(system_suspend_handler, 0);
 #endif
 	cpufreq_register_notifier(&cpu_policy, CPUFREQ_POLICY_NOTIFIER);

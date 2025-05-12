@@ -9,6 +9,7 @@
 
 #include <linux/fs.h>
 #include <linux/slab.h>
+#include <linux/cred.h>
 #include <linux/xattr.h>
 #include "overlayfs.h"
 
@@ -81,6 +82,8 @@ static int ovl_getattr(struct vfsmount *mnt, struct dentry *dentry,
 			 struct kstat *stat)
 {
 	struct path realpath;
+	const struct cred *old_cred;
+ 	int err;
 
 #ifdef CONFIG_KSU_SUSFS_SUS_OVERLAYFS
 	ovl_path_lowerdata(dentry, &realpath);

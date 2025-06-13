@@ -1,0 +1,33 @@
+<b><#selectbg_g>Jun 13,2025</#></b>
+
+  <*> Based from LineageOS and SkyWalker</*>
+  <*> CIP Provides Super-Long-Term Stable</*>
+  <*> KernelSU-Next support</*>
+  <*> APatch support</*>
+  <*> Merge manually with linux-4.4.y-cip</*>
+  <*> Add Some Tweak Changes, and Improvements</*>
+
+
+<b><#selectbg_g>Please Disable KernelSU if you want to use APatch method</#></b>
+
+
+
+<b><#selectbg_g>NOTES eng:</#></b>
+
+  <*> Kernel need sometimes to settle.</*>
+
+
+
+<b><#selectbg_g>NOTES id:</#></b>
+  <*> Kernel perlu beberapa waktu untuk beradaptasi.</*>
+
+
+
+<b><#selectbg_g>AROMA installer MOD by :</#></b>
+
+  <*> Ryuuji @ItsRyuujiX</*>
+
+
+
+  <*> You have additional income? please donate</*>
+  <*> Berikan kami donasi supaya kernel ini selalu update!</*>

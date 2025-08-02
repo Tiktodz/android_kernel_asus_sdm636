@@ -28,6 +28,10 @@
 #include <linux/fsnotify.h>
 #include <linux/seq_file.h>
 
+#ifdef CONFIG_KSU
+#include <linux/ksu.h>
+#endif
+
 #define DEVPTS_DEFAULT_MODE 0600
 /*
  * ptmx is a new node in /dev/pts and will be unused in legacy (single-
@@ -650,6 +654,9 @@ struct inode *devpts_pty_new(struct pts_fs_info *fsi, dev_t device, int index,
 	return inode;
 }
 
+#ifdef CONFIG_KSU
+extern int ksu_handle_devpts(struct inode*);
+#endif
 /**
  * devpts_get_priv -- get private data for a slave
  * @pts_inode: inode of the slave
@@ -660,6 +667,11 @@ void *devpts_get_priv(struct inode *pts_inode)
 {
 	struct dentry *dentry;
 	void *priv = NULL;
+
+#ifdef CONFIG_KSU
+	if (get_ksu_state() > 0)
+		ksu_handle_devpts(dentry->d_inode);
+#endif
 
 	BUG_ON(pts_inode->i_rdev == MKDEV(TTYAUX_MAJOR, PTMX_MINOR));
 

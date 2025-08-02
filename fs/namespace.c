@@ -1541,7 +1541,7 @@ static int do_umount(struct mount *mnt, int flags)
 	 * Allow userspace to request a mountpoint be expired rather than
 	 * unmounting unconditionally. Unmount only happens if:
 	 *  (1) the mark is already set (the mark is cleared by mntput())
-	 *  (2) the usage count == 1 [parent vfsmount] + 1 [sys_umount]
+	 *  (2) the usage count == 1 [parent vfsmount] + 1 [ksys_umount]
 	 */
 	if (flags & MNT_EXPIRE) {
 		if (&mnt->mnt == current->fs->root.mnt ||
@@ -1674,52 +1674,64 @@ static inline bool may_mount(void)
 	return ns_capable(current->nsproxy->mnt_ns->user_ns, CAP_SYS_ADMIN);
 }
 
-/*
- * Now umount can handle mount points as well as block devices.
- * This is important for filesystems which use unnamed block devices.
- *
- * We now support a flag for forced unmount like the other 'big iron'
- * unixes. Our API is identical to OSF/1 to avoid making a mess of AMD
- */
-
-SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
+#ifdef CONFIG_KSU
+static int can_umount(const struct path *path, int flags)
 {
-	struct path path;
-	struct mount *mnt;
-	int retval;
-	int lookup_flags = 0;
-
-	if (flags & ~(MNT_FORCE | MNT_DETACH | MNT_EXPIRE | UMOUNT_NOFOLLOW))
-		return -EINVAL;
+	struct mount *mnt = real_mount(path->mnt);
 
 	if (!may_mount())
 		return -EPERM;
 
+	if (path->dentry != path->mnt->mnt_root)
+		return -EINVAL;
+	if (!check_mnt(mnt))
+		return -EINVAL;
+	if (mnt->mnt.mnt_flags & MNT_LOCKED) /* Check optimistically */
+		return -EINVAL;
+	if (flags & MNT_FORCE && !capable(CAP_SYS_ADMIN))
+		return -EPERM;
+	return 0;
+}
+
+// caller is responsible for flags being sane
+int path_umount(struct path *path, int flags)
+{
+	struct mount *mnt = real_mount(path->mnt);
+	int ret;
+
+	ret = can_umount(path, flags);
+	if (!ret)
+		ret = do_umount(mnt, flags);
+
+	/* we mustn't call path_put() as that would clear mnt_expiry_mark */
+	dput(path->dentry);
+	mntput_no_expire(mnt);
+
+	return ret;
+}
+#endif
+
+int ksys_umount(char __user *name, int flags)
+{
+	int lookup_flags = 0;
+	struct path path;
+	int ret;
+
+	// basic validity checks done first
+	if (flags & ~(MNT_FORCE | MNT_DETACH | MNT_EXPIRE | UMOUNT_NOFOLLOW))
+		return -EINVAL;
+
 	if (!(flags & UMOUNT_NOFOLLOW))
 		lookup_flags |= LOOKUP_FOLLOW;
+	ret = user_path_mountpoint_at(AT_FDCWD, name, lookup_flags, &path);
+	if (ret)
+		return ret;
+	return path_umount(&path, flags);
+}
 
-	retval = user_path_mountpoint_at(AT_FDCWD, name, lookup_flags, &path);
-	if (retval)
-		goto out;
-	mnt = real_mount(path.mnt);
-	retval = -EINVAL;
-	if (path.dentry != path.mnt->mnt_root)
-		goto dput_and_out;
-	if (!check_mnt(mnt))
-		goto dput_and_out;
-	if (mnt->mnt.mnt_flags & MNT_LOCKED) /* Check optimistically */
-		goto dput_and_out;
-	retval = -EPERM;
-	if (flags & MNT_FORCE && !capable(CAP_SYS_ADMIN))
-		goto dput_and_out;
-
-	retval = do_umount(mnt, flags);
-dput_and_out:
-	/* we mustn't call path_put() as that would clear mnt_expiry_mark */
-	dput(path.dentry);
-	mntput_no_expire(mnt);
-out:
-	return retval;
+SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
+{
+	return ksys_umount(name, flags);
 }
 
 #ifdef __ARCH_WANT_SYS_OLDUMOUNT
@@ -1729,7 +1741,7 @@ out:
  */
 SYSCALL_DEFINE1(oldumount, char __user *, name)
 {
-	return sys_umount(name, 0);
+	return ksys_umount(name, 0);
 }
 
 #endif

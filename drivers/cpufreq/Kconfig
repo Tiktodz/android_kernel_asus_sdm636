@@ -732,12 +732,6 @@ config CPU_FREQ_GOV_BLU_ACTIVE
 
 	  If in doubt, say N.
 
-config ALUCARD_HOTPLUG
-	bool "Enable alucard-hotplug cpu hotplug driver"
-    default n
-	help
-	  Generic Alucard-hotplug cpu hotplug driver for ARM SOCs.
-
 config CPU_FREQ_GOV_DARKNESSV5
 	tristate "'darknessv5' cpufreq governor"
         depends on CPU_FREQ

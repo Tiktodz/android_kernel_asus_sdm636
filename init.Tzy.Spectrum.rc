@@ -41,7 +41,7 @@ on property:persist.spectrum.profile=0
     write /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq "633600"
     ## Little max freq
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq
-    write /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq "1536000"
+    write /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq "1612800"
     ## Little gov Setting
     chown system system /sys/devices/system/cpu/cpufreq/policy0/schedutil/*
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy0/schedutil/*
@@ -56,7 +56,7 @@ on property:persist.spectrum.profile=0
     write /sys/devices/system/cpu/cpufreq/policy4/scaling_min_freq "1113600"
     ## Big max freq
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq
-    write /sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq "1747200"
+    write /sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq "1804800"
     ## Big gov Setting
     chown system system /sys/devices/system/cpu/cpufreq/policy4/schedutil/*
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy4/schedutil/*
@@ -65,7 +65,7 @@ on property:persist.spectrum.profile=0
 	write /sys/devices/system/cpu/cpufreq/policy4/schedutil/iowait_boost_enable "1"
 	## CPU Boost
     write /sys/module/cpu_boost/parameters/sched_boost_on_input Y
-    write /sys/module/cpu_boost/parameters/input_boost_freq "0:902400 1:902400 2:902400 3:902400 4:1401600 5:1401600 6:1401600 7:1401600"
+    write /sys/module/cpu_boost/parameters/input_boost_freq "0:1113600 1:1113600 2:1113600 3:1113600 4:1401600 5:1401600 6:1401600 7:1401600"
     write /sys/module/cpu_boost/parameters/input_boost_ms 400
     ## GPU
     write /sys/class/kgsl/kgsl-3d0/devfreq/max_freq 430000000
@@ -99,7 +99,7 @@ on property:persist.spectrum.profile=1
     write /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq "902400"
     ## Little max freq
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq
-    write /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq "1612800"
+    write /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq "1843200"
     ## Big gov
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy4/scaling_governor
     write /sys/devices/system/cpu/cpufreq/policy4/scaling_governor performance
@@ -108,15 +108,15 @@ on property:persist.spectrum.profile=1
     write /sys/devices/system/cpu/cpufreq/policy4/scaling_min_freq "1113600"
     ## Big max freq
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq
-    write /sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq "1804800"
+    write /sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq "2208000"
 	## CPU Boost
 	write /sys/module/cpu_boost/parameters/sched_boost_on_input Y
-    write /sys/module/cpu_boost/parameters/input_boost_freq "0:1612800 1:1612800 2:1612800 3:1612800 4:1804800 5:1804800 6:1804800 7:1804800"
+    write /sys/module/cpu_boost/parameters/input_boost_freq "0:1843200 1:1843200 2:1843200 3:1843200 4:2208000 5:2208000 6:2208000 7:2208000"
     write /sys/module/cpu_boost/parameters/input_boost_ms 3000
     ## GPU
-    write /sys/class/kgsl/kgsl-3d0/devfreq/max_freq 430000000
+    write /sys/class/kgsl/kgsl-3d0/devfreq/max_freq 585000000
     write /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 370000000
-    write /sys/class/kgsl/kgsl-3d0/max_clock_mhz 430
+    write /sys/class/kgsl/kgsl-3d0/max_clock_mhz 585
     write /sys/class/kgsl/kgsl-3d0/min_clock_mhz 370
     write /sys/class/kgsl/kgsl-3d0/devfreq/governor "msm-adreno-tz"
     write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 3
@@ -198,7 +198,7 @@ on property:persist.spectrum.profile=3
     write /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq "1401600"
     ## Little max freq
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq
-    write /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq "1612800"
+    write /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq "1843200"
     ## Little gov Setting
     chown system system /sys/devices/system/cpu/cpufreq/policy0/schedutil/*
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy0/schedutil/*
@@ -213,7 +213,7 @@ on property:persist.spectrum.profile=3
     write /sys/devices/system/cpu/cpufreq/policy4/scaling_min_freq "1401600"
     ## Big max freq
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq
-    write /sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq "1804800"
+    write /sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq "2208000"
 	## Big gov Setting
     chown system system /sys/devices/system/cpu/cpufreq/policy4/schedutil/*
     chmod 0644 /sys/devices/system/cpu/cpufreq/policy4/schedutil/*
@@ -225,9 +225,9 @@ on property:persist.spectrum.profile=3
     write /sys/module/cpu_boost/parameters/input_boost_freq "0:1612800 1:1612800 2:1612800 3:1612800 4:1804800 5:1804800 6:1804800 7:1804800"
     write /sys/module/cpu_boost/parameters/input_boost_ms 1000
     ## GPU
-    write /sys/class/kgsl/kgsl-3d0/devfreq/max_freq 430000000
+    write /sys/class/kgsl/kgsl-3d0/devfreq/max_freq 585000000
     write /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 370000000
-    write /sys/class/kgsl/kgsl-3d0/max_clock_mhz 430
+    write /sys/class/kgsl/kgsl-3d0/max_clock_mhz 585
     write /sys/class/kgsl/kgsl-3d0/min_clock_mhz 370
     write /sys/class/kgsl/kgsl-3d0/devfreq/governor "msm-adreno-tz"
     write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 3

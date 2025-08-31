@@ -470,7 +470,7 @@ out:
 
 static const struct inode_operations binderfs_dir_inode_operations = {
 	.lookup = simple_lookup,
-	.rename = binderfs_rename,
+	.rename2 = binderfs_rename,
 	.unlink = binderfs_unlink,
 };
 

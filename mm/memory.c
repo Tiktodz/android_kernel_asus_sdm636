@@ -2006,7 +2006,7 @@ static bool pte_spinlock(struct vm_fault *vmf)
 again:
 	local_irq_disable();
 	if (vma_has_changed(vmf)) {
-		trace_spf_vma_changed(_RET_IP_, vmf->vma, vmf->address);
+//		trace_spf_vma_changed(_RET_IP_, vmf->vma, vmf->address);
 		goto out;
 	}
 
@@ -2017,7 +2017,7 @@ again:
 	 */
 	pmdval = READ_ONCE(*vmf->pmd);
 	if (!pmd_same(pmdval, vmf->orig_pmd)) {
-		trace_spf_pmd_changed(_RET_IP_, vmf->vma, vmf->address);
+//		trace_spf_pmd_changed(_RET_IP_, vmf->vma, vmf->address);
 		goto out;
 	}
 #endif
@@ -2030,7 +2030,7 @@ again:
 
 	if (vma_has_changed(vmf)) {
 		spin_unlock(vmf->ptl);
-		trace_spf_vma_changed(_RET_IP_, vmf->vma, vmf->address);
+//		trace_spf_vma_changed(_RET_IP_, vmf->vma, vmf->address);
 		goto out;
 	}
 
@@ -2065,7 +2065,7 @@ static bool pte_map_lock(struct vm_fault *vmf)
 again:
 	local_irq_disable();
 	if (vma_has_changed(vmf)) {
-		trace_spf_vma_changed(_RET_IP_, vmf->vma, vmf->address);
+//		trace_spf_vma_changed(_RET_IP_, vmf->vma, vmf->address);
 		goto out;
 	}
 
@@ -2076,7 +2076,7 @@ again:
 	 */
 	pmdval = READ_ONCE(*vmf->pmd);
 	if (!pmd_same(pmdval, vmf->orig_pmd)) {
-		trace_spf_pmd_changed(_RET_IP_, vmf->vma, vmf->address);
+//		trace_spf_pmd_changed(_RET_IP_, vmf->vma, vmf->address);
 		goto out;
 	}
 #endif
@@ -2098,7 +2098,7 @@ again:
 
 	if (vma_has_changed(vmf)) {
 		pte_unmap_unlock(pte, ptl);
-		trace_spf_vma_changed(_RET_IP_, vmf->vma, vmf->address);
+//		trace_spf_vma_changed(_RET_IP_, vmf->vma, vmf->address);
 		goto out;
 	}
 
@@ -3765,7 +3765,7 @@ int __handle_speculative_fault(struct mm_struct *mm, unsigned long address,
 
 	seq = raw_read_seqcount(&vma->vm_sequence); /* rmb <-> seqlock,vma_rb_erase() */
 	if (seq & 1) {
-		trace_spf_vma_changed(_RET_IP_, vma, address);
+//		trace_spf_vma_changed(_RET_IP_, vma, address);
 		goto out_put;
 	}
 
@@ -3775,7 +3775,7 @@ int __handle_speculative_fault(struct mm_struct *mm, unsigned long address,
 	 * This include huge page from hugetlbfs.
 	 */
 	if (vma->vm_ops) {
-		trace_spf_vma_notsup(_RET_IP_, vma, address);
+//		trace_spf_vma_notsup(_RET_IP_, vma, address);
 		goto out_put;
 	}
 
@@ -3785,7 +3785,7 @@ int __handle_speculative_fault(struct mm_struct *mm, unsigned long address,
 	 * in the speculative path.
 	 */
 	if (unlikely(!vma->anon_vma)) {
-		trace_spf_vma_notsup(_RET_IP_, vma, address);
+//		trace_spf_vma_notsup(_RET_IP_, vma, address);
 		goto out_put;
 	}
 
@@ -3794,7 +3794,7 @@ int __handle_speculative_fault(struct mm_struct *mm, unsigned long address,
 
 	/* Can't call userland page fault handler in the speculative path */
 	if (unlikely(vmf.vma_flags & VM_UFFD_MISSING)) {
-		trace_spf_vma_notsup(_RET_IP_, vma, address);
+//		trace_spf_vma_notsup(_RET_IP_, vma, address);
 		goto out_put;
 	}
 
@@ -3804,13 +3804,13 @@ int __handle_speculative_fault(struct mm_struct *mm, unsigned long address,
 		 * boundaries but we want to trace it as not supported instead
 		 * of changed.
 		 */
-		trace_spf_vma_notsup(_RET_IP_, vma, address);
+//		trace_spf_vma_notsup(_RET_IP_, vma, address);
 		goto out_put;
 	}
 
 	if (address < READ_ONCE(vma->vm_start)
 	    || READ_ONCE(vma->vm_end) <= address) {
-		trace_spf_vma_changed(_RET_IP_, vma, address);
+//		trace_spf_vma_changed(_RET_IP_, vma, address);
 		goto out_put;
 	}
 /*
@@ -3845,7 +3845,7 @@ int __handle_speculative_fault(struct mm_struct *mm, unsigned long address,
 	if (!pol)
 		pol = get_task_policy(current);
 	if (pol && pol->mode == MPOL_INTERLEAVE) {
-		trace_spf_vma_notsup(_RET_IP_, vma, address);
+//		trace_spf_vma_notsup(_RET_IP_, vma, address);
 		goto out_put;
 	}
 #endif
@@ -3923,7 +3923,7 @@ int __handle_speculative_fault(struct mm_struct *mm, unsigned long address,
 	 * we might have a false positive on the bounds.
 	 */
 	if (read_seqcount_retry(&vma->vm_sequence, seq)) {
-		trace_spf_vma_changed(_RET_IP_, vma, address);
+//		trace_spf_vma_changed(_RET_IP_, vma, address);
 		goto out_put;
 	}
 
@@ -3948,7 +3948,7 @@ int __handle_speculative_fault(struct mm_struct *mm, unsigned long address,
 	return ret;
 
 out_walk:
-	trace_spf_vma_notsup(_RET_IP_, vma, address);
+//	trace_spf_vma_notsup(_RET_IP_, vma, address);
 	local_irq_enable();
 out_put:
 	put_vma(vma);

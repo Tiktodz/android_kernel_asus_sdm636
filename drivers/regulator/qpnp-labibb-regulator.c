@@ -4251,8 +4251,8 @@ static int qpnp_labibb_regulator_probe(struct platform_device *pdev)
 		default:
 			pr_err("qpnp_labibb: unknown peripheral type %x\n",
 				type);
-			rc = -EINVAL;
-			goto fail_registration;
+			/*rc = -EINVAL;
+			goto fail_registration;*/
 		}
 	}
 

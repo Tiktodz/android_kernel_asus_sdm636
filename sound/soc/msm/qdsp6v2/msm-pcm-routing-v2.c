@@ -16446,7 +16446,7 @@ static int msm_voice_sound_focus_get(struct snd_kcontrol *kcontrol,
 
 	ret = voc_get_sound_focus(&soundFocusData);
 	if (ret) {
-		pr_err("%s: Error getting Sound Focus Params, err=%d\n",
+		pr_debug("%s: Error getting Sound Focus Params, err=%d\n",
 			  __func__, ret);
 
 		ret = -EINVAL;
@@ -16478,7 +16478,7 @@ static int msm_voice_source_tracking_get(struct snd_kcontrol *kcontrol,
 
 	ret = voc_get_source_tracking(&sourceTrackingData);
 	if (ret) {
-		pr_err("%s: Error getting Source Tracking Params, err=%d\n",
+		pr_debug("%s: Error getting Source Tracking Params, err=%d\n",
 			  __func__, ret);
 
 		ret = -EINVAL;

@@ -1,9 +1,7 @@
-<b><#selectbg_g>Aug 31,2025</#></b>
+<b><#selectbg_g>Mar 15,2026</#></b>
 
-  <*> Based from LineageOS and SkyWalker</*>
-  <*> APatch support</*>
-  <*> KernelSU-Next v1.0.9 support</*>
-  <*> SuSFS v1.0.7 support</*>
+  <*> Bring the tree up-to-date with 4.9.320</*>
+  <*> KernelSU-Next v3.1.0 support</*>
   <*> Add Some Tweak Changes, and Improvements</*>
 
 
@@ -27,5 +25,3 @@
 
   <*> You have additional income? please donate</*>
   <*> Berikan kami donasi supaya kernel ini selalu update!</*>
-
-<b><#selectbg_g>Please Disable KernelSU if you want to use APatch method</#></b>

@@ -22,11 +22,6 @@
 		qcom,mdss-dsi-panel-type = "dsi_video_mode";
 		qcom,mdss-dsi-panel-destination = "display_1";
 		qcom,mdss-dsi-panel-framerate = <60>;
-		qcom,mdss-dsi-pan-enable-dynamic-bitclk;
-		qcom,mdss-dsi-dynamic-bitclk_freq = <798240576 801594528 804948480
-			808302432 811656384>;
-		qcom,mdss-dsi-pan-enable-dynamic-fps;
-		qcom,mdss-dsi-pan-fps-update = "dfps_immediate_porch_mode_vfp";
 		qcom,mdss-dsi-virtual-channel-id = <0>;
 		qcom,mdss-dsi-stream = <0>;
 		qcom,mdss-dsi-panel-width = <1080>;

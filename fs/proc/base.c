@@ -1126,7 +1126,7 @@ static ssize_t oom_adj_write(struct file *file, const char __user *buf,
 	}
 
 	task_lock(task);
-	if (!task->mm) {
+	if (IS_ENABLED(CONFIG_ANDROID_LOW_MEMORY_KILLER) && !task->mm) {
 		err = -EINVAL;
 		goto err_task_lock;
 	}
@@ -1230,7 +1230,7 @@ static ssize_t oom_score_adj_write(struct file *file, const char __user *buf,
 	}
 
 	task_lock(task);
-	if (!task->mm) {
+	if (IS_ENABLED(CONFIG_ANDROID_LOW_MEMORY_KILLER) && !task->mm) {
 		err = -EINVAL;
 		goto err_task_lock;
 	}

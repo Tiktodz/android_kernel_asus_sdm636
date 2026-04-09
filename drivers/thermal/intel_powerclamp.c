@@ -502,7 +502,7 @@ static void poll_pkg_cstate(struct work_struct *dummy)
 	tsc_last = tsc_now;
 
 	if (true == clamping)
-		schedule_delayed_work(&poll_pkg_cstate_work, HZ);
+		queue_delayed_work(system_power_efficient_wq, &poll_pkg_cstate_work, HZ);
 }
 
 static int start_power_clamp(void)
@@ -526,7 +526,7 @@ static int start_power_clamp(void)
 		control_cpu = smp_processor_id();
 
 	clamping = true;
-	schedule_delayed_work(&poll_pkg_cstate_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &poll_pkg_cstate_work, 0);
 
 	/* start one thread per online cpu */
 	for_each_online_cpu(cpu) {

@@ -1581,7 +1581,7 @@ debug_start:
 
 re_schedule:
 
-	schedule_delayed_work(&tmdev->tsens_critical_poll_test,
+	queue_delayed_work(system_power_efficient_wq, &tmdev->tsens_critical_poll_test,
 			msecs_to_jiffies(tsens_sec_to_msec_value));
 }
 
@@ -2583,7 +2583,7 @@ static int tsens_thermal_zone_register(struct tsens_tm_device *tmdev)
 		if (tsens_poll_check) {
 			INIT_DEFERRABLE_WORK(&tmdev->tsens_critical_poll_test,
 								tsens_poll);
-			schedule_delayed_work(&tmdev->tsens_critical_poll_test,
+			queue_delayed_work(system_power_efficient_wq, &tmdev->tsens_critical_poll_test,
 				msecs_to_jiffies(tsens_sec_to_msec_value));
 			init_completion(&tmdev->tsens_rslt_completion);
 			tmdev->tsens_critical_poll = true;

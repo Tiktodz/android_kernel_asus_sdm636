@@ -5418,7 +5418,7 @@ int msm_thermal_init(struct msm_thermal_data *pdata)
 	}
 
 	INIT_DELAYED_WORK(&check_temp_work, check_temp);
-	schedule_delayed_work(&check_temp_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &check_temp_work, 0);
 	msm_thermal_panic_notifier_init(&pdata->pdev->dev);
 
 	return ret;

@@ -847,6 +847,23 @@ struct file *open_exec(const char *name)
 }
 EXPORT_SYMBOL(open_exec);
 
+int kernel_read(struct file *file, loff_t offset,
+		char *addr, unsigned long count)
+{
+	mm_segment_t old_fs;
+	loff_t pos = offset;
+	int result;
+
+	old_fs = get_fs();
+	set_fs(get_ds());
+	/* The cast to a user pointer is valid due to the set_fs() */
+	result = vfs_read(file, (void __user *)addr, count, &pos);
+	set_fs(old_fs);
+	return result;
+}
+
+EXPORT_SYMBOL(kernel_read);
+
 ssize_t read_code(struct file *file, unsigned long addr, loff_t pos, size_t len)
 {
 	ssize_t res = vfs_read(file, (void __user *)addr, len, &pos);
@@ -1378,7 +1395,6 @@ static void bprm_fill_uid(struct linux_binprm *bprm)
 int prepare_binprm(struct linux_binprm *bprm)
 {
 	int retval;
-    loff_t pos = 0;
 
 	bprm_fill_uid(bprm);
 
@@ -1389,7 +1405,7 @@ int prepare_binprm(struct linux_binprm *bprm)
 	bprm->cred_prepared = 1;
 
 	memset(bprm->buf, 0, BINPRM_BUF_SIZE);
-	return kernel_read(bprm->file, bprm->buf, BINPRM_BUF_SIZE, &pos);
+	return kernel_read(bprm->file, 0, bprm->buf, BINPRM_BUF_SIZE);
 }
 
 EXPORT_SYMBOL(prepare_binprm);

@@ -144,7 +144,6 @@ static int elf_fdpic_fetch_phdrs(struct elf_fdpic_params *params,
 	struct elf32_phdr *phdr;
 	unsigned long size;
 	int retval, loop;
-    loff_t pos = params->hdr.e_phoff;
 
 	if (params->hdr.e_phentsize != sizeof(struct elf_phdr))
 		return -ENOMEM;
@@ -156,7 +155,8 @@ static int elf_fdpic_fetch_phdrs(struct elf_fdpic_params *params,
 	if (!params->phdrs)
 		return -ENOMEM;
 
-	retval = kernel_read(file, params->phdrs, size, &pos);
+	retval = kernel_read(file, params->hdr.e_phoff,
+			     (char *) params->phdrs, size);
 	if (unlikely(retval != size))
 		return retval < 0 ? retval : -ENOEXEC;
 
@@ -198,7 +198,6 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm)
 	char *interpreter_name = NULL;
 	int executable_stack;
 	int retval, i;
-    loff_t pos;
 
 	kdebug("____ LOAD %d ____", current->pid);
 
@@ -246,9 +245,10 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm)
 			if (!interpreter_name)
 				goto error;
 
-			pos = phdr->p_offset;
-			retval = kernel_read(bprm->file, interpreter_name,
-					     phdr->p_filesz, &pos);
+			retval = kernel_read(bprm->file,
+					     phdr->p_offset,
+					     interpreter_name,
+					     phdr->p_filesz);
 			if (unlikely(retval != phdr->p_filesz)) {
 				if (retval >= 0)
 					retval = -ENOEXEC;
@@ -276,9 +276,8 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm)
 			 */
 			would_dump(bprm, interpreter);
 
-			pos = 0;
-			retval = kernel_read(interpreter, bprm->buf,
-					BINPRM_BUF_SIZE, &pos);
+			retval = kernel_read(interpreter, 0, bprm->buf,
+					     BINPRM_BUF_SIZE);
 			if (unlikely(retval != BINPRM_BUF_SIZE)) {
 				if (retval >= 0)
 					retval = -ENOEXEC;

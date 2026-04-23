@@ -17,7 +17,6 @@
 #include <linux/err.h>
 #include <keys/user-type.h>
 #include <keys/big_key-type.h>
-#include <crypto/rng.h>
 
 MODULE_LICENSE("GPL");
 
@@ -32,72 +31,11 @@ enum {
 };
 
 /*
- * Crypto operation with big_key data
- */
-enum big_key_op {
-	BIG_KEY_ENC,
-	BIG_KEY_DEC,
-};
-
-/*
  * If the data is under this limit, there's no point creating a shm file to
  * hold it as the permanently resident metadata for the shmem fs will be at
  * least as large as the data.
  */
 #define BIG_KEY_FILE_THRESHOLD (sizeof(struct inode) + sizeof(struct dentry))
-
-/*
- * Key size for big_key data encryption
- */
-#define ENC_KEY_SIZE	16
-
-/*
- * Crypto names for big_key data encryption
- */
-static const char big_key_rng_name[] = "stdrng";
-static const char big_key_alg_name[] = "ecb(aes)";
-
-/*
- * Crypto algorithms for big_key data encryption
- */
-static struct crypto_rng *big_key_rng;
-static struct crypto_blkcipher *big_key_blkcipher;
-
-/*
- * Generate random key to encrypt big_key data
- */
-static inline int big_key_gen_enckey(u8 *key)
-{
-	return crypto_rng_get_bytes(big_key_rng, key, ENC_KEY_SIZE);
-}
-
-/*
- * Encrypt/decrypt big_key data
- */
-static int big_key_crypt(enum big_key_op op, u8 *data, size_t datalen, u8 *key)
-{
-	int ret = -EINVAL;
-	struct scatterlist sgio;
-	struct blkcipher_desc desc;
-
-	if (crypto_blkcipher_setkey(big_key_blkcipher, key, ENC_KEY_SIZE)) {
-		ret = -EAGAIN;
-		goto error;
-	}
-
-	desc.flags = 0;
-	desc.tfm = big_key_blkcipher;
-
-	sg_init_one(&sgio, data, datalen);
-
-	if (op == BIG_KEY_ENC)
-		ret = crypto_blkcipher_encrypt(&desc, &sgio, &sgio, datalen);
-	else
-		ret = crypto_blkcipher_decrypt(&desc, &sgio, &sgio, datalen);
-
-error:
-	return ret;
-}
 
 /*
  * big_key defined keys take an arbitrary string as the description and an
@@ -122,8 +60,7 @@ int big_key_preparse(struct key_preparsed_payload *prep)
 	struct path *path = (struct path *)&prep->payload.data[big_key_path];
 	struct file *file;
 	ssize_t written;
-	size_t datalen = ALIGN(datalen, crypto_skcipher_blocksize(big_key_skcipher));
-	loff_t pos = 0;
+	size_t datalen = prep->datalen;
 	int ret;
 
 	ret = -EINVAL;
@@ -147,7 +84,7 @@ int big_key_preparse(struct key_preparsed_payload *prep)
 			goto error;
 		}
 
-		written = kernel_write(file, data, datalen, &pos);
+		written = kernel_write(file, prep->data, prep->datalen, 0);
 		if (written != datalen) {
 			ret = written;
 			if (written >= 0)
@@ -245,8 +182,7 @@ void big_key_describe(const struct key *key, struct seq_file *m)
  */
 long big_key_read(const struct key *key, char __user *buffer, size_t buflen)
 {
-	size_t datalen = ALIGN(datalen, crypto_blkcipher_blocksize(big_key_blkcipher));
-	loff_t pos = 0;
+	size_t datalen = (size_t)key->payload.data[big_key_len];
 	long ret;
 
 	if (!buffer || buflen < datalen)
@@ -262,7 +198,7 @@ long big_key_read(const struct key *key, char __user *buffer, size_t buflen)
 			return PTR_ERR(file);
 
 		pos = 0;
-		ret = vfs_read(file, data, datalen, &pos);
+		ret = vfs_read(file, buffer, datalen, &pos);
 		fput(file);
 		if (ret >= 0 && ret != datalen)
 			ret = -EIO;

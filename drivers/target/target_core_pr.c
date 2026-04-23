@@ -1985,7 +1985,6 @@ static int __core_scsi3_write_aptpl_to_file(
 	char path[512];
 	u32 pr_aptpl_buf_len;
 	int ret;
-	loff_t pos = 0;
 
 	memset(path, 0, 512);
 
@@ -2005,7 +2004,7 @@ static int __core_scsi3_write_aptpl_to_file(
 
 	pr_aptpl_buf_len = (strlen(buf) + 1); /* Add extra for NULL */
 
-	ret = kernel_write(file, buf, pr_aptpl_buf_len, &pos);
+	ret = kernel_write(file, buf, pr_aptpl_buf_len, 0);
 
 	if (ret < 0)
 		pr_debug("Error writing APTPL metadata file: %s\n", path);

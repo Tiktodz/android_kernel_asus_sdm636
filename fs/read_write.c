@@ -4,7 +4,7 @@
  *  Copyright (C) 1991, 1992  Linus Torvalds
  */
 
-#include <linux/slab.h>
+#include <linux/slab.h> 
 #include <linux/stat.h>
 #include <linux/fcntl.h>
 #include <linux/file.h>
@@ -436,20 +436,6 @@ ssize_t __vfs_read(struct file *file, char __user *buf, size_t count,
 }
 EXPORT_SYMBOL(__vfs_read);
 
-ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
-{
-	mm_segment_t old_fs;
-	ssize_t result;
-
-	old_fs = get_fs();
-	set_fs(get_ds());
-	/* The cast to a user pointer is valid due to the set_fs() */
-	result = vfs_read(file, (void __user *)buf, count, pos);
-	set_fs(old_fs);
-	return result;
-}
-EXPORT_SYMBOL(kernel_read);
-
 ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 {
 	ssize_t ret;
@@ -532,22 +518,6 @@ ssize_t __kernel_write(struct file *file, const char *buf, size_t count, loff_t 
 }
 
 EXPORT_SYMBOL(__kernel_write);
-
-ssize_t kernel_write(struct file *file, const void *buf, size_t count,
-			    loff_t *pos)
-{
-	mm_segment_t old_fs;
-	ssize_t res;
-
-	old_fs = get_fs();
-	set_fs(get_ds());
-	/* The cast to a user pointer is valid due to the set_fs() */
-	res = vfs_write(file, (__force const char __user *)buf, count, pos);
-	set_fs(old_fs);
-
-	return res;
-}
-EXPORT_SYMBOL(kernel_write);
 
 ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_t *pos)
 {

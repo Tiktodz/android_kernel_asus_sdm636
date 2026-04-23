@@ -341,12 +341,11 @@ static int load_aout_library(struct file *file)
 	unsigned long error;
 	int retval;
 	struct exec ex;
-	loff_t pos = 0;
 
 	inode = file_inode(file);
 
 	retval = -ENOEXEC;
-	error = kernel_read(file, &ex, sizeof(ex), &pos);
+	error = kernel_read(file, 0, (char *) &ex, sizeof(ex));
 	if (error != sizeof(ex))
 		goto out;
 

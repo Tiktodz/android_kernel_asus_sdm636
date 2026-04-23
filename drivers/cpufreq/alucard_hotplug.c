@@ -452,12 +452,12 @@ static void hotplug_stop(void)
 	exit_rq_avg();
 }
 
-#define show_one(file_name, object)					\
-static ssize_t show_##file_name						\
-(struct kobject *kobj, struct attribute *attr, char *buf)		\
-{									\
-	return sprintf(buf, "%d\n",					\
-			hotplug_tuners_ins.object);			\
+#define show_one(file_name, object)                 \
+static ssize_t show_##file_name                     \
+(struct kobject *kobj, struct kobj_attribute *attr, char *buf)      \
+{                                   \
+    return sprintf(buf, "%d\n",                 \
+            hotplug_tuners_ins.object);         \
 }
 
 show_one(hotplug_sampling_rate, hotplug_sampling_rate);
@@ -468,14 +468,14 @@ show_one(maxcoreslimit_sleep, maxcoreslimit_sleep);
 show_one(hp_io_is_busy, hp_io_is_busy);
 show_one(hotplug_suspend, hotplug_suspend);
 
-#define show_pcpu_param(file_name, var_name, num_core)			\
-static ssize_t show_##file_name						\
-(struct kobject *kobj, struct attribute *attr, char *buf)		\
-{									\
-	struct hotplug_cpuinfo *pcpu_info =				\
-			&per_cpu(od_hotplug_cpuinfo, num_core - 1);	\
-	return sprintf(buf, "%u\n",					\
-			pcpu_info->var_name);				\
+#define show_pcpu_param(file_name, var_name, num_core)          \
+static ssize_t show_##file_name                     \
+(struct kobject *kobj, struct kobj_attribute *attr, char *buf)      \
+{                                   \
+    struct hotplug_cpuinfo *pcpu_info =             \
+            &per_cpu(od_hotplug_cpuinfo, num_core - 1); \
+    return sprintf(buf, "%u\n",                 \
+            pcpu_info->var_name);               \
 }
 
 show_pcpu_param(hotplug_freq_1_1, up_freq, 1);
@@ -506,27 +506,27 @@ show_pcpu_param(hotplug_rate_2_0, down_rate, 2);
 show_pcpu_param(hotplug_rate_3_0, down_rate, 3);
 show_pcpu_param(hotplug_rate_4_0, down_rate, 4);
 
-#define store_pcpu_param(file_name, var_name, num_core)			\
-static ssize_t store_##file_name					\
-(struct kobject *kobj, struct attribute *attr,				\
-	const char *buf, size_t count)					\
-{									\
-	unsigned int input;						\
-	struct hotplug_cpuinfo *pcpu_info;				\
-	int ret;							\
-									\
-	ret = sscanf(buf, "%u", &input);				\
-	if (ret != 1)							\
-		return -EINVAL;						\
-									\
-	pcpu_info = &per_cpu(od_hotplug_cpuinfo, num_core - 1);		\
-									\
-	if (input == pcpu_info->var_name) {				\
-		return count;						\
-	}								\
-									\
-	pcpu_info->var_name = input;					\
-	return count;							\
+#define store_pcpu_param(file_name, var_name, num_core)         \
+static ssize_t store_##file_name                    \
+(struct kobject *kobj, struct kobj_attribute *attr,             \
+    const char *buf, size_t count)                  \
+{                                   \
+    unsigned int input;                     \
+    struct hotplug_cpuinfo *pcpu_info;              \
+    int ret;                            \
+                                    \
+    ret = sscanf(buf, "%u", &input);                \
+    if (ret != 1)                           \
+        return -EINVAL;                     \
+                                    \
+    pcpu_info = &per_cpu(od_hotplug_cpuinfo, num_core - 1);     \
+                                    \
+    if (input == pcpu_info->var_name) {             \
+        return count;                       \
+    }                               \
+                                    \
+    pcpu_info->var_name = input;                    \
+    return count;                           \
 }
 
 store_pcpu_param(hotplug_freq_1_1, up_freq, 1);
@@ -601,8 +601,8 @@ static void cpus_hotplugging(int status) {
 
 /* hotplug_sampling_rate */
 static ssize_t store_hotplug_sampling_rate(struct kobject *a,
-				struct attribute *b,
-				const char *buf, size_t count)
+                struct kobj_attribute *b,
+                const char *buf, size_t count)
 {
 	int input;
 	int ret;
@@ -622,8 +622,8 @@ static ssize_t store_hotplug_sampling_rate(struct kobject *a,
 }
 
 /* hotplug_enable */
-static ssize_t store_hotplug_enable(struct kobject *a, struct attribute *b,
-				  const char *buf, size_t count)
+static ssize_t store_hotplug_enable(struct kobject *a, struct kobj_attribute *b,
+                  const char *buf, size_t count)
 {
 	int input;
 	int ret;
@@ -650,8 +650,8 @@ static ssize_t store_hotplug_enable(struct kobject *a, struct attribute *b,
 }
 
 /* min_cpus_online */
-static ssize_t store_min_cpus_online(struct kobject *a, struct attribute *b,
-				  const char *buf, size_t count)
+static ssize_t store_min_cpus_online(struct kobject *a, struct kobj_attribute *b,
+                  const char *buf, size_t count)
 {
 	int input;
 	int ret;
@@ -671,8 +671,8 @@ static ssize_t store_min_cpus_online(struct kobject *a, struct attribute *b,
 }
 
 /* maxcoreslimit */
-static ssize_t store_maxcoreslimit(struct kobject *a, struct attribute *b,
-				  const char *buf, size_t count)
+static ssize_t store_maxcoreslimit(struct kobject *a, struct kobj_attribute *b,
+                  const char *buf, size_t count)
 {
 	int input;
 	int ret;
@@ -693,8 +693,8 @@ static ssize_t store_maxcoreslimit(struct kobject *a, struct attribute *b,
 
 /* maxcoreslimit_sleep */
 static ssize_t store_maxcoreslimit_sleep(struct kobject *a,
-				struct attribute *b,
-				const char *buf, size_t count)
+                struct kobj_attribute *b,
+                const char *buf, size_t count)
 {
 	int input;
 	int ret;
@@ -714,8 +714,8 @@ static ssize_t store_maxcoreslimit_sleep(struct kobject *a,
 }
 
 /* hp_io_is_busy */
-static ssize_t store_hp_io_is_busy(struct kobject *a, struct attribute *b,
-				   const char *buf, size_t count)
+static ssize_t store_hp_io_is_busy(struct kobject *a, struct kobj_attribute *b,
+                   const char *buf, size_t count)
 {
 	unsigned int input, j;
 	int ret;
@@ -752,8 +752,8 @@ static ssize_t store_hp_io_is_busy(struct kobject *a, struct attribute *b,
  * if set = 0, then hoplug will be active all the time.
  */
 static ssize_t store_hotplug_suspend(struct kobject *a,
-				struct attribute *b,
-				const char *buf, size_t count)
+                struct kobj_attribute *b,
+                const char *buf, size_t count)
 {
 	int input;
 	int ret;

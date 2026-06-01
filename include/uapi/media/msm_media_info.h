@@ -227,7 +227,7 @@ enum color_fmts {
 	 * Y_Stride = align(Width, 128)
 	 * UV_Stride = align(Width, 128)
 	 * Y_Scanlines = align(Height, 32)
-	 * UV_Scanlines = align(Height/2, 32)
+	 * UV_Scanlines = align(Height/2, 16)
 	 * Y_UBWC_Plane_size = align(Y_Stride * Y_Scanlines, 4096)
 	 * UV_UBWC_Plane_size = align(UV_Stride * UV_Scanlines, 4096)
 	 * Y_Meta_Stride = align(roundup(Width, Y_TileWidth), 64)
@@ -493,8 +493,8 @@ enum color_fmts {
 	 * . . . . . . . . . . . . . . . .  -------> Buffer size aligned to 4k
 	 *
 	 *
-	 * Y_Stride = align(Width * 4/3, 256)
-	 * UV_Stride = align(Width * 4/3, 256)
+	 * Y_Stride = align(Width * 4/3, 128)
+	 * UV_Stride = align(Width * 4/3, 128)
 	 * Y_Scanlines = align(Height, 32)
 	 * UV_Scanlines = align(Height/2, 16)
 	 * Y_UBWC_Plane_Size = align(Y_Stride * Y_Scanlines, 4096)
@@ -573,8 +573,8 @@ enum color_fmts {
 	 * . . . . . . . . . . . . . . . .    -------> Buffer size aligned to 4k
 	 * . . . . . . . . . . . . . . . .              V
 	 *
-	 * RGB_Stride = align(Width * 4, 256)
-	 * RGB_Scanlines = align(Height, 16)
+	 * RGB_Stride = align(Width * 4, 128)
+	 * RGB_Scanlines = align(Height, 32)
 	 * RGB_Plane_size = align(RGB_Stride * RGB_Scanlines, 4096)
 	 * RGB_Meta_Stride = align(roundup(Width, RGB_TileWidth), 64)
 	 * RGB_Meta_Scanline = align(roundup(Height, RGB_TileHeight), 16)
@@ -667,7 +667,7 @@ enum color_fmts {
 	 * . . . . . . . . . . . . . . . .    -------> Buffer size aligned to 4k
 	 * . . . . . . . . . . . . . . . .              V
 	 *
-	 * RGB_Stride = align(Width * 2, 256)
+	 * RGB_Stride = align(Width * 2, 128)
 	 * RGB_Scanlines = align(Height, 16)
 	 * RGB_Plane_size = align(RGB_Stride * RGB_Scanlines, 4096)
 	 * RGB_Meta_Stride = align(roundup(Width, RGB_TileWidth), 64)

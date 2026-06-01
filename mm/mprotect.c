@@ -427,8 +427,7 @@ SYSCALL_DEFINE3(mprotect, unsigned long, start, size_t, len,
 
 	vm_flags = calc_vm_prot_bits(prot);
 
-	if (down_write_killable(&current->mm->mmap_sem))
-		return -EINTR;
+	down_write(&current->mm->mmap_sem);
 
 	vma = find_vma(current->mm, start);
 	error = -ENOMEM;

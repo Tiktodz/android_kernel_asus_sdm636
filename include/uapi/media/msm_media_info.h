@@ -1261,11 +1261,8 @@ static inline unsigned int VENUS_BUFFER_SIZE(
 		size = MSM_MEDIA_ALIGN(size, 4096);
 
 		/* Additional size to cover last row of non-aligned frame */
-		if (width >= 2400 && height >= 2400) {
-			size += MSM_MEDIA_ALIGN(width, w_alignment) *
-					w_alignment;
-			size = MSM_MEDIA_ALIGN(size, 4096);
-		}
+		size += MSM_MEDIA_ALIGN(width, w_alignment) * w_alignment;
+		size = MSM_MEDIA_ALIGN(size, 4096);
 		break;
 	case COLOR_FMT_P010:
 		uv_alignment = 4096;
@@ -1306,11 +1303,8 @@ static inline unsigned int VENUS_BUFFER_SIZE(
 		size = MSM_MEDIA_ALIGN(size, 4096);
 
 		/* Additional size to cover last row of non-aligned frame */
-		if (width >= 2400 && height >= 2400) {
-			size += MSM_MEDIA_ALIGN(width, w_alignment) *
-					w_alignment;
-			size = MSM_MEDIA_ALIGN(size, 4096);
-		}
+		size += MSM_MEDIA_ALIGN(width, w_alignment) * w_alignment;
+		size = MSM_MEDIA_ALIGN(size, 4096);
 		break;
 	case COLOR_FMT_NV12_BPP10_UBWC:
 		y_ubwc_plane = MSM_MEDIA_ALIGN(y_stride * y_sclines, 4096);

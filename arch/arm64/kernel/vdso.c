@@ -130,8 +130,7 @@ int aarch32_setup_vectors_page(struct linux_binprm *bprm, int uses_interp)
 	unsigned long addr;
 	void *ret;
 
-	if (down_write_killable(&mm->mmap_sem))
-		return -EINTR;
+	down_write(&mm->mmap_sem);
 	addr = get_unmapped_area(NULL, 0, PAGE_SIZE, 0, 0);
 	if (IS_ERR_VALUE(addr)) {
 		ret = ERR_PTR(addr);
@@ -281,8 +280,7 @@ int aarch32_setup_vectors_page(struct linux_binprm *bprm, int uses_interp)
 	struct mm_struct *mm = current->mm;
 	void *ret;
 
-	if (down_write_killable(&mm->mmap_sem))
-		return -EINTR;
+	down_write(&mm->mmap_sem);
 
 	ret = ERR_PTR(vdso_setup(mm, &vdso32_mappings));
 #ifdef CONFIG_KUSER_HELPERS
@@ -307,9 +305,7 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
 	struct mm_struct *mm = current->mm;
 	int ret;
 
-	if (down_write_killable(&mm->mmap_sem))
-		return -EINTR;
-
+	down_write(&mm->mmap_sem);
 	ret = vdso_setup(mm, &vdso_mappings);
 	up_write(&mm->mmap_sem);
 	return ret;

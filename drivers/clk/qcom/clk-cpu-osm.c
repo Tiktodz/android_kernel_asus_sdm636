@@ -3120,8 +3120,8 @@ static int clk_osm_acd_init(struct clk_osm *c)
 
 static unsigned long init_rate = 300000000;
 static unsigned long osm_clk_init_rate = 200000000;
-static unsigned long pwrcl_boot_rate = 1401600000;
-static unsigned long perfcl_boot_rate = 1747200000;
+static unsigned long pwrcl_boot_rate = 1612800000;
+static unsigned long perfcl_boot_rate = 1804800000;
 
 static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 {

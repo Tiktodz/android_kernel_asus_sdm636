@@ -209,9 +209,6 @@ struct smbchg_chip {
 	bool				batt_cold;
 	bool				batt_warm;
 	bool				batt_cool;
-	unsigned int			thermal_levels;
-	unsigned int			therm_lvl_sel;
-	unsigned int			*thermal_mitigation;
 
 	/* irqs */
 	int				batt_hot_irq;
@@ -2893,63 +2890,15 @@ static int smbchg_system_temp_level_set(struct smbchg_chip *chip,
 	int prev_therm_lvl;
 	int thermal_icl_ma;
 
-	if (!chip->thermal_mitigation) {
-		dev_err(chip->dev, "Thermal mitigation not supported\n");
-		return -EINVAL;
-	}
-
 	if (lvl_sel < 0) {
 		dev_err(chip->dev, "Unsupported level selected %d\n", lvl_sel);
 		return -EINVAL;
 	}
 
-	if (lvl_sel >= chip->thermal_levels) {
-		dev_err(chip->dev, "Unsupported level selected %d forcing %d\n",
-				lvl_sel, chip->thermal_levels - 1);
-		lvl_sel = chip->thermal_levels - 1;
-	}
-
-	if (lvl_sel == chip->therm_lvl_sel)
-		return 0;
-
-	mutex_lock(&chip->therm_lvl_lock);
-	prev_therm_lvl = chip->therm_lvl_sel;
-	chip->therm_lvl_sel = lvl_sel;
-	if (chip->therm_lvl_sel == (chip->thermal_levels - 1)) {
-		/*
-		 * Disable charging if highest value selected by
-		 * setting the DC and USB path in suspend
-		 */
-		rc = vote(chip->dc_suspend_votable, THERMAL_EN_VOTER, true, 0);
 		if (rc < 0) {
-			dev_err(chip->dev,
-				"Couldn't set dc suspend rc %d\n", rc);
-			goto out;
-		}
-		rc = vote(chip->usb_suspend_votable, THERMAL_EN_VOTER, true, 0);
-		if (rc < 0) {
-			dev_err(chip->dev,
-				"Couldn't set usb suspend rc %d\n", rc);
-			goto out;
-		}
-		goto out;
-	}
-
-	if (chip->therm_lvl_sel == 0) {
-		rc = vote(chip->usb_icl_votable, THERMAL_ICL_VOTER, false, 0);
-		if (rc < 0)
-			pr_err("Couldn't disable USB thermal ICL vote rc=%d\n",
-				rc);
-
-		rc = vote(chip->dc_icl_votable, THERMAL_ICL_VOTER, false, 0);
-		if (rc < 0)
 			pr_err("Couldn't disable DC thermal ICL vote rc=%d\n",
 				rc);
 	} else {
-		thermal_icl_ma =
-			(int)chip->thermal_mitigation[chip->therm_lvl_sel];
-		rc = vote(chip->usb_icl_votable, THERMAL_ICL_VOTER, true,
-					thermal_icl_ma);
 		if (rc < 0)
 			pr_err("Couldn't vote for USB thermal ICL rc=%d\n", rc);
 
@@ -2958,19 +2907,6 @@ static int smbchg_system_temp_level_set(struct smbchg_chip *chip,
 		if (rc < 0)
 			pr_err("Couldn't vote for DC thermal ICL rc=%d\n", rc);
 	}
-
-	if (prev_therm_lvl == chip->thermal_levels - 1) {
-		/*
-		 * If previously highest value was selected charging must have
-		 * been disabed. Enable charging by taking the DC and USB path
-		 * out of suspend.
-		 */
-		rc = vote(chip->dc_suspend_votable, THERMAL_EN_VOTER, false, 0);
-		if (rc < 0) {
-			dev_err(chip->dev,
-				"Couldn't set dc suspend rc %d\n", rc);
-			goto out;
-		}
 		rc = vote(chip->usb_suspend_votable, THERMAL_EN_VOTER,
 								false, 0);
 		if (rc < 0) {
@@ -6106,7 +6042,7 @@ static int smbchg_battery_get_property(struct power_supply *psy,
 		val->intval = chip->fastchg_current_ma * 1000;
 		break;
 	case POWER_SUPPLY_PROP_SYSTEM_TEMP_LEVEL:
-		val->intval = chip->therm_lvl_sel;
+		val->intval = 0;
 		break;
 	case POWER_SUPPLY_PROP_INPUT_CURRENT_MAX:
 		val->intval = smbchg_get_aicl_level_ma(chip) * 1000;
@@ -7694,28 +7630,6 @@ static int smb_parse_dt(struct smbchg_chip *chip)
 		of_property_read_bool(node, "qcom,chg-led-sw-controls");
 	chip->cfg_chg_led_support =
 		of_property_read_bool(node, "qcom,chg-led-support");
-
-	if (of_find_property(node, "qcom,thermal-mitigation",
-					&chip->thermal_levels)) {
-		chip->thermal_mitigation = devm_kzalloc(chip->dev,
-			chip->thermal_levels,
-			GFP_KERNEL);
-
-		if (chip->thermal_mitigation == NULL) {
-			dev_err(chip->dev, "thermal mitigation kzalloc() failed.\n");
-			return -ENOMEM;
-		}
-
-		chip->thermal_levels /= sizeof(int);
-		rc = of_property_read_u32_array(node,
-				"qcom,thermal-mitigation",
-				chip->thermal_mitigation, chip->thermal_levels);
-		if (rc) {
-			dev_err(chip->dev,
-				"Couldn't read threm limits rc = %d\n", rc);
-			return rc;
-		}
-	}
 
 	chip->skip_usb_notification
 		= of_property_read_bool(node,

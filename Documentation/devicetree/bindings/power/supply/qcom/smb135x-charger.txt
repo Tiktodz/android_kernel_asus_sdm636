@@ -53,8 +53,6 @@ Optional Properties:
 					indicates the ratio of the pull up resistors and NTC
 					resistor in battery pack. There are 4 options refering to
 					the graphic user interface.
-- qcom,thermal-mitigation:		Array of input current limit values for different
-					system thermal mitigation level.
 - regulator-name			A string used as a descriptive name for OTG regulator.
 - therm-bias-supply			The supply that provides bias voltage to the battery
 					thermistor. This is useful in designs that do not use the SYSON
@@ -94,7 +92,6 @@ Example:
 			qcom,charging-disabled;
 			qcom,recharge-thresh-mv = <100>;
 			regulator-name = "smb1357-otg";
-			qcom,thermal-mitigation = <1500 700 600 325>;
 			qcom,gamma-setting = <3 2 0 2>;
 			qcom,fastchg-ma = <3000>;
 		};

@@ -203,11 +203,6 @@ Optional Properties:
 				is a boolean property.
 - otg-parent-supply		A phandle to an external boost regulator for
 				OTG if it exists.
-- qcom,thermal-mitigation:	Array of input current limit values for
-				different system thermal mitigation levels.
-				This should be a flat array that denotates the
-				maximum charge current in mA for each thermal
-				level.
 - qcom,rparasitics-uohm:	The parasitic resistance of the board following
 				the line from the battery connectors through
 				vph_power. This is used to calculate maximum
@@ -298,7 +293,6 @@ Example:
 		qcom,dc-psy-ma = <1500>;
 		qcom,bms-psy-name = "bms";
 		qcom,battery-psy-name = "battery";
-		qcom,thermal-mitigation = <1500 700 600 325>;
 		qcom,vchg_sns-vadc = <&pmi8950_vadc>;
 		qcom,vchg-adc-channel-id = <3>;
 

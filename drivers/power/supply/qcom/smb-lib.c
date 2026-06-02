@@ -2075,27 +2075,8 @@ int smblib_set_prop_system_temp_level(struct smb_charger *chg,
 	if (val->intval < 0)
 		return -EINVAL;
 
-	if (chg->thermal_levels <= 0)
-		return -EINVAL;
-
-	if (val->intval > chg->thermal_levels)
-		return -EINVAL;
-
 	chg->system_temp_level = val->intval;
-	/* disable parallel charge in case of system temp level */
-	vote(chg->pl_disable_votable, THERMAL_DAEMON_VOTER,
-			chg->system_temp_level ? true : false, 0);
 
-	if (chg->system_temp_level == chg->thermal_levels)
-		return vote(chg->chg_disable_votable,
-			THERMAL_DAEMON_VOTER, true, 0);
-
-	vote(chg->chg_disable_votable, THERMAL_DAEMON_VOTER, false, 0);
-	if (chg->system_temp_level == 0)
-		return vote(chg->fcc_votable, THERMAL_DAEMON_VOTER, false, 0);
-
-	vote(chg->fcc_votable, THERMAL_DAEMON_VOTER, true,
-			chg->thermal_mitigation[chg->system_temp_level]);
 	return 0;
 }
 
@@ -3725,7 +3706,7 @@ void jeita_rule(void)
 	 * JEITA_EN_HARDLIMIT=enable
 	 * JEITA Temperature Hard Limit Pauses Charging
 	 */
-	rc = smblib_write(smbchg_dev, JEITA_EN_CFG_REG, 0x10);
+	rc = smblib_write(smbchg_dev, JEITA_EN_CFG_REG, 0x00);
 	if (rc < 0)
 		pr_err("%s: Failed to set JEITA_EN_CFG_REG\n", __func__);
 

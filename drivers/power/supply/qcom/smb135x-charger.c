@@ -414,9 +414,6 @@ struct smb135x_chg {
 	struct regulator		*usb_pullup_vreg;
 	struct delayed_work		wireless_insertion_work;
 
-	unsigned int			thermal_levels;
-	unsigned int			therm_lvl_sel;
-	unsigned int			*thermal_mitigation;
 	unsigned int			gamma_setting_num;
 	unsigned int			*gamma_setting;
 	struct mutex			current_change_lock;
@@ -1318,27 +1315,6 @@ static int smb135x_set_appropriate_current(struct smb135x_chg *chip,
 			func = NULL;
 	}
 
-	if (chip->therm_lvl_sel > 0
-			&& chip->therm_lvl_sel < (chip->thermal_levels - 1))
-		/*
-		 * consider thermal limit only when it is active and not at
-		 * the highest level
-		 */
-		therm_ma = chip->thermal_mitigation[chip->therm_lvl_sel];
-	else
-		therm_ma = path_current;
-
-	current_ma = min(therm_ma, path_current);
-	if (func != NULL)
-		rc = func(chip, current_ma);
-	if (rc < 0)
-		dev_err(chip->dev, "Couldn't set %s current to min(%d, %d)rc = %d\n",
-				path == USB ? "usb" : "dc",
-				therm_ma, path_current,
-				rc);
-	return rc;
-}
-
 static int smb135x_charging_enable(struct smb135x_chg *chip, int enable)
 {
 	int rc;
@@ -1423,74 +1399,13 @@ static int smb135x_system_temp_level_set(struct smb135x_chg *chip,
 	int rc = 0;
 	int prev_therm_lvl;
 
-	if (!chip->thermal_mitigation) {
-		pr_err("Thermal mitigation not supported\n");
-		return -EINVAL;
-	}
-
 	if (lvl_sel < 0) {
 		pr_err("Unsupported level selected %d\n", lvl_sel);
 		return -EINVAL;
 	}
 
-	if (lvl_sel >= chip->thermal_levels) {
-		pr_err("Unsupported level selected %d forcing %d\n", lvl_sel,
-				chip->thermal_levels - 1);
-		lvl_sel = chip->thermal_levels - 1;
-	}
-
-	if (lvl_sel == chip->therm_lvl_sel)
-		return 0;
-
-	mutex_lock(&chip->current_change_lock);
-	prev_therm_lvl = chip->therm_lvl_sel;
-	chip->therm_lvl_sel = lvl_sel;
-	if (chip->therm_lvl_sel == (chip->thermal_levels - 1)) {
-		/*
-		 * Disable charging if highest value selected by
-		 * setting the DC and USB path in suspend
-		 */
-		rc = smb135x_path_suspend(chip, DC, THERMAL, true);
-		if (rc < 0) {
-			dev_err(chip->dev,
-				"Couldn't set dc suspend rc %d\n", rc);
-			goto out;
-		}
-		rc = smb135x_path_suspend(chip, USB, THERMAL, true);
-		if (rc < 0) {
-			dev_err(chip->dev,
-				"Couldn't set usb suspend rc %d\n", rc);
-			goto out;
-		}
-		goto out;
-	}
-
 	smb135x_set_appropriate_current(chip, USB);
 	smb135x_set_appropriate_current(chip, DC);
-
-	if (prev_therm_lvl == chip->thermal_levels - 1) {
-		/*
-		 * If previously highest value was selected charging must have
-		 * been disabed. Enable charging by taking the DC and USB path
-		 * out of suspend.
-		 */
-		rc = smb135x_path_suspend(chip, DC, THERMAL, false);
-		if (rc < 0) {
-			dev_err(chip->dev,
-				"Couldn't set dc suspend rc %d\n", rc);
-			goto out;
-		}
-		rc = smb135x_path_suspend(chip, USB, THERMAL, false);
-		if (rc < 0) {
-			dev_err(chip->dev,
-				"Couldn't set usb suspend rc %d\n", rc);
-			goto out;
-		}
-	}
-out:
-	mutex_unlock(&chip->current_change_lock);
-	return rc;
-}
 
 static int smb135x_battery_set_property(struct power_supply *psy,
 				       enum power_supply_property prop,
@@ -1606,7 +1521,7 @@ static int smb135x_battery_get_property(struct power_supply *psy,
 		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
 		break;
 	case POWER_SUPPLY_PROP_SYSTEM_TEMP_LEVEL:
-		val->intval = chip->therm_lvl_sel;
+		val->intval = 0;
 		break;
 	default:
 		return -EINVAL;
@@ -4013,7 +3928,7 @@ static int smb_parse_dt(struct smb135x_chg *chip)
 		}
 	}
 
-	if (of_find_property(node, "qcom,thermal-mitigation",
+	/*if (of_find_property(node, "qcom,thermal-mitigation",
 					&chip->thermal_levels)) {
 		chip->thermal_mitigation = devm_kzalloc(chip->dev,
 			chip->thermal_levels,
@@ -4032,7 +3947,7 @@ static int smb_parse_dt(struct smb135x_chg *chip)
 			pr_err("Couldn't read threm limits rc = %d\n", rc);
 			return rc;
 		}
-	}
+	}*/
 
 	if (of_find_property(node, "usb-pullup-supply", NULL)) {
 		/* get the data line pull-up regulator */

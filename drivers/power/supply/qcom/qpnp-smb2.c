@@ -293,7 +293,7 @@ static int smb2_parse_dt(struct smb2 *chip)
 	if (rc < 0)
 		chip->dt.wipower_max_uw = -EINVAL;
 
-	if (of_find_property(node, "qcom,thermal-mitigation", &byte_len)) {
+	/*if (of_find_property(node, "qcom,thermal-mitigation", &byte_len)) {
 		chg->thermal_mitigation = devm_kzalloc(chg->dev, byte_len,
 			GFP_KERNEL);
 
@@ -310,7 +310,7 @@ static int smb2_parse_dt(struct smb2 *chip)
 				"Couldn't read threm limits rc = %d\n", rc);
 			return rc;
 		}
-	}
+	}*/
 
 #ifdef CONFIG_MACH_ASUS_SDM660
 	if (of_find_property(node, "qcom,chg-alert-vadc", NULL))
@@ -1126,7 +1126,7 @@ static int smb2_batt_set_prop(struct power_supply *psy,
 		break;
 #endif
 	case POWER_SUPPLY_PROP_SYSTEM_TEMP_LEVEL:
-		rc = smblib_set_prop_system_temp_level(chg, val);
+		rc = 0;
 		break;
 	case POWER_SUPPLY_PROP_CAPACITY:
 		rc = smblib_set_prop_batt_capacity(chg, val);

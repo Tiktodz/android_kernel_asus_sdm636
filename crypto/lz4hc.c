@@ -22,51 +22,35 @@
 #include <linux/crypto.h>
 #include <linux/vmalloc.h>
 #include <linux/lz4.h>
-#include <crypto/internal/scompress.h>
 
 struct lz4hc_ctx {
 	void *lz4hc_comp_mem;
 };
 
-static void *lz4hc_alloc_ctx(struct crypto_scomp *tfm)
-{
-	void *ctx;
-
-	ctx = vmalloc(LZ4HC_MEM_COMPRESS);
-	if (!ctx)
-		return ERR_PTR(-ENOMEM);
-
-	return ctx;
-}
-
 static int lz4hc_init(struct crypto_tfm *tfm)
 {
 	struct lz4hc_ctx *ctx = crypto_tfm_ctx(tfm);
 
-	ctx->lz4hc_comp_mem = lz4hc_alloc_ctx(NULL);
-	if (IS_ERR(ctx->lz4hc_comp_mem))
+	ctx->lz4hc_comp_mem = vmalloc(LZ4HC_MEM_COMPRESS);
+	if (!ctx->lz4hc_comp_mem)
 		return -ENOMEM;
 
 	return 0;
-}
-
-static void lz4hc_free_ctx(struct crypto_scomp *tfm, void *ctx)
-{
-	vfree(ctx);
 }
 
 static void lz4hc_exit(struct crypto_tfm *tfm)
 {
 	struct lz4hc_ctx *ctx = crypto_tfm_ctx(tfm);
 
-	lz4hc_free_ctx(NULL, ctx->lz4hc_comp_mem);
+	vfree(ctx->lz4hc_comp_mem);
 }
 
-static int __lz4hc_compress_crypto(const u8 *src, unsigned int slen,
-				   u8 *dst, unsigned int *dlen, void *ctx)
+static int lz4hc_compress_crypto(struct crypto_tfm *tfm, const u8 *src,
+			    unsigned int slen, u8 *dst, unsigned int *dlen)
 {
+	struct lz4hc_ctx *ctx = crypto_tfm_ctx(tfm);
 	int out_len = LZ4_compress_HC(src, dst, slen,
-		*dlen, LZ4HC_DEFAULT_CLEVEL, ctx);
+		*dlen, LZ4HC_DEFAULT_CLEVEL, ctx->lz4hc_comp_mem);
 
 	if (!out_len)
 		return -EINVAL;
@@ -75,47 +59,16 @@ static int __lz4hc_compress_crypto(const u8 *src, unsigned int slen,
 	return 0;
 }
 
-static int lz4hc_scompress(struct crypto_scomp *tfm, const u8 *src,
-			   unsigned int slen, u8 *dst, unsigned int *dlen,
-			   void *ctx)
-{
-	return __lz4hc_compress_crypto(src, slen, dst, dlen, ctx);
-}
-
-static int lz4hc_compress_crypto(struct crypto_tfm *tfm, const u8 *src,
-				 unsigned int slen, u8 *dst,
-				 unsigned int *dlen)
-{
-	struct lz4hc_ctx *ctx = crypto_tfm_ctx(tfm);
-
-	return __lz4hc_compress_crypto(src, slen, dst, dlen,
-					ctx->lz4hc_comp_mem);
-}
-
-static int __lz4hc_decompress_crypto(const u8 *src, unsigned int slen,
-				     u8 *dst, unsigned int *dlen, void *ctx)
+static int lz4hc_decompress_crypto(struct crypto_tfm *tfm, const u8 *src,
+			      unsigned int slen, u8 *dst, unsigned int *dlen)
 {
 	int out_len = LZ4_decompress_safe(src, dst, slen, *dlen);
 
 	if (out_len < 0)
-		return -EINVAL;
+		return out_len;
 
 	*dlen = out_len;
 	return 0;
-}
-
-static int lz4hc_sdecompress(struct crypto_scomp *tfm, const u8 *src,
-			     unsigned int slen, u8 *dst, unsigned int *dlen,
-			     void *ctx)
-{
-	return __lz4hc_decompress_crypto(src, slen, dst, dlen, NULL);
-}
-
-static int lz4hc_decompress_crypto(struct crypto_tfm *tfm, const u8 *src,
-				   unsigned int slen, u8 *dst,
-				   unsigned int *dlen)
-{
-	return __lz4hc_decompress_crypto(src, slen, dst, dlen, NULL);
 }
 
 static struct crypto_alg alg_lz4hc = {
@@ -131,39 +84,14 @@ static struct crypto_alg alg_lz4hc = {
 	.coa_decompress		= lz4hc_decompress_crypto } }
 };
 
-static struct scomp_alg scomp = {
-	.alloc_ctx		= lz4hc_alloc_ctx,
-	.free_ctx		= lz4hc_free_ctx,
-	.compress		= lz4hc_scompress,
-	.decompress		= lz4hc_sdecompress,
-	.base			= {
-		.cra_name	= "lz4hc",
-		.cra_driver_name = "lz4hc-scomp",
-		.cra_module	 = THIS_MODULE,
-	}
-};
-
 static int __init lz4hc_mod_init(void)
 {
-	int ret;
-
-	ret = crypto_register_alg(&alg_lz4hc);
-	if (ret)
-		return ret;
-
-	ret = crypto_register_scomp(&scomp);
-	if (ret) {
-		crypto_unregister_alg(&alg_lz4hc);
-		return ret;
-	}
-
-	return ret;
+	return crypto_register_alg(&alg_lz4hc);
 }
 
 static void __exit lz4hc_mod_fini(void)
 {
 	crypto_unregister_alg(&alg_lz4hc);
-	crypto_unregister_scomp(&scomp);
 }
 
 module_init(lz4hc_mod_init);

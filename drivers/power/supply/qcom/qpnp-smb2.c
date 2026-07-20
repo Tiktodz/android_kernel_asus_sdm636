@@ -2293,14 +2293,14 @@ static void smb2_create_debugfs(struct smb2 *chip)
 
 #ifdef CONFIG_MACH_ASUS_SDM660
 #define ATD_CHG_LIMIT_SOC	70
-int charger_limit_enable_flag = 1;
-int charger_limit_value = 100;
+int charger_limit_enable_flag;
+int charger_limit_value;
 static char charger_limit[8] = "0";
 static struct proc_dir_entry *limit_enable_entry;
 static struct proc_dir_entry *limit_entry;
 extern int asus_get_prop_batt_capacity(struct smb_charger *chg);
-#define CHARGER_LIMIT_EN_PROC_FILE	"/proc/enable_charger_limit"
-#define CHARGER_LIMIT_PROC_FILE		"/proc/charger_limit_value"
+#define CHARGER_LIMIT_EN_PROC_FILE	"driver/charger_limit_enable"
+#define CHARGER_LIMIT_PROC_FILE		"driver/charger_limit"
 
 ssize_t charger_limit_enable_read_proc(struct file *file, char __user *page,
 					size_t size, loff_t *ppos)
